@@ -1,0 +1,14 @@
+[
+    {
+      "name": "John Doe",
+      "email": "admin@anineplus.com",
+      "roles": ["ADMIN"],
+      "status": "ACTIVE"
+    },
+    {
+      "name": "Jane Smith",
+      "email": "user@anineplus.com",
+      "roles": ["USER"],
+      "status": "ACTIVE"
+    }
+  ]

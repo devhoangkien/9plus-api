@@ -1,0 +1,274 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+  binaryTargets   = ["native", "windows", "linux-arm64-openssl-1.0.x", "linux-arm64-openssl-3.0.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+  output = "../prisma/@generated"
+}
+
+generator nestgraphql {
+  provider                              = "prisma-nestjs-graphql"
+  output                                = "../prisma/@generated"
+  combineScalarFilters                  = "false"
+  decorate_1_arguments                  = "[]"
+  decorate_1_field                      = "data"
+  decorate_1_from                       = "class-validator"
+  decorate_1_name                       = "ValidateNested"
+  decorate_1_type                       = "Create@(One|Many)UserArgs"
+  decorate_2_arguments                  = "['() => {propertyType.0}']"
+  decorate_2_field                      = "data"
+  decorate_2_from                       = "class-transformer"
+  decorate_2_name                       = "Type"
+  decorate_2_namedImport                = "true"
+  decorate_2_type                       = "Create@(One|Many)UserArgs"
+  decorate_3_arguments                  = "[]"
+  decorate_3_field                      = "!(create)"
+  decorate_3_from                       = "@nestjs/graphql"
+  decorate_3_name                       = "HideField"
+  decorate_3_type                       = "ProfileUncheckedCreateNestedOneWithoutUserInput"
+  emitCompiled                          = "true"
+  emitSingle                            = "true"
+  fields_Scalars_from                   = "graphql-scalars"
+  fields_Scalars_input                  = "true"
+  fields_Validator_from                 = "class-validator"
+  fields_Validator_input                = "true"
+  noAtomicOperations                    = "false"
+  purgeOutput                           = "false"
+  reExport                              = "None"
+  requireSingleFieldsInWhereUniqueInput = "false"
+  prismaClientImport = "true"
+}
+
+
+
+model User {
+  id                       String                @id @default(cuid())
+  /// @FieldType('Scalars.GraphQLEmailAddress')
+  email                    String                @unique
+  phone                    String?               @unique
+  /// @HideField()
+  password                 String
+  username                 String                @unique @default(cuid())
+  firstName                String?
+  lastName                 String?
+  fullName                 String?
+  avatar                   String?
+  dateOfBirth              DateTime?
+  gender                   GenderEnum?
+  address                  String?
+  status                   UserStatusEnum        @default(INACTIVE)
+  emailVerified            Boolean               @default(false)
+  phoneVerified            Boolean               @default(false)
+  twoFactorEnabled         Boolean               @default(false)
+  isFirstLogin             Boolean               @default(true)
+  loginMethod              LoginMethod           @default(LOCAL)
+  lastLogin                DateTime?
+  lastLoginIP              String?
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  failedLoginAttempts      Int                   @default(0)
+  lockoutExpires           DateTime?
+  twoFactorSecret          String?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  deletedAt                DateTime?
+  createdBy                String?
+  updatedBy                String?
+  userSessions             UserSession[]
+  roles                    Role[]                @relation("UserRoles")
+
+  @@index([email])
+  @@index([username])
+  @@index([phone])
+  @@index([status])
+  @@index([emailVerified])
+  @@index([lastLogin])
+  @@map("users")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  refreshToken String?  @unique
+  deviceInfo   String?
+  ipAddress    String?
+  userAgent    String?
+  isActive     Boolean  @default(true)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActivity DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+
+
+model Role {
+  id           String         @id @default(cuid())
+  name         String
+  key          String         @unique
+  description  String?
+  level        Int            @default(1)
+  isSystemRole Boolean        @default(false)
+  status       RoleStatusEnum @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  permissions  Permission[]   @relation("RolePermissions")
+  users        User[]         @relation("UserRoles")
+
+  @@index([key])
+  @@index([status])
+  @@index([level])
+  @@map("roles")
+}
+
+model Permission {
+  id          String               @id @default(cuid())
+  name        String
+  key         String               @unique
+  description String?
+  resource    String
+  action      String
+  scope       String               @default("OWN")
+  status      PermissionStatusEnum @default(ACTIVE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  roles       Role[]               @relation("RolePermissions")
+
+  @@index([key])
+  @@index([resource, action])
+  @@index([status])
+  @@map("permissions")
+}
+
+enum UserStatusEnum {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  LOCKED
+  PENDING_VERIFICATION
+  ARCHIVED
+}
+
+enum GenderEnum {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum LoginMethod {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+  MICROSOFT
+  APPLE
+  SSO
+}
+
+enum LoginStatus {
+  SUCCESS
+  FAILED
+  BLOCKED
+  LOCKED_OUT
+  INVALID_CREDENTIALS
+  ACCOUNT_DISABLED
+}
+
+enum RoleStatusEnum {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+  ARCHIVED
+}
+
+enum PermissionStatusEnum {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+  ARCHIVED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  SUBSTITUTE
+  VOLUNTEER
+}
+
+enum ContactMethod {
+  EMAIL
+  PHONE
+  SMS
+  MAIL
+  APP_NOTIFICATION
+}
+
+enum TeacherStudentType {
+  CLASS_TEACHER
+  SUBJECT_TEACHER
+  SUBSTITUTE_TEACHER
+  MENTOR
+  COUNSELOR
+}
+
+enum StudentClassStatus {
+  ENROLLED
+  COMPLETED
+  DROPPED
+  TRANSFERRED
+  SUSPENDED
+  GRADUATED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  GRADUATED
+  TRANSFERRED
+  DROPPED
+  SUSPENDED
+  EXPELLED
+  ON_LEAVE
+}
+
+enum ExamType {
+  QUIZ
+  TEST
+  MIDTERM
+  FINAL
+  ASSIGNMENT
+  PROJECT
+  PRESENTATION
+  LAB_WORK
+  PRACTICAL
+  ORAL_EXAM
+  PORTFOLIO
+  HOMEWORK
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+  SICK
+  HALF_DAY
+  EARLY_DISMISSAL
+}

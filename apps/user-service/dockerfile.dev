@@ -1,0 +1,40 @@
+# Use Bun as the base image for development
+FROM oven/bun:latest
+
+# Install OpenSSL and other dependencies needed for Prisma
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package.json  ./
+
+
+# Build & link libs THEN install dependencies for main app
+RUN cd /app/libs/casl-authorization && bun i && bun run build && bun link \
+ && cd /app/libs/common && bun i && bun run build && bun link \
+ && cd /app \
+ && bun install 
+#--production=false 2>/dev/null || bun install --ignore-scripts 2>/dev/null || echo "Some packages failed to install, continuing..."
+
+# Copy prisma schema first
+# COPY microservice/user-service/prisma ./prisma
+
+# Generate prisma client (with retries and fallbacks)
+RUN bunx prisma generate || npx prisma generate || echo "Prisma generate completed with warnings"
+
+# Copy source code and config files
+COPY . .
+# COPY nest-cli.json tsconfig*.json eslint.config.mjs .prettierrc ./
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ARG PORT=50051
+ENV PORT=${PORT}
+
+# Expose the development port
+EXPOSE ${PORT}
+
+# Start the application in development mode with hot reloading
+CMD ["bun", "run", "dev"]

@@ -1,0 +1,34 @@
+[
+    {
+      "name": "Send Notification",
+      "key": "SEND_NOTIFICATION",
+      "description": "Allows sending notifications to users",
+      "resource": "NOTIFICATION",
+      "action": "SEND",
+      "status": "ACTIVE"
+    },
+    {
+      "name": "Create User",
+      "key": "CREATE_USER",
+      "description": "Allows creating new users",
+      "resource": "USER",
+      "action": "CREATE",
+      "status": "ACTIVE"
+    },
+    {
+      "name": "Update User",
+      "key": "UPDATE_USER",
+      "description": "Allows updating user information",
+      "resource": "USER",
+      "action": "UPDATE",
+      "status": "ACTIVE"
+    },
+    {
+      "name": "Delete User",
+      "key": "DELETE_USER",
+      "description": "Allows deleting users",
+      "resource": "USER",
+      "action": "DELETE",
+      "status": "ACTIVE"
+    }
+  ]

@@ -1,0 +1,34 @@
+{
+  "name": "anineplus-api",
+  "version": "0.0.1",
+  "description": "ANINEPLUS EDU CMS with Nestjs GraphQL microservices",
+  "scripts": {
+    "env": "sh ./scripts/setup-env.sh",
+    "libs-i":"sh ./scripts/link-libs.sh",
+    "bune-i": "bun run libs-i && sh ./scripts/install.sh",
+    "bune-lint": "sh ./scripts/lint.sh",
+    "bune-build": "sh ./scripts/build.sh",
+    "validate-dev": "sh ./scripts/validate-dev-env.sh",
+    "docker:build": "docker compose build",
+    "docker:start": "docker compose up -d",
+    "docker:dev": "docker compose -f docker-compose-dev.yaml up -d",
+    "docker:dev:build": "docker compose -f docker-compose-dev.yaml build",
+    "docker:dev:up": "docker compose -f docker-compose-dev.yaml up",
+    "docker:dev:logs": "docker compose -f docker-compose-dev.yaml logs -f",
+    "docker:dev:down": "docker compose -f docker-compose-dev.yaml down",
+    "docker:dev:restart": "docker compose -f docker-compose-dev.yaml restart",
+    "docker:down": "docker compose down",
+    "start": "bun run install && bun run lint && bun run build && bun run docker:build && bun run docker:start",
+    "dev": "bun run docker:dev:up"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anineplus/anineplus-api"
+  },
+  "author": "Devhoangkien <devhoangkien@gmail.com> (https://github.com/devhoangkien)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anineplus/anineplus-api/issues"
+  },
+  "homepage": "https://github.com/anineplus/anineplus-api#readme"
+}

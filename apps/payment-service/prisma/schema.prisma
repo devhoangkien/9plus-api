@@ -1,0 +1,737 @@
+// Payment Service - Manages billing, subscriptions, and transactions
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-arm64-openssl-1.0.x", "debian-openssl-1.1.x"]
+  previewFeatures = ["fullTextSearchPostgres"]
+  output   = "../prisma/@generated/client"
+}
+
+generator nestgraphql {
+  provider                              = "prisma-nestjs-graphql"
+  output                                = "../prisma/@generated"
+  noAtomicOperations                    = false
+  combineScalarFilters                  = false
+  reExport                              = None
+  emitSingle                            = true
+  emitCompiled                          = true
+  purgeOutput                           = false
+  requireSingleFieldsInWhereUniqueInput = false
+  fields_Validator_from                 = "class-validator"
+  fields_Validator_input                = true
+  fields_Scalars_from                   = "graphql-scalars"
+  fields_Scalars_input                  = true
+  useInputType_WhereInput_ALL           = "WhereInput"
+}
+
+// Subscription plans
+model SubscriptionPlan {
+  id          String @id @default(cuid())
+  
+  // Plan details
+  name        String
+  description String?
+  
+  // Plan type and status
+  type        PlanType
+  status      PlanStatus @default(ACTIVE)
+  
+  // Pricing
+  price       Decimal @db.Money
+  currency    String @default("USD")
+  billingCycle BillingCycle
+  
+  // Features and limits
+  features    Json // Plan features and limits
+  maxStudents Int? // Maximum students for institution plans
+  maxCourses  Int? // Maximum courses
+  maxStorage  Int? // Storage limit in GB
+  
+  // Trial settings
+  trialDays   Int @default(0)
+  
+  // Discounts
+  isPromo     Boolean @default(false)
+  promoCode   String?
+  discountPercentage Decimal? @db.Decimal(5,2)
+  promoValidUntil DateTime?
+  
+  // Plan ordering and visibility
+  sortOrder   Int @default(0)
+  isVisible   Boolean @default(true)
+  isRecommended Boolean @default(false)
+  
+  // Relationships
+  subscriptions Subscription[]
+  planFeatures  PlanFeature[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  @@index([type])
+  @@index([status])
+  @@index([isVisible])
+  @@map("subscription_plans")
+}
+
+model PlanFeature {
+  id       String @id @default(cuid())
+  planId   String
+  plan     SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  // Feature details
+  name     String
+  description String?
+  category FeatureCategory
+  
+  // Feature value/limit
+  value    String? // Feature value (e.g., "unlimited", "100")
+  isIncluded Boolean @default(true)
+  
+  // Display
+  icon     String?
+  sortOrder Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId])
+  @@index([category])
+  @@map("plan_features")
+}
+
+// User subscriptions
+model Subscription {
+  id          String @id @default(cuid())
+  
+  // Subscriber
+  userId      String
+  planId      String
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id])
+  
+  // Subscription status
+  status      SubscriptionStatus
+  
+  // Billing cycle
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  
+  // Trial
+  trialStart  DateTime?
+  trialEnd    DateTime?
+  isTrialing  Boolean @default(false)
+  
+  // Cancellation
+  cancelAtPeriodEnd Boolean @default(false)
+  canceledAt        DateTime?
+  cancelReason      String?
+  
+  // Usage tracking
+  studentsUsed Int @default(0)
+  coursesUsed  Int @default(0)
+  storageUsed  Int @default(0) // in MB
+  
+  // Billing
+  nextBillingDate DateTime?
+  lastBillingDate DateTime?
+  
+  // Payment method
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  
+  // Relationships
+  invoices        Invoice[]
+  usageRecords    UsageRecord[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@index([nextBillingDate])
+  @@map("subscriptions")
+}
+
+// Payment methods
+model PaymentMethod {
+  id          String @id @default(cuid())
+  
+  // Owner
+  userId      String
+  
+  // Payment method details
+  type        PaymentType
+  provider    PaymentProvider
+  
+  // Card details (encrypted)
+  cardLast4   String?
+  cardBrand   String?
+  cardExpMonth Int?
+  cardExpYear Int?
+  
+  // Bank details
+  bankName    String?
+  accountLast4 String?
+  
+  // Digital wallet
+  walletType  String?
+  
+  // Provider IDs
+  providerId  String // Stripe customer ID, PayPal account ID, etc.
+  providerPaymentMethodId String? // Stripe payment method ID
+  
+  // Status
+  isDefault   Boolean @default(false)
+  isActive    Boolean @default(true)
+  
+  // Verification
+  isVerified  Boolean @default(false)
+  verifiedAt  DateTime?
+  
+  // Billing address
+  billingAddress Json?
+  
+  // Relationships
+  subscriptions Subscription[]
+  transactions  Transaction[]
+  invoices      Invoice[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([provider])
+  @@index([isDefault])
+  @@map("payment_methods")
+}
+
+// Invoices
+model Invoice {
+  id            String @id @default(cuid())
+  
+  // Invoice identification
+  invoiceNumber String @unique
+  
+  // Customer
+  userId        String
+  subscriptionId String?
+  subscription  Subscription? @relation(fields: [subscriptionId], references: [id])
+  
+  // Invoice details
+  description   String
+  
+  // Amounts
+  subtotal      Decimal @db.Money
+  taxAmount     Decimal @db.Money @default(0)
+  discountAmount Decimal @db.Money @default(0)
+  total         Decimal @db.Money
+  currency      String @default("USD")
+  
+  // Billing period
+  periodStart   DateTime?
+  periodEnd     DateTime?
+  
+  // Status and dates
+  status        InvoiceStatus
+  invoiceDate   DateTime @default(now())
+  dueDate       DateTime
+  paidDate      DateTime?
+  
+  // Payment
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  
+  // Files and communication
+  pdfUrl        String?
+  emailSent     Boolean @default(false)
+  emailSentAt   DateTime?
+  
+  // Dunning and collections
+  dunningLevel  Int @default(0)
+  lastDunningAt DateTime?
+  
+  // Relationships
+  lineItems     InvoiceLineItem[]
+  transactions  Transaction[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id          String @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  // Item details
+  description String
+  quantity    Int @default(1)
+  unitPrice   Decimal @db.Money
+  amount      Decimal @db.Money
+  
+  // Item metadata
+  itemType    LineItemType
+  itemId      String? // Reference to plan, course, etc.
+  
+  // Period for subscription items
+  periodStart DateTime?
+  periodEnd   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([itemType])
+  @@map("invoice_line_items")
+}
+
+// Transactions
+model Transaction {
+  id          String @id @default(cuid())
+  
+  // Transaction identification
+  reference   String @unique
+  
+  // Customer and payment
+  userId      String
+  invoiceId   String?
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  
+  // Transaction details
+  type        TransactionType
+  status      TransactionStatus
+  
+  // Amounts
+  amount      Decimal @db.Money
+  feeAmount   Decimal @db.Money @default(0)
+  netAmount   Decimal @db.Money
+  currency    String @default("USD")
+  
+  // Provider details
+  provider    PaymentProvider
+  providerId  String? // Provider transaction ID
+  
+  // Payment details
+  description String?
+  
+  // Status tracking
+  processedAt DateTime?
+  settledAt   DateTime?
+  failedAt    DateTime?
+  
+  // Error handling
+  errorCode   String?
+  errorMessage String?
+  retryCount  Int @default(0)
+  
+  // Metadata
+  metadata    Json?
+  
+  // Relationships
+  refunds     Refund[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([invoiceId])
+  @@index([status])
+  @@index([type])
+  @@index([reference])
+  @@map("transactions")
+}
+
+// Refunds
+model Refund {
+  id            String @id @default(cuid())
+  
+  // Refund identification
+  refundNumber  String @unique
+  
+  // Original transaction
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  
+  // Refund details
+  amount        Decimal @db.Money
+  currency      String @default("USD")
+  reason        RefundReason
+  description   String?
+  
+  // Status
+  status        RefundStatus
+  
+  // Provider details
+  providerId    String? // Provider refund ID
+  
+  // Processing
+  requestedAt   DateTime @default(now())
+  processedAt   DateTime?
+  completedAt   DateTime?
+  
+  // Error handling
+  errorMessage  String?
+  
+  // Audit
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([transactionId])
+  @@index([status])
+  @@index([refundNumber])
+  @@map("refunds")
+}
+
+// Usage tracking for subscription billing
+model UsageRecord {
+  id             String @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  
+  // Usage details
+  metricName     String // students, courses, storage, api_calls
+  value          Int
+  unit           String? // GB, calls, users
+  
+  // Time period
+  recordDate     DateTime @db.Date
+  periodStart    DateTime
+  periodEnd      DateTime
+  
+  // Billing
+  isBillable     Boolean @default(true)
+  unitPrice      Decimal? @db.Money
+  totalCost      Decimal? @db.Money
+  
+  // Metadata
+  metadata       Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subscriptionId, metricName, recordDate])
+  @@index([subscriptionId])
+  @@index([metricName])
+  @@index([recordDate])
+  @@map("usage_records")
+}
+
+// Discount codes and promotions
+model DiscountCode {
+  id          String @id @default(cuid())
+  
+  // Code details
+  code        String @unique
+  name        String
+  description String?
+  
+  // Discount configuration
+  type        DiscountType
+  value       Decimal @db.Decimal(10,2) // Percentage or fixed amount
+  currency    String? // For fixed amount discounts
+  
+  // Usage limits
+  usageLimit  Int? // Maximum number of uses
+  usageCount  Int @default(0)
+  perUserLimit Int @default(1) // Uses per user
+  
+  // Validity
+  validFrom   DateTime
+  validUntil  DateTime?
+  isActive    Boolean @default(true)
+  
+  // Applicable plans
+  planIds     Json? // Array of plan IDs, null = all plans
+  minAmount   Decimal? @db.Money // Minimum purchase amount
+  
+  // First-time customer only
+  newCustomersOnly Boolean @default(false)
+  
+  // Relationships
+  applications DiscountApplication[]
+  
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validFrom])
+  @@index([validUntil])
+  @@map("discount_codes")
+}
+
+model DiscountApplication {
+  id          String @id @default(cuid())
+  
+  // Discount and user
+  discountId  String
+  discount    DiscountCode @relation(fields: [discountId], references: [id])
+  userId      String
+  
+  // Application details
+  appliedAt   DateTime @default(now())
+  invoiceId   String?
+  
+  // Discount amount
+  discountAmount Decimal @db.Money
+  
+  createdAt DateTime @default(now())
+
+  @@unique([discountId, userId, invoiceId])
+  @@index([discountId])
+  @@index([userId])
+  @@map("discount_applications")
+}
+
+// Tax configuration
+model TaxRate {
+  id          String @id @default(cuid())
+  
+  // Geographic scope
+  country     String
+  state       String?
+  region      String?
+  city        String?
+  zipCode     String?
+  
+  // Tax details
+  name        String
+  rate        Decimal @db.Decimal(5,4) // Tax rate as decimal (0.08 = 8%)
+  
+  // Status
+  isActive    Boolean @default(true)
+  validFrom   DateTime
+  validUntil  DateTime?
+  
+  // Tax type
+  taxType     TaxType @default(SALES_TAX)
+  
+  // Configuration
+  isInclusive Boolean @default(false) // Tax included in price
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+  @@map("tax_rates")
+}
+
+// Webhooks from payment providers
+model PaymentWebhook {
+  id          String @id @default(cuid())
+  
+  // Provider details
+  provider    PaymentProvider
+  eventType   String
+  eventId     String? // Provider's event ID
+  
+  // Webhook data
+  payload     Json
+  signature   String?
+  
+  // Processing
+  processed   Boolean @default(false)
+  processedAt DateTime?
+  
+  // Error handling
+  retryCount  Int @default(0)
+  errorMessage String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([provider])
+  @@index([eventType])
+  @@index([processed])
+  @@map("payment_webhooks")
+}
+
+// Financial reporting and analytics
+model PaymentAnalytics {
+  id          String @id @default(cuid())
+  
+  // Time dimension
+  date        DateTime @db.Date
+  
+  // Revenue metrics
+  grossRevenue    Decimal @db.Money @default(0)
+  netRevenue      Decimal @db.Money @default(0)
+  refundAmount    Decimal @db.Money @default(0)
+  
+  // Transaction metrics
+  transactionCount    Int @default(0)
+  successfulTransactions Int @default(0)
+  failedTransactions  Int @default(0)
+  
+  // Customer metrics
+  newCustomers    Int @default(0)
+  churnedCustomers Int @default(0)
+  activeSubscriptions Int @default(0)
+  
+  // Plan breakdown
+  planMetrics     Json? // Revenue by plan
+  
+  // Geography
+  countryMetrics  Json? // Revenue by country
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date])
+  @@index([date])
+  @@map("payment_analytics")
+}
+
+// Enums
+enum PlanType {
+  STUDENT
+  TEACHER
+  INSTITUTION
+  ENTERPRISE
+  FREEMIUM
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ONE_TIME
+}
+
+enum FeatureCategory {
+  CORE
+  ANALYTICS
+  INTEGRATIONS
+  SUPPORT
+  STORAGE
+  USERS
+  CONTENT
+  EXAMS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  DIGITAL_WALLET
+  CRYPTO
+  CASH
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  SQUARE
+  BRAINTREE
+  RAZORPAY
+  PAYU
+  MOMO
+  ZALO_PAY
+  VIETQR
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum LineItemType {
+  SUBSCRIPTION
+  ONE_TIME
+  DISCOUNT
+  TAX
+  FEE
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+  CHARGEBACK
+  ADJUSTMENT
+  FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REQUIRES_ACTION
+}
+
+enum RefundReason {
+  REQUESTED_BY_CUSTOMER
+  DUPLICATE
+  FRAUDULENT
+  SUBSCRIPTION_CANCELED
+  PRODUCT_UNACCEPTABLE
+  NO_LONGER_AVAILABLE
+  OTHER
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_TRIAL
+  FREE_MONTHS
+}
+
+enum TaxType {
+  SALES_TAX
+  VAT
+  GST
+  SERVICE_TAX
+}

@@ -1,0 +1,37 @@
+# Docker Compose Override File for Local Development
+# This file can be used to override settings in docker-compose-dev.yaml
+# Copy this file to docker-compose.override.yaml and customize as needed
+
+services:
+  api-gateway:
+    # Uncomment to change the port
+    # ports:
+    #   - "3001:3000"
+    
+    # Uncomment to add additional environment variables
+    # environment:
+    #   - CUSTOM_VAR=value
+    
+    # Uncomment to add custom volumes
+    # volumes:
+    #   - ./custom-config:/app/config
+
+  user-service:
+    # Uncomment to change the port
+    # ports:
+    #   - "50061:50051"
+
+  payment-service:
+    # Uncomment to change the port
+    # ports:
+    #   - "50062:50052"
+
+  user-database:
+    # Uncomment to change the port
+    # ports:
+    #   - "5433:5432"
+
+  cache-service:
+    # Uncomment to change the port
+    # ports:
+    #   - "6380:6379"
