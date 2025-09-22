@@ -6,7 +6,10 @@ set -e
 (cp example.env .env)
 
 # copy env service
-(cd "apps/core-service/" && cp example.env .env )
+(cd "apps/core/" && cp example.env .env )
 
 # copy env api gateway
-(cd "apps/api-gateway/" && cp example.env .env )
+(cd "apps/gateway/" && cp example.env .env )
+
+# copy env payment plugin
+(cd "plugins/payment/" && cp example.env .env )

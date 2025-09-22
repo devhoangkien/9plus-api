@@ -11,6 +11,7 @@ import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from 'nestjs-prisma';
 import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/nestjs-federation'
+import { PluginsManagementModule } from './plugin-management/plugin-management.module';
 
 // Import GraphQL enums to register them
 import './common/enums/graphql.enums';
@@ -44,6 +45,7 @@ import './common/enums/graphql.enums';
     RolesModule,
     PermissionsModule,
     RedisModule,
+    PluginsManagementModule,
     
   ],
   

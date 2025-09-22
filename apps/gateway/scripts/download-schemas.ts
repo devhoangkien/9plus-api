@@ -8,7 +8,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 
 const services = {
-  'core-service': process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
+  'core': process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
   'payment-service': process.env.PAYMENT_SERVICE_URL || 'http://localhost:50052/graphql',
 };
 

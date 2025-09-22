@@ -63,17 +63,17 @@ fi
 echo ""
 echo "📦 Checking git submodules..."
 
-if [ -d "apps/core-service/.git" ] || [ -f "apps/core-service/.git" ]; then
-    echo -e "${GREEN}✓${NC} core-service submodule is initialized"
+if [ -d "apps/core/.git" ] || [ -f "apps/core/.git" ]; then
+    echo -e "${GREEN}✓${NC} core submodule is initialized"
 else
-    echo -e "${YELLOW}⚠${NC} core-service submodule not initialized"
+    echo -e "${YELLOW}⚠${NC} core submodule not initialized"
     echo "  Run: git submodule update --init --recursive"
 fi
 
-if [ -d "apps/payment-service/.git" ] || [ -f "apps/payment-service/.git" ]; then
-    echo -e "${GREEN}✓${NC} payment-service submodule is initialized"
+if [ -d "plugins/payment/.git" ] || [ -f "plugins/payment/.git" ]; then
+    echo -e "${GREEN}✓${NC} payment plugin submodule is initialized"
 else
-    echo -e "${YELLOW}⚠${NC} payment-service submodule not initialized"
+    echo -e "${YELLOW}⚠${NC} payment plugin submodule not initialized"
     echo "  Run: git submodule update --init --recursive"
 fi
 

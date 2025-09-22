@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Check health of all   console.log('\n💡 To start services:');
-  console.log('   cd apps/core-service && bun run start:dev');
+  console.log('   cd apps/core && bun run start:dev');
   console.log('   cd apps/payment-service && bun run start:dev');phQL microservices
  */
 import { GraphQLClient } from 'graphql-request';

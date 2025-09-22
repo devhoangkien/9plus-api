@@ -1,6 +1,7 @@
 import { Module, BadRequestException, HttpStatus } from '@nestjs/common';
 import { IntrospectAndCompose, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { verify, decode } from 'jsonwebtoken';
 import { UNAUTHORIZED, UNAUTHORIZED_MESSAGE } from './app.constants';
 import { LoggerModule, createGraphQLError } from '@bune/common';
@@ -11,6 +12,9 @@ import {
 import { GraphQLClient } from 'graphql-request';
 import { extractUniquePermissions } from './common';
 import { LRUCache } from 'lru-cache';
+import { DynamicGatewayModule } from './dynamic-gateway/dynamic-gateway.module';
+import { DynamicGatewayService } from './dynamic-gateway/dynamic-gateway.service';
+import { GatewayConfigFactory } from './dynamic-gateway/gateway-config.factory';
 // Initialize cache with LRU (Least Recently Used)
 const cache = new LRUCache<string, any>({
   max: 100, // Maximum number of items in cache
@@ -122,29 +126,40 @@ const handleAuth = async ({ req }) => {
 
 @Module({
   imports: [
-    GraphQLModule.forRoot<YogaGatewayDriverConfig>({
-      // server: {
-      //   context: handleAuth,
-      // },
+    ConfigModule.forRoot({ isGlobal: true }),
+    DynamicGatewayModule,
+    GraphQLModule.forRootAsync<YogaGatewayDriverConfig>({
       driver: YogaGatewayDriver,
-      gateway: {
-        buildService: ({ name, url }) => {
-          return new RemoteGraphQLDataSource({
-            url,
-            willSendRequest({ request, context }: any) {
-              request.http.headers.set('userId', context.userId);
-              // for now pass authorization also
-              request.http.headers.set('authorization', context.authorization);
-              request.http.headers.set('permissions', context.permissions);
+      imports: [DynamicGatewayModule],
+      inject: [ConfigService, DynamicGatewayService],
+      useFactory: async (
+        configService: ConfigService,
+        dynamicGatewayService: DynamicGatewayService,
+      ) => {
+        // Load subgraphs dynamically
+        const subgraphs = await dynamicGatewayService.loadSubgraphs();
+        
+        return {
+          // server: {
+          //   context: handleAuth,
+          // },
+          gateway: {
+            buildService: ({ name, url }) => {
+              return new RemoteGraphQLDataSource({
+                url,
+                willSendRequest({ request, context }: any) {
+                  request.http.headers.set('userId', context.userId);
+                  // for now pass authorization also
+                  request.http.headers.set('authorization', context.authorization);
+                  request.http.headers.set('permissions', context.permissions);
+                },
+              });
             },
-          });
-          
-        },
-        supergraphSdl: new IntrospectAndCompose({
-          subgraphs: [
-            { name: 'core-service', url: process.env.CORE_SERVICE_URL},
-          ],
-        }),
+            supergraphSdl: new IntrospectAndCompose({
+              subgraphs: subgraphs,
+            }),
+          },
+        };
       },
     }),
     LoggerModule.forRoot({

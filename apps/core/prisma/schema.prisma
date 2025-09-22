@@ -205,70 +205,40 @@ enum PermissionStatusEnum {
   ARCHIVED
 }
 
-enum EmploymentType {
-  FULL_TIME
-  PART_TIME
-  CONTRACT
-  SUBSTITUTE
-  VOLUNTEER
+
+
+
+
+
+model PluginRegistry {
+  id              String                     @id @default(cuid())
+  name            String                     @unique
+  displayName     String?
+  description     String?
+  url             String
+  version         String                     @default("1.0.0")
+  status          PluginStatusEnum           @default(INACTIVE)
+  healthCheck     String?                    // Health check endpoint
+  metadata        Json?                      // Additional plugin metadata
+  dependencies    String[]                   @default([]) // List of plugin names this plugin depends on
+  tags            String[]                   @default([]) // Tags for plugin categorization
+  isRequired      Boolean                    @default(false) // Whether this plugin is required for the app to function
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  lastHealthCheck DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([name])
+  @@index([status])
+  @@index([isRequired])
+  @@map("plugin_registry")
 }
 
-enum ContactMethod {
-  EMAIL
-  PHONE
-  SMS
-  MAIL
-  APP_NOTIFICATION
-}
-
-enum TeacherStudentType {
-  CLASS_TEACHER
-  SUBJECT_TEACHER
-  SUBSTITUTE_TEACHER
-  MENTOR
-  COUNSELOR
-}
-
-enum StudentClassStatus {
-  ENROLLED
-  COMPLETED
-  DROPPED
-  TRANSFERRED
-  SUSPENDED
-  GRADUATED
-}
-
-enum EnrollmentStatus {
+enum PluginStatusEnum {
   ACTIVE
-  GRADUATED
-  TRANSFERRED
-  DROPPED
-  SUSPENDED
-  EXPELLED
-  ON_LEAVE
-}
-
-enum ExamType {
-  QUIZ
-  TEST
-  MIDTERM
-  FINAL
-  ASSIGNMENT
-  PROJECT
-  PRESENTATION
-  LAB_WORK
-  PRACTICAL
-  ORAL_EXAM
-  PORTFOLIO
-  HOMEWORK
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
-  EXCUSED
-  SICK
-  HALF_DAY
-  EARLY_DISMISSAL
+  INACTIVE
+  MAINTENANCE
+  ERROR
+  DEGRADED
 }

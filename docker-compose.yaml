@@ -2,11 +2,11 @@ version: "3"
 
 services:
 
-  core-service:
-    image: "core-service:dev"
-    container_name: "core-service"
+  core:
+    image: "core:dev"
+    container_name: "core"
     build:
-      context: "./apps/core-service"
+      context: "./apps/core"
     networks:
       - "frontend"
       - "backend"
@@ -25,22 +25,44 @@ services:
       retries: 5
     restart: "on-failure"
 
-  api-gateway:
-    image: "api-gateway:dev"
-    container_name: "api-gateway"
+  gateway:
+    image: "gateway:dev"
+    container_name: "gateway"
     build:
-      context: "./apps/api-gateway"
+      context: "./apps/gateway"
     networks:
       - "frontend"
     ports:
       - "3000:3000"
     depends_on:
       - "cache-service"
-      - "core-service"
+      - "core"
     env_file:
       - .env
     healthcheck:
       test: ["CMD", "wget", "localhost:3000/healthz -q -O - > /dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: "on-failure"
+
+  payment:
+    image: "payment:dev"
+    container_name: "payment"
+    build:
+      context: "./plugins/payment"
+    networks:
+      - "frontend"
+      - "backend"
+    expose:
+      - "50052"
+    depends_on:
+      - "core"
+      - "cache-service"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "localhost:3002/healthz -q -O - > /dev/null 2>&1"]
       interval: 30s
       timeout: 10s
       retries: 5

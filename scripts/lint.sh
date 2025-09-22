@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cd apps/api-gateway && bun run lint && cd -
-cd apps/core-service && bun run lint && cd -
+cd apps/gateway && bun run lint && cd -
+cd apps/core && bun run lint && cd -
+cd plugins/payment && bun run lint && cd -

@@ -52,7 +52,7 @@ anineplus-api/
 │   ├── Dockerfile              # Container configuration
 │   └── package.json            # Dependencies and scripts
 ├── apps/                       # Applications (Git submodules)
-│   ├── core-service/           # User management microservice
+│   ├── core/                   # Core management service
 │   └── payment-service/        # Payment processing microservice
 ├── libs/                       # Shared libraries
 │   ├── common/                 # Common utilities and services
@@ -72,7 +72,7 @@ anineplus-api/
 │   ├── build.sh               # Build all services
 │   └── lint.sh                # Code linting
 ├── docs/                       # Documentation
-│   ├── core-service.md        # User service API docs
+│   ├── core.md                # Core service API docs
 │   └── change-logs.md         # Version history
 ├── docker-compose.yaml        # Production container orchestration
 ├── docker-compose-dev.yaml    # Development container orchestration
@@ -105,8 +105,10 @@ Before getting started, ensure you have the following installed:
    ```bash
    # Copy environment files manually or use the script
    cp example.env .env
-   cd apps/api-gateway && cp example.env .env && cd ..
-   # Note: Microservice env files will be created when submodules are properly initialized
+   cd apps/gateway && cp example.env .env && cd ..
+   cd apps/core && cp example.env .env && cd ..
+   cd plugins/payment && cp example.env .env && cd ..
+   # Note: Plugin env files will be created when submodules are properly initialized
    
    # Or use the automated script (requires Bun)
    bun run env
@@ -125,8 +127,10 @@ Before getting started, ensure you have the following installed:
    
    **Method B: Using npm/node**:
    ```bash
-   cd apps/api-gateway && npm install && cd ..
-   # Microservice dependencies will be available once submodules are initialized
+   cd apps/gateway && npm install && cd ..
+   cd apps/core && npm install && cd ..
+   cd plugins/payment && npm install && cd ..
+   # Plugin dependencies will be available once submodules are initialized
    ```
 
 4. **Start the development environment**:
@@ -203,7 +207,7 @@ git submodule update --init --recursive
 git submodule update --remote --recursive
 
 # Work in a specific submodule
-cd apps/core-service
+cd apps/core
 git checkout main
 # Make changes, commit, and push
 git add .
@@ -212,8 +216,8 @@ git push origin main
 
 # Update parent repository to reference new submodule commit
 cd ../..
-git add apps/core-service
-git commit -m "Update core-service submodule"
+git add apps/core
+git commit -m "Update core submodule"
 git push
 ```
 
@@ -292,7 +296,7 @@ Handles all user-related operations including authentication, profile management
 
 **gRPC Port:** 50051
 
-For detailed API documentation, see [Core Service Documentation](docs/core-service.md).
+For detailed API documentation, see [Core Service Documentation](docs/core.md).
 
 ### Payment Service
 
@@ -424,7 +428,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ```bash
 # Install dependencies first
-cd apps/api-gateway && npm install
+cd apps/gateway && npm install
 
 # Run all tests
 npm run test
@@ -439,8 +443,8 @@ npm run test:e2e
 npm run test:watch
 
 # For applications (when submodules are initialized)
-cd apps/core-service && npm test
-cd apps/payment-service && npm test
+cd apps/core && npm test
+cd plugins/payment && npm test
 ```
 
 ### Test Structure
@@ -512,7 +516,7 @@ docker compose logs -f
 
 # View specific service logs
 docker compose logs -f api-gateway
-docker compose logs -f core-service
+docker compose logs -f core
 
 # View logs for development environment
 docker compose -f docker-compose-dev.yaml logs -f
@@ -620,11 +624,14 @@ git submodule foreach --recursive git reset --hard
 
 Run services in debug mode:
 ```bash
-# API Gateway debug mode
-cd apps/api-gateway && bun debug
+# Gateway debug mode
+cd apps/gateway && bun debug
 
-# User Service debug mode
-cd apps/core-service && bun debug
+# Core Service debug mode
+cd apps/core && bun debug
+
+# Payment Plugin debug mode
+cd plugins/payment && bun debug
 ```
 
 ## 🤝 Contributing

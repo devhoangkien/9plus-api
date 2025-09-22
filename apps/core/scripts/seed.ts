@@ -2,6 +2,7 @@ import { PermissionStatusEnum, PrismaClient, RoleStatusEnum, UserStatusEnum } fr
 import PermissionsData from './data/permissions.json';
 import RolesData from './data/roles.json';
 import UsersData from './data/users.json';
+import { seedPluginsManagement } from './seed-plugin-management';
 
 // Force local database URL to avoid conflicts with parent .env
 process.env.DATABASE_URL = "postgresql://bune-cms:bune-cms@127.0.0.1:5432/nineplusedu?schema=public";
@@ -94,6 +95,13 @@ async function main() {
   }
 
   console.log('Seed data successfully!');
+
+  // Seed service registry
+  try {
+    await seedPluginsManagement();
+  } catch (error) {
+    console.warn('Service registry seeding failed (this may be expected if dependencies are not available):', error.message);
+  }
 }
 
 main()
