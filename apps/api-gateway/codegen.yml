@@ -2,8 +2,8 @@ overwrite: true
 
 # Schema sources - GraphQL services
 schema:
-  # User Service
-  - "${USER_SERVICE_URL:http://localhost:50051/graphql}"
+  # Core Service
+  - "${CORE_SERVICE_URL:http://localhost:50051/graphql}"
   # Payment Service
   - "${PAYMENT_SERVICE_URL:http://localhost:50052/graphql}"
   # Future services can be added here
@@ -58,9 +58,9 @@ generates:
             
             // Service configuration
             export const serviceConfig = {
-              userService: {
-                name: 'user-service',
-                url: process.env.USER_SERVICE_URL || 'http://localhost:50051/graphql',
+              coreService: {
+                name: 'core-service',
+                url: process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
               },
               paymentService: {
                 name: 'payment-service', 

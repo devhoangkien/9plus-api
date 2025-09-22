@@ -7,9 +7,9 @@ export const federatedSchema = buildClientSchema(introspectionResult as Introspe
 
 // Service configuration
 export const serviceConfig = {
-  userService: {
-    name: 'user-service',
-    url: process.env.USER_SERVICE_URL || 'http://localhost:50051/graphql',
+  coreService: {
+    name: 'core-service',
+    url: process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
   },
   paymentService: {
     name: 'payment-service', 

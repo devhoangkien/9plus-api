@@ -63,7 +63,7 @@ const decodeToken = (tokenString: string) => {
 };
 
 // Apollo Client for querying user service
-const client = new GraphQLClient(process.env.USER_SERVICE_URL || '');
+const client = new GraphQLClient(process.env.CORE_SERVICE_URL || '');
 const query = `
   query getRolesByKeys($keys: String!) {
     getRolesByKeys(keys: $keys) {
@@ -142,7 +142,7 @@ const handleAuth = async ({ req }) => {
         },
         supergraphSdl: new IntrospectAndCompose({
           subgraphs: [
-            { name: 'user-service', url: process.env.USER_SERVICE_URL},
+            { name: 'core-service', url: process.env.CORE_SERVICE_URL},
           ],
         }),
       },

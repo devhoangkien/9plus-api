@@ -1,7 +1,7 @@
-# User Service Documentation
+# Core Service Documentation
 
 ## Overview
-The `user-service` is a microservice responsible for managing user-related operations in the system. It handles user registration, authentication, profile management, and other user-centric functionalities.
+The `core-service` is a microservice responsible for managing user-related operations in the system. It handles user registration, authentication, profile management, and other user-centric functionalities.
 
 ## Features
 - User registration and account creation

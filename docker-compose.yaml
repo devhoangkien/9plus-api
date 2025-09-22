@@ -2,11 +2,11 @@ version: "3"
 
 services:
 
-  user-service:
-    image: "user-service:dev"
-    container_name: "user-service"
+  core-service:
+    image: "core-service:dev"
+    container_name: "core-service"
     build:
-      context: "./microservices/user-service"
+      context: "./apps/core-service"
     networks:
       - "frontend"
       - "backend"
@@ -36,7 +36,7 @@ services:
       - "3000:3000"
     depends_on:
       - "cache-service"
-      - "user-service"
+      - "core-service"
     env_file:
       - .env
     healthcheck:

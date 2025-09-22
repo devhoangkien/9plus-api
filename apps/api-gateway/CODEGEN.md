@@ -55,7 +55,7 @@ npm run start:dev
 ### Environment Variables
 ```env
 # Service URLs
-USER_SERVICE_URL=http://localhost:50051/graphql
+CORE_SERVICE_URL=http://localhost:50051/graphql
 PAYMENT_SERVICE_URL=http://localhost:50052/graphql
 
 # Code generation

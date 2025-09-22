@@ -1,11 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Check health of all GraphQL microservices
+ * Check health of all   console.log('\n💡 To start services:');
+  console.log('   cd apps/core-service && bun run start:dev');
+  console.log('   cd apps/payment-service && bun run start:dev');phQL microservices
  */
 import { GraphQLClient } from 'graphql-request';
 
 const services = {
-  'User Service': process.env.USER_SERVICE_URL || 'http://localhost:50051/graphql',
+  'Core Service': process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
   'Payment Service': process.env.PAYMENT_SERVICE_URL || 'http://localhost:50052/graphql',
 };
 

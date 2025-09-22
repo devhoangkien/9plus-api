@@ -52,7 +52,7 @@ anineplus-api/
 │   ├── Dockerfile              # Container configuration
 │   └── package.json            # Dependencies and scripts
 ├── apps/                       # Applications (Git submodules)
-│   ├── user-service/           # User management microservice
+│   ├── core-service/           # User management microservice
 │   └── payment-service/        # Payment processing microservice
 ├── libs/                       # Shared libraries
 │   ├── common/                 # Common utilities and services
@@ -72,7 +72,7 @@ anineplus-api/
 │   ├── build.sh               # Build all services
 │   └── lint.sh                # Code linting
 ├── docs/                       # Documentation
-│   ├── user-service.md        # User service API docs
+│   ├── core-service.md        # User service API docs
 │   └── change-logs.md         # Version history
 ├── docker-compose.yaml        # Production container orchestration
 ├── docker-compose-dev.yaml    # Development container orchestration
@@ -203,7 +203,7 @@ git submodule update --init --recursive
 git submodule update --remote --recursive
 
 # Work in a specific submodule
-cd apps/user-service
+cd apps/core-service
 git checkout main
 # Make changes, commit, and push
 git add .
@@ -212,8 +212,8 @@ git push origin main
 
 # Update parent repository to reference new submodule commit
 cd ../..
-git add apps/user-service
-git commit -m "Update user-service submodule"
+git add apps/core-service
+git commit -m "Update core-service submodule"
 git push
 ```
 
@@ -292,7 +292,7 @@ Handles all user-related operations including authentication, profile management
 
 **gRPC Port:** 50051
 
-For detailed API documentation, see [User Service Documentation](docs/user-service.md).
+For detailed API documentation, see [Core Service Documentation](docs/core-service.md).
 
 ### Payment Service
 
@@ -439,7 +439,7 @@ npm run test:e2e
 npm run test:watch
 
 # For applications (when submodules are initialized)
-cd apps/user-service && npm test
+cd apps/core-service && npm test
 cd apps/payment-service && npm test
 ```
 
@@ -512,7 +512,7 @@ docker compose logs -f
 
 # View specific service logs
 docker compose logs -f api-gateway
-docker compose logs -f user-service
+docker compose logs -f core-service
 
 # View logs for development environment
 docker compose -f docker-compose-dev.yaml logs -f
@@ -624,7 +624,7 @@ Run services in debug mode:
 cd apps/api-gateway && bun debug
 
 # User Service debug mode
-cd apps/user-service && bun debug
+cd apps/core-service && bun debug
 ```
 
 ## 🤝 Contributing

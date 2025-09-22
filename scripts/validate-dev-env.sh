@@ -63,10 +63,10 @@ fi
 echo ""
 echo "📦 Checking git submodules..."
 
-if [ -d "apps/user-service/.git" ] || [ -f "apps/user-service/.git" ]; then
-    echo -e "${GREEN}✓${NC} user-service submodule is initialized"
+if [ -d "apps/core-service/.git" ] || [ -f "apps/core-service/.git" ]; then
+    echo -e "${GREEN}✓${NC} core-service submodule is initialized"
 else
-    echo -e "${YELLOW}⚠${NC} user-service submodule not initialized"
+    echo -e "${YELLOW}⚠${NC} core-service submodule not initialized"
     echo "  Run: git submodule update --init --recursive"
 fi
 

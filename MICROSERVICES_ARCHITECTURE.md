@@ -164,7 +164,7 @@ const handleAuth = async ({ req }) => {
 ```typescript
 supergraphSdl: new IntrospectAndCompose({
   subgraphs: [
-    { name: 'user-service', url: process.env.USER_SERVICE_URL },
+    { name: 'core-service', url: process.env.CORE_SERVICE_URL },
     { name: 'content-service', url: process.env.CONTENT_SERVICE_URL },
     { name: 'exam-service', url: process.env.EXAM_SERVICE_URL },
     { name: 'submission-service', url: process.env.SUBMISSION_SERVICE_URL },
@@ -196,7 +196,7 @@ supergraphSdl: new IntrospectAndCompose({
 docker-compose -f docker-compose-dev.yaml up
 
 # Individual service development
-cd microservices/user-service && npm run start:dev
+cd microservices/core-service && npm run start:dev
 ```
 
 ### Production
@@ -295,7 +295,7 @@ REDIS_HOST="localhost"
 REDIS_PORT=6379
 
 # Services URLs
-USER_SERVICE_URL="http://localhost:3001/graphql"
+CORE_SERVICE_URL="http://localhost:3001/graphql"
 CONTENT_SERVICE_URL="http://localhost:3002/graphql"
 EXAM_SERVICE_URL="http://localhost:3003/graphql"
 SUBMISSION_SERVICE_URL="http://localhost:3004/graphql"
