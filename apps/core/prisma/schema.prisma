@@ -2,11 +2,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearchPostgres"]
-  binaryTargets   = ["native", "windows", "linux-arm64-openssl-1.0.x", "linux-arm64-openssl-3.0.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
-  output = "../prisma/@generated"
+  binaryTargets   = ["native", "linux-arm64-openssl-1.0.x", "linux-arm64-openssl-3.0.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+  output   = "../prisma/@generated/client"
 }
 
 generator nestgraphql {
@@ -39,19 +40,17 @@ generator nestgraphql {
   purgeOutput                           = "false"
   reExport                              = "None"
   requireSingleFieldsInWhereUniqueInput = "false"
-  prismaClientImport = "true"
+  prismaClientImport                    = "true"
 }
 
-
-
 model User {
-  id                       String                @id @default(cuid())
+  id                       String         @id @default(cuid())
   /// @FieldType('Scalars.GraphQLEmailAddress')
-  email                    String                @unique
-  phone                    String?               @unique
+  email                    String         @unique
+  phone                    String?        @unique
   /// @HideField()
   password                 String
-  username                 String                @unique @default(cuid())
+  username                 String         @unique @default(cuid())
   firstName                String?
   lastName                 String?
   fullName                 String?
@@ -59,28 +58,28 @@ model User {
   dateOfBirth              DateTime?
   gender                   GenderEnum?
   address                  String?
-  status                   UserStatusEnum        @default(INACTIVE)
-  emailVerified            Boolean               @default(false)
-  phoneVerified            Boolean               @default(false)
-  twoFactorEnabled         Boolean               @default(false)
-  isFirstLogin             Boolean               @default(true)
-  loginMethod              LoginMethod           @default(LOCAL)
+  status                   UserStatusEnum @default(INACTIVE)
+  emailVerified            Boolean        @default(false)
+  phoneVerified            Boolean        @default(false)
+  twoFactorEnabled         Boolean        @default(false)
+  isFirstLogin             Boolean        @default(true)
+  loginMethod              LoginMethod    @default(LOCAL)
   lastLogin                DateTime?
   lastLoginIP              String?
   passwordResetToken       String?
   passwordResetExpires     DateTime?
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
-  failedLoginAttempts      Int                   @default(0)
+  failedLoginAttempts      Int            @default(0)
   lockoutExpires           DateTime?
   twoFactorSecret          String?
-  createdAt                DateTime              @default(now())
-  updatedAt                DateTime              @updatedAt
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
   deletedAt                DateTime?
   createdBy                String?
   updatedBy                String?
   userSessions             UserSession[]
-  roles                    Role[]                @relation("UserRoles")
+  roles                    Role[]         @relation("UserRoles")
 
   @@index([email])
   @@index([username])
@@ -112,8 +111,6 @@ model UserSession {
   @@index([expiresAt])
   @@map("user_sessions")
 }
-
-
 
 model Role {
   id           String         @id @default(cuid())
@@ -155,6 +152,31 @@ model Permission {
   @@index([resource, action])
   @@index([status])
   @@map("permissions")
+}
+
+model PluginRegistry {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  displayName     String?
+  description     String?
+  url             String
+  version         String           @default("1.0.0")
+  status          PluginStatusEnum @default(INACTIVE)
+  healthCheck     String? // Health check endpoint
+  metadata        Json? // Additional plugin metadata
+  dependencies    String[]         @default([]) // List of plugin names this plugin depends on
+  tags            String[]         @default([]) // Tags for plugin categorization
+  isRequired      Boolean          @default(false) // Whether this plugin is required for the app to function
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  lastHealthCheck DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([name])
+  @@index([status])
+  @@index([isRequired])
+  @@map("plugin_registry")
 }
 
 enum UserStatusEnum {
@@ -203,36 +225,6 @@ enum PermissionStatusEnum {
   INACTIVE
   DEPRECATED
   ARCHIVED
-}
-
-
-
-
-
-
-model PluginRegistry {
-  id              String                     @id @default(cuid())
-  name            String                     @unique
-  displayName     String?
-  description     String?
-  url             String
-  version         String                     @default("1.0.0")
-  status          PluginStatusEnum           @default(INACTIVE)
-  healthCheck     String?                    // Health check endpoint
-  metadata        Json?                      // Additional plugin metadata
-  dependencies    String[]                   @default([]) // List of plugin names this plugin depends on
-  tags            String[]                   @default([]) // Tags for plugin categorization
-  isRequired      Boolean                    @default(false) // Whether this plugin is required for the app to function
-  createdAt       DateTime                   @default(now())
-  updatedAt       DateTime                   @updatedAt
-  lastHealthCheck DateTime?
-  createdBy       String?
-  updatedBy       String?
-
-  @@index([name])
-  @@index([status])
-  @@index([isRequired])
-  @@map("plugin_registry")
 }
 
 enum PluginStatusEnum {

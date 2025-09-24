@@ -81,6 +81,94 @@ type Permission {
   _count: PermissionCount!
 }
 
+type PluginRegistryCountAggregate {
+  id: Int!
+  name: Int!
+  displayName: Int!
+  description: Int!
+  url: Int!
+  version: Int!
+  status: Int!
+  healthCheck: Int!
+  metadata: Int!
+  dependencies: Int!
+  tags: Int!
+  isRequired: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  lastHealthCheck: Int!
+  createdBy: Int!
+  updatedBy: Int!
+  _all: Int!
+}
+
+type PluginRegistryMaxAggregate {
+  id: String
+  name: String
+  displayName: String
+  description: String
+  url: String
+  version: String
+  status: PluginStatusEnum
+  healthCheck: String
+  isRequired: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  lastHealthCheck: DateTime
+  createdBy: String
+  updatedBy: String
+}
+
+enum PluginStatusEnum {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  ERROR
+  DEGRADED
+}
+
+type PluginRegistryMinAggregate {
+  id: String
+  name: String
+  displayName: String
+  description: String
+  url: String
+  version: String
+  status: PluginStatusEnum
+  healthCheck: String
+  isRequired: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  lastHealthCheck: DateTime
+  createdBy: String
+  updatedBy: String
+}
+
+type PluginRegistry {
+  id: ID!
+  name: String!
+  displayName: String
+  description: String
+  url: String!
+  version: String!
+  status: PluginStatusEnum!
+  healthCheck: String
+  metadata: JSON
+  dependencies: [String!]
+  tags: [String!]
+  isRequired: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  lastHealthCheck: DateTime
+  createdBy: String
+  updatedBy: String
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 type RoleAvgAggregate {
   level: Float
 }
@@ -409,12 +497,28 @@ type LoginResponse {
   requiresTwoFactor: Boolean
 }
 
+type HealthCheckResult {
+  plugin: String!
+  healthy: Boolean!
+}
+
+type GatewaySubgraph {
+  name: String!
+  url: String!
+}
+
 type Query {
   me: User!
   validateToken: Boolean!
   checkUserExists(data: CheckUserExistDto!): Boolean!
   getRoleByKey(key: String!): Role!
   getRolesByKeys(keys: String!): [Role!]!
+  getPlugins: [PluginRegistry!]!
+  getActivePlugins: [PluginRegistry!]!
+  getPlugin(id: String, name: String): PluginRegistry!
+  checkPluginHealth(id: String, name: String): Boolean!
+  checkAllPluginsHealth: [HealthCheckResult!]!
+  getGatewaySubgraphs: [GatewaySubgraph!]!
 }
 
 input CheckUserExistDto {
@@ -435,6 +539,10 @@ type Mutation {
   setupTwoFactor: String!
   enableTwoFactor(token: String!): Boolean!
   disableTwoFactor(password: String!): Boolean!
+  registerPlugin(input: PluginRegistryCreateInput!): PluginRegistry!
+  unregisterPlugin(id: String, name: String): PluginRegistry!
+  updatePlugin(id: String, name: String, input: PluginRegistryCreateInput!): PluginRegistry!
+  updatePluginStatus(id: String, name: String, status: String!): PluginRegistry!
 }
 
 input RegisterUserInput {
@@ -445,4 +553,32 @@ input RegisterUserInput {
 input LoginUserInput {
   email: String!
   password: String!
+}
+
+input PluginRegistryCreateInput {
+  id: String
+  name: String!
+  displayName: String
+  description: String
+  url: String!
+  version: String
+  status: PluginStatusEnum
+  healthCheck: String
+  metadata: JSON
+  dependencies: PluginRegistryCreatedependenciesInput
+  tags: PluginRegistryCreatetagsInput
+  isRequired: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  lastHealthCheck: DateTime
+  createdBy: String
+  updatedBy: String
+}
+
+input PluginRegistryCreatedependenciesInput {
+  set: [String!]!
+}
+
+input PluginRegistryCreatetagsInput {
+  set: [String!]!
 }

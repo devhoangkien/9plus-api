@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { PluginsManagementResolver } from './plugin-management.resolver';
-import { PluginsManagementService } from './plugin-management.service';
+import { PluginManagementResolver } from './plugin-management.resolver';
+import { PluginManagementService } from './plugin-management.service';
 import { WebhookService } from './webhook.service';
 
 @Module({
-  providers: [PluginsManagementResolver, PluginsManagementService, WebhookService],
-  exports: [PluginsManagementService, WebhookService],
+  providers: [PluginManagementResolver, PluginManagementService, WebhookService],
+  exports: [PluginManagementService, WebhookService],
 })
-export class PluginsManagementModule {}
+export class PluginManagementModule {}

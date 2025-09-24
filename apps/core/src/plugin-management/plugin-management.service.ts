@@ -1,45 +1,18 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
 import { GraphQLClient } from 'graphql-request';
 import { WebhookService } from './webhook.service';
+import { PluginRegistryCreateInput, PluginRegistryUpdateInput } from 'prisma/@generated';
+import { PrismaService } from 'src/prisma/prisma.service';
 
-interface PluginCreateData {
-  name: string;
-  displayName?: string;
-  description?: string;
-  url: string;
-  version?: string;
-  status?: string;
-  healthCheck?: string;
-  metadata?: any;
-  dependencies?: string[];
-  tags?: string[];
-  isRequired?: boolean;
-  createdBy?: string;
-}
-
-interface PluginUpdateData {
-  displayName?: string;
-  description?: string;
-  url?: string;
-  version?: string;
-  status?: string;
-  healthCheck?: string;
-  metadata?: any;
-  dependencies?: string[];
-  tags?: string[];
-  isRequired?: boolean;
-  updatedBy?: string;
-}
 
 @Injectable()
-export class PluginsManagementService {
+export class PluginManagementService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly webhookService: WebhookService,
   ) {}
 
-  async register(data: PluginCreateData) {
+  async register(data: PluginRegistryCreateInput) {
     // Validate service URL by checking GraphQL endpoint
     if (data.url) {
       const isValid = await this.validateServiceEndpoint(data.url);
@@ -51,7 +24,7 @@ export class PluginsManagementService {
       }
     }
 
-    const service = await (this.prisma as any).pluginRegistry.create({
+    const service = await this.prisma.pluginRegistry.create({
       data,
     });
 
@@ -62,12 +35,18 @@ export class PluginsManagementService {
   }
 
   async unregister(where: { id?: string; name?: string }) {
-    const service = await (this.prisma as any).pluginRegistry.findUnique({ where });
+    if (!where.id && !where.name) {
+      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Use either id or name as unique identifier
+    const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
+    const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
       throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
     }
 
-    const deletedService = await (this.prisma as any).pluginRegistry.delete({ where });
+    const deletedService = await this.prisma.pluginRegistry.delete({ where: uniqueWhere });
 
     // Notify gateway about the removed service
     await this.webhookService.notifyServiceUnregistered(deletedService);
@@ -77,15 +56,21 @@ export class PluginsManagementService {
 
   async update(
     where: { id?: string; name?: string },
-    data: PluginUpdateData,
+    data: PluginRegistryUpdateInput,
   ) {
-    const service = await (this.prisma as any).pluginRegistry.findUnique({ where });
+    if (!where.id && !where.name) {
+      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Use either id or name as unique identifier
+    const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
+    const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
       throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
     }
 
     // Validate service URL if it's being updated
-    if (data.url) {
+    if (data.url && typeof data.url === 'string') {
       const isValid = await this.validateServiceEndpoint(data.url);
       if (!isValid) {
         throw new HttpException(
@@ -95,8 +80,8 @@ export class PluginsManagementService {
       }
     }
 
-    const updatedService = await (this.prisma as any).pluginRegistry.update({
-      where,
+    const updatedService = await this.prisma.pluginRegistry.update({
+      where: uniqueWhere,
       data: {
         ...data,
         lastHealthCheck: new Date(),
@@ -110,21 +95,27 @@ export class PluginsManagementService {
   }
 
   async findAll(where?: any) {
-    return (this.prisma as any).pluginRegistry.findMany({
+    return this.prisma.pluginRegistry.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findActiveServices() {
-    return (this.prisma as any).pluginRegistry.findMany({
+    return this.prisma.pluginRegistry.findMany({
       where: { status: 'ACTIVE' },
       orderBy: { name: 'asc' },
     });
   }
 
   async findOne(where: { id?: string; name?: string }) {
-    const service = await (this.prisma as any).pluginRegistry.findUnique({ where });
+    if (!where.id && !where.name) {
+      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Use either id or name as unique identifier
+    const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
+    const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
       throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
     }
@@ -135,10 +126,16 @@ export class PluginsManagementService {
     where: { id?: string; name?: string },
     status: string,
   ) {
-    return (this.prisma as any).pluginRegistry.update({
-      where,
+    if (!where.id && !where.name) {
+      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Use either id or name as unique identifier
+    const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
+    return this.prisma.pluginRegistry.update({
+      where: uniqueWhere,
       data: {
-        status,
+        status: status as any, // Cast to handle the enum type
         lastHealthCheck: new Date(),
       },
     });
@@ -147,12 +144,19 @@ export class PluginsManagementService {
   async healthCheck(where: { id?: string; name?: string }): Promise<boolean> {
     const service = await this.findOne(where);
     
+    if (!where.id && !where.name) {
+      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+    }
+    
+    // Use either id or name as unique identifier
+    const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
+    
     try {
       const isHealthy = await this.validateServiceEndpoint(service.url);
       
       // Update health check timestamp and status
-      await (this.prisma as any).pluginRegistry.update({
-        where,
+      await this.prisma.pluginRegistry.update({
+        where: uniqueWhere,
         data: {
           lastHealthCheck: new Date(),
           status: isHealthy ? 'ACTIVE' : 'ERROR',
@@ -161,8 +165,8 @@ export class PluginsManagementService {
 
       return isHealthy;
     } catch (error) {
-      await (this.prisma as any).pluginRegistry.update({
-        where,
+      await this.prisma.pluginRegistry.update({
+        where: uniqueWhere,
         data: {
           lastHealthCheck: new Date(),
           status: 'ERROR',

@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "ANINEPLUS EDU CMS with Nestjs GraphQL microservices",
   "scripts": {
+    "gateway": "cd apps/gateway && bun dev",
+    "core": "cd apps/core && bun start:dev",
+    "payment": "cd plugins/payment && bun dev",
     "env": "sh ./scripts/setup-env.sh",
     "libs-i":"sh ./scripts/link-libs.sh",
     "bune-i": "bun run libs-i && sh ./scripts/install.sh",

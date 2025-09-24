@@ -6,7 +6,7 @@ import { createGraphQLError } from '@bune/common';
 import { RedisService } from '../redis/redis.service';
 import { LoginUserInput, RegisterUserInput } from './inputs';
 import { CheckUserExistDto, LoginResponse } from './dtos';
-import { PrismaService } from 'nestjs-prisma';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 export interface CreateUserInput {
   email: string;
@@ -134,8 +134,6 @@ export class UsersService {
         },
         include: {
           roles: true,
-          teacherProfile: true,
-          studentProfile: true,
         },
       });
 
@@ -152,8 +150,6 @@ export class UsersService {
       where,
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -166,8 +162,8 @@ export class UsersService {
       where: { id },
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
         notificationSettings: true,
       },
     });
@@ -192,8 +188,8 @@ export class UsersService {
       where: { email },
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
       },
     });
   }
@@ -203,8 +199,8 @@ export class UsersService {
       where: { username },
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
       },
     });
   }
@@ -272,8 +268,8 @@ export class UsersService {
       },
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
       },
     });
 
@@ -295,8 +291,8 @@ export class UsersService {
       },
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
       },
     });
 
@@ -382,8 +378,8 @@ export class UsersService {
       take,
       include: {
         roles: true,
-        teacherProfile: true,
-        studentProfile: true,
+
+
       },
       orderBy: {
         createdAt: 'desc',

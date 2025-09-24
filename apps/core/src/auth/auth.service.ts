@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { User, UserStatusEnum } from 'prisma/@generated';
 import { LoginMethod } from 'prisma/@generated';
 import { LoginResponse } from 'src/users/dtos';
-import { PrismaService } from 'nestjs-prisma';
+import { PrismaService } from '../prisma/prisma.service';
 import { RegisterUserInput } from 'src/users/inputs';
 
 
@@ -462,6 +462,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+      userId: user.id,
       user,
     };
   }
@@ -492,7 +493,7 @@ export class AuthService {
         ipAddress,
         userAgent,
         loginMethod: LoginMethod.LOCAL,
-        status: LoginStatus.SUCCESS,
+        status: 'SUCCESS', // LoginStatus.SUCCESS,
       },
     });
   }
@@ -559,7 +560,7 @@ export class AuthService {
         ipAddress,
         userAgent,
         loginMethod: LoginMethod.LOCAL,
-        status: LoginStatus.FAILED,
+        status: 'FAILED', // LoginStatus.FAILED,
         failureReason: reason,
       },
     });

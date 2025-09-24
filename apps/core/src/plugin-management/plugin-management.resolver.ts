@@ -1,73 +1,22 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { PluginsManagementService } from './plugin-management.service';
-
-// Input types for GraphQL
-class RegisterPluginInput {
-  name: string;
-  displayName?: string;
-  description?: string;
-  url: string;
-  version?: string;
-  healthCheck?: string;
-  metadata?: any;
-  dependencies?: string[];
-  tags?: string[];
-  isRequired?: boolean;
-}
-
-class UpdatePluginInput {
-  displayName?: string;
-  description?: string;
-  url?: string;
-  version?: string;
-  healthCheck?: string;
-  metadata?: any;
-  dependencies?: string[];
-  tags?: string[];
-  isRequired?: boolean;
-}
-
-// Output types for GraphQL
-class Plugin {
-  id: string;
-  name: string;
-  displayName?: string;
-  description?: string;
-  url: string;
-  version: string;
-  status: string;
-  healthCheck?: string;
-  metadata?: any;
-  dependencies: string[];
-  tags: string[];
-  isRequired: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  lastHealthCheck?: Date;
-}
-
-class HealthCheckResult {
-  plugin: string;
-  healthy: boolean;
-}
-
-class GatewaySubgraph {
-  name: string;
-  url: string;
-}
+import { PluginManagementService } from './plugin-management.service';
+import { PluginRegistryCreateInput } from 'prisma/@generated';
+import { PluginRegistry } from 'prisma/@generated';
+import { HealthCheckResult } from './dto/health-check-result.dto';
+import { GatewaySubgraph } from './dto/gateway-subgraph.dto';
 
 @Resolver()
-export class PluginsManagementResolver {
-  constructor(private readonly pluginsManagementService: PluginsManagementService) {}
+export class PluginManagementResolver {
+  constructor(private readonly pluginsManagementService: PluginManagementService) {}
 
-  @Mutation(() => Plugin)
+  @Mutation(() => PluginRegistry)
   async registerPlugin(
-    @Args('input') input: RegisterPluginInput,
+    @Args('input') input: PluginRegistryCreateInput,
   ) {
     return this.pluginsManagementService.register(input);
   }
 
-  @Mutation(() => Plugin)
+  @Mutation(() => PluginRegistry)
   async unregisterPlugin(
     @Args('id', { type: () => String, nullable: true }) id?: string,
     @Args('name', { type: () => String, nullable: true }) name?: string,
@@ -75,11 +24,11 @@ export class PluginsManagementResolver {
     return this.pluginsManagementService.unregister({ id, name });
   }
 
-  @Mutation(() => Plugin)
+  @Mutation(() => PluginRegistry)
   async updatePlugin(
     @Args('id', { type: () => String, nullable: true }) id?: string,
     @Args('name', { type: () => String, nullable: true }) name?: string,
-    @Args('input') input?: UpdatePluginInput,
+    @Args('input') input?: PluginRegistryCreateInput,
   ) {
     if (!input) {
       throw new Error('Input is required');
@@ -87,7 +36,7 @@ export class PluginsManagementResolver {
     return this.pluginsManagementService.update({ id, name }, input);
   }
 
-  @Mutation(() => Plugin)
+  @Mutation(() => PluginRegistry)
   async updatePluginStatus(
     @Args('id', { type: () => String, nullable: true }) id?: string,
     @Args('name', { type: () => String, nullable: true }) name?: string,
@@ -99,17 +48,17 @@ export class PluginsManagementResolver {
     return this.pluginsManagementService.updateStatus({ id, name }, status);
   }
 
-  @Query(() => [Plugin])
+  @Query(() => [PluginRegistry])
   async getPlugins() {
     return this.pluginsManagementService.findAll();
   }
 
-  @Query(() => [Plugin])
+  @Query(() => [PluginRegistry])
   async getActivePlugins() {
     return this.pluginsManagementService.findActiveServices();
   }
 
-  @Query(() => Plugin)
+  @Query(() => PluginRegistry)
   async getPlugin(
     @Args('id', { type: () => String, nullable: true }) id?: string,
     @Args('name', { type: () => String, nullable: true }) name?: string,
