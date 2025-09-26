@@ -49,12 +49,12 @@ echo "📁 Checking configuration files..."
 if [ -f ".env" ]; then
     echo -e "${GREEN}✓${NC} .env file exists"
 else
-    echo -e "${YELLOW}⚠${NC} .env file not found. Creating from example.env..."
-    if [ -f "example.env" ]; then
-        cp example.env .env
-        echo -e "${GREEN}✓${NC} .env file created from example.env"
+    echo -e "${YELLOW}⚠${NC} .env file not found. Creating from .env.example..."
+    if [ -f ".env.example" ]; then
+        cp .env.example .env
+        echo -e "${GREEN}✓${NC} .env file created from .env.example"
     else
-        echo -e "${RED}✗${NC} example.env file not found"
+        echo -e "${RED}✗${NC} .env.example file not found"
         exit 1
     fi
 fi

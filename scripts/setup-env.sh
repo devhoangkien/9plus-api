@@ -3,13 +3,13 @@
 set -e
 
 # copy env root
-(cp example.env .env)
+(cp .env.example .env)
 
 # copy env service
-(cd "apps/core/" && cp example.env .env )
+(cd "apps/core/" && cp .env.example .env )
 
 # copy env api gateway
-(cd "apps/gateway/" && cp example.env .env )
+(cd "apps/gateway/" && cp .env.example .env )
 
 # copy env payment plugin
-(cd "plugins/payment/" && cp example.env .env )
+(cd "plugins/payment/" && cp .env.example .env )

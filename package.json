@@ -1,16 +1,16 @@
 {
   "name": "anineplus-api",
   "version": "0.0.1",
-  "description": "ANINEPLUS EDU CMS with Nestjs GraphQL microservices",
+  "description": "ANINEPLUSs CMS with Nestjs GraphQL microservices",
   "scripts": {
     "gateway": "cd apps/gateway && bun dev",
-    "core": "cd apps/core && bun start:dev",
+    "core": "cd apps/core && bun dev",
     "payment": "cd plugins/payment && bun dev",
     "env": "sh ./scripts/setup-env.sh",
-    "libs-i":"sh ./scripts/link-libs.sh",
-    "bune-i": "bun run libs-i && sh ./scripts/install.sh",
-    "bune-lint": "sh ./scripts/lint.sh",
-    "bune-build": "sh ./scripts/build.sh",
+    "i:libs": "sh ./scripts/link-libs.sh",
+    "i:all": "bun run i:libs && sh ./scripts/install.sh",
+    "app:lint": "sh ./scripts/lint.sh",
+    "app:build": "sh ./scripts/build.sh",
     "validate-dev": "sh ./scripts/validate-dev-env.sh",
     "docker:build": "docker compose build",
     "docker:start": "docker compose up -d",
@@ -33,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/anineplus/anineplus-api/issues"
   },
-  "homepage": "https://github.com/anineplus/anineplus-api#readme"
+  "homepage": "https://github.com/anineplus/anineplus-api#readme",
+  "dependencies": {
+    "reflect-metadata": "0.2.2"
+  }
 }
