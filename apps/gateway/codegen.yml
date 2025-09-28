@@ -1,50 +1,37 @@
 overwrite: true
 
-# Schema sources - GraphQL services
 schema:
-  # Core Service
   - "${CORE_SERVICE_URL:http://localhost:50051/graphql}"
-  # Payment Service
-  - "${PAYMENT_SERVICE_URL:http://localhost:50052/graphql}"
-  # Future services can be added here
-  # - "${CONTENT_SERVICE_URL:http://localhost:50053/graphql}"
-  # - "${NOTIFICATION_SERVICE_URL:http://localhost:50054/graphql}"
 
-# Code generation targets
 generates:
-  # Single combined federated schema file
+  ./src/generated/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      # Force all fields to be nullable in types
+      defaultMapper: "T | null | undefined"
+      maybeValue: "T | null | undefined"
+      avoidOptionals: false
+      scalars:
+        DateTime: Date
+        Date: Date
+        JSON: any
+        Decimal: number
+
   ./src/generated/schema.graphql:
     plugins:
       - schema-ast
     config:
       includeDirectives: true
       federation: true
-      
-  # Introspection result for runtime
+
   ./src/generated/introspection.json:
     plugins:
       - introspection
     config:
       minify: true
-      
-  # TypeScript types only (no resolvers)
-  ./src/generated/types.ts:
-    plugins:
-      - typescript
-      - typescript-operations
-    config:
-      # Type generation options
-      avoidOptionals: false
-      maybeValue: T | null | undefined
-      scalars:
-        DateTime: Date
-        Date: Date
-        JSON: any
-        Decimal: number
-      # Skip resolvers to avoid missing plugin
-      skipTypename: false
-      
-  # Gateway utilities and helpers
+
   ./src/generated/gateway-utils.ts:
     plugins:
       - add:
@@ -53,85 +40,4 @@ generates:
             import { GraphQLClient } from 'graphql-request';
             import introspectionResult from './introspection.json';
             
-            // Build federated schema from introspection
             export const federatedSchema = buildClientSchema(introspectionResult as IntrospectionQuery);
-            
-            // Service configuration
-            export const serviceConfig = {
-              coreService: {
-                name: 'core',
-                url: process.env.CORE_SERVICE_URL || 'http://localhost:50051/graphql',
-              },
-              paymentService: {
-                name: 'payment-service', 
-                url: process.env.PAYMENT_SERVICE_URL || 'http://localhost:50052/graphql',
-              },
-            };
-            
-            // Create GraphQL clients for each service
-            export const createServiceClients = () => {
-              const clients: Record<string, GraphQLClient> = {};
-              
-              Object.entries(serviceConfig).forEach(([key, config]) => {
-                try {
-                  clients[key] = new GraphQLClient(config.url, {
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                  });
-                  console.log(`✅ Created client for ${config.name} at ${config.url}`);
-                } catch (error) {
-                  console.warn(`⚠️  Failed to create client for ${config.name}:`, error.message);
-                }
-              });
-              
-              return clients;
-            };
-            
-            // Health check for services
-            export const checkServiceHealth = async (url: string): Promise<boolean> => {
-              try {
-                const client = new GraphQLClient(url);
-                await client.request('{ __typename }');
-                return true;
-              } catch (error) {
-                console.error(`Health check failed for ${url}:`, error.message);
-                return false;
-              }
-            };
-            
-            // Get available services
-            export const getAvailableServices = async () => {
-              const results = await Promise.allSettled(
-                Object.values(serviceConfig).map(async (config) => {
-                  const isHealthy = await checkServiceHealth(config.url);
-                  return {
-                    name: config.name,
-                    url: config.url,
-                    isHealthy,
-                  };
-                })
-              );
-              
-              return results
-                .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-                .map(result => result.value)
-                .filter(service => service.isHealthy);
-            };
-
-# Configuration
-config:
-  # Allow partial outputs on errors
-  allowPartialOutputs: true
-  # Skip validation for generated files
-  skipTypename: false
-
-# Hooks for post-generation tasks
-hooks:
-  afterAllFileWrite:
-    - echo "✅ GraphQL Federation schema generation completed!"
-    - echo "📁 Generated files:"
-    - echo "  - schema.graphql (Combined federated schema)"
-    - echo "  - introspection.json (Runtime introspection)"
-    - echo "  - types.ts (TypeScript types)"
-    - echo "  - gateway-utils.ts (Utility functions)"

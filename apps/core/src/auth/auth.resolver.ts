@@ -1,15 +1,15 @@
 import { Resolver, Mutation, Args, Context, Query } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { AuthService,  } from './auth.service';
+import { AuthService, } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginResponse } from 'src/users/dtos';
-import { RegisterUserInput } from 'src/users/inputs';
+import { LoginUserInput, RegisterUserInput } from 'src/users/inputs';
 import { User } from 'prisma/@generated';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Mutation(() => LoginResponse)
   async register(
@@ -20,16 +20,24 @@ export class AuthResolver {
     return this.authService.register(input, ipAddress);
   }
 
-  @Mutation(() => LoginResponse)
+  @Mutation(() => LoginResponse, { nullable: true })
   async login(
-    @Args('email') email: string,
-    @Args('password') password: string,
+    @Args('input') input: LoginUserInput,
     @Context('req') req: any,
   ): Promise<LoginResponse> {
-    const ipAddress = req.ip || req.connection.remoteAddress;
-    const userAgent = req.headers['user-agent'];
-    return this.authService.login(email, password, ipAddress, userAgent);
+    console.log('Login attempt with input:', input);
+    try {
+      const { email, password } = input;
+      const ipAddress = req.ip || req.connection?.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
+      return await this.authService.login(email, password, ipAddress, userAgent);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   }
+
 
   @Mutation(() => LoginResponse)
   async verifyTwoFactor(

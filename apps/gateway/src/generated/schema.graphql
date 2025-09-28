@@ -38,12 +38,27 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type GatewaySubgraph {
+  name: String!
+  url: String!
+}
+
 enum GenderEnum {
   FEMALE
   MALE
   OTHER
   PREFER_NOT_TO_SAY
 }
+
+type HealthCheckResult {
+  healthy: Boolean!
+  plugin: String!
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 enum LoginMethod {
   APPLE
@@ -75,9 +90,13 @@ type Mutation {
   logout: Boolean!
   refreshToken(refreshToken: String!): LoginResponse!
   register(input: RegisterUserInput!): User!
+  registerPlugin(input: PluginRegistryCreateInput!): PluginRegistry!
   requestPasswordReset(email: String!): Boolean!
   resetPassword(newPassword: String!, token: String!): Boolean!
   setupTwoFactor: String!
+  unregisterPlugin(id: String, name: String): PluginRegistry!
+  updatePlugin(id: String, input: PluginRegistryCreateInput!, name: String): PluginRegistry!
+  updatePluginStatus(id: String, name: String, status: String!): PluginRegistry!
   verifyTwoFactor(token: String!, userId: String!): LoginResponse!
 }
 
@@ -155,8 +174,125 @@ enum PermissionStatusEnum {
   INACTIVE
 }
 
+type PluginRegistry {
+  createdAt: DateTime!
+  createdBy: String
+  dependencies: [String!]
+  description: String
+  displayName: String
+  healthCheck: String
+  id: ID!
+  isRequired: Boolean!
+  lastHealthCheck: DateTime
+  metadata: JSON
+  name: String!
+  status: PluginStatusEnum!
+  tags: [String!]
+  updatedAt: DateTime!
+  updatedBy: String
+  url: String!
+  version: String!
+}
+
+type PluginRegistryCountAggregate {
+  _all: Int!
+  createdAt: Int!
+  createdBy: Int!
+  dependencies: Int!
+  description: Int!
+  displayName: Int!
+  healthCheck: Int!
+  id: Int!
+  isRequired: Int!
+  lastHealthCheck: Int!
+  metadata: Int!
+  name: Int!
+  status: Int!
+  tags: Int!
+  updatedAt: Int!
+  updatedBy: Int!
+  url: Int!
+  version: Int!
+}
+
+input PluginRegistryCreateInput {
+  createdAt: DateTime
+  createdBy: String
+  dependencies: PluginRegistryCreatedependenciesInput
+  description: String
+  displayName: String
+  healthCheck: String
+  id: String
+  isRequired: Boolean
+  lastHealthCheck: DateTime
+  metadata: JSON
+  name: String!
+  status: PluginStatusEnum
+  tags: PluginRegistryCreatetagsInput
+  updatedAt: DateTime
+  updatedBy: String
+  url: String!
+  version: String
+}
+
+input PluginRegistryCreatedependenciesInput {
+  set: [String!]!
+}
+
+input PluginRegistryCreatetagsInput {
+  set: [String!]!
+}
+
+type PluginRegistryMaxAggregate {
+  createdAt: DateTime
+  createdBy: String
+  description: String
+  displayName: String
+  healthCheck: String
+  id: String
+  isRequired: Boolean
+  lastHealthCheck: DateTime
+  name: String
+  status: PluginStatusEnum
+  updatedAt: DateTime
+  updatedBy: String
+  url: String
+  version: String
+}
+
+type PluginRegistryMinAggregate {
+  createdAt: DateTime
+  createdBy: String
+  description: String
+  displayName: String
+  healthCheck: String
+  id: String
+  isRequired: Boolean
+  lastHealthCheck: DateTime
+  name: String
+  status: PluginStatusEnum
+  updatedAt: DateTime
+  updatedBy: String
+  url: String
+  version: String
+}
+
+enum PluginStatusEnum {
+  ACTIVE
+  DEGRADED
+  ERROR
+  INACTIVE
+  MAINTENANCE
+}
+
 type Query {
+  checkAllPluginsHealth: [HealthCheckResult!]!
+  checkPluginHealth(id: String, name: String): Boolean!
   checkUserExists(data: CheckUserExistDto!): Boolean!
+  getActivePlugins: [PluginRegistry!]!
+  getGatewaySubgraphs: [GatewaySubgraph!]!
+  getPlugin(id: String, name: String): PluginRegistry!
+  getPlugins: [PluginRegistry!]!
   getRoleByKey(key: String!): Role!
   getRolesByKeys(keys: String!): [Role!]!
   me: User!

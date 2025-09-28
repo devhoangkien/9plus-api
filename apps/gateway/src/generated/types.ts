@@ -12,8 +12,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
   DateTime: { input: Date; output: Date; }
+  JSON: { input: any; output: any; }
   _Any: { input: any; output: any; }
   federation__FieldSet: { input: any; output: any; }
   link__Import: { input: any; output: any; }
@@ -25,12 +25,24 @@ export type CheckUserExistDto = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type GatewaySubgraph = {
+  __typename?: 'GatewaySubgraph';
+  name: Scalars['String']['output'];
+  url: Scalars['String']['output'];
+};
+
 export enum GenderEnum {
   Female = 'FEMALE',
   Male = 'MALE',
   Other = 'OTHER',
   PreferNotToSay = 'PREFER_NOT_TO_SAY'
 }
+
+export type HealthCheckResult = {
+  __typename?: 'HealthCheckResult';
+  healthy: Scalars['Boolean']['output'];
+  plugin: Scalars['String']['output'];
+};
 
 export enum LoginMethod {
   Apple = 'APPLE',
@@ -64,9 +76,13 @@ export type Mutation = {
   logout: Scalars['Boolean']['output'];
   refreshToken: LoginResponse;
   register: User;
+  registerPlugin: PluginRegistry;
   requestPasswordReset: Scalars['Boolean']['output'];
   resetPassword: Scalars['Boolean']['output'];
   setupTwoFactor: Scalars['String']['output'];
+  unregisterPlugin: PluginRegistry;
+  updatePlugin: PluginRegistry;
+  updatePluginStatus: PluginRegistry;
   verifyTwoFactor: LoginResponse;
 };
 
@@ -102,6 +118,11 @@ export type MutationRegisterArgs = {
 };
 
 
+export type MutationRegisterPluginArgs = {
+  input: PluginRegistryCreateInput;
+};
+
+
 export type MutationRequestPasswordResetArgs = {
   email: Scalars['String']['input'];
 };
@@ -110,6 +131,26 @@ export type MutationRequestPasswordResetArgs = {
 export type MutationResetPasswordArgs = {
   newPassword: Scalars['String']['input'];
   token: Scalars['String']['input'];
+};
+
+
+export type MutationUnregisterPluginArgs = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationUpdatePluginArgs = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  input: PluginRegistryCreateInput;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationUpdatePluginStatusArgs = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  status: Scalars['String']['input'];
 };
 
 
@@ -197,10 +238,131 @@ export enum PermissionStatusEnum {
   Inactive = 'INACTIVE'
 }
 
+export type PluginRegistry = {
+  __typename?: 'PluginRegistry';
+  createdAt: Scalars['DateTime']['output'];
+  createdBy?: Maybe<Scalars['String']['output']>;
+  dependencies?: Maybe<Array<Scalars['String']['output']>>;
+  description?: Maybe<Scalars['String']['output']>;
+  displayName?: Maybe<Scalars['String']['output']>;
+  healthCheck?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isRequired: Scalars['Boolean']['output'];
+  lastHealthCheck?: Maybe<Scalars['DateTime']['output']>;
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  name: Scalars['String']['output'];
+  status: PluginStatusEnum;
+  tags?: Maybe<Array<Scalars['String']['output']>>;
+  updatedAt: Scalars['DateTime']['output'];
+  updatedBy?: Maybe<Scalars['String']['output']>;
+  url: Scalars['String']['output'];
+  version: Scalars['String']['output'];
+};
+
+export type PluginRegistryCountAggregate = {
+  __typename?: 'PluginRegistryCountAggregate';
+  _all: Scalars['Int']['output'];
+  createdAt: Scalars['Int']['output'];
+  createdBy: Scalars['Int']['output'];
+  dependencies: Scalars['Int']['output'];
+  description: Scalars['Int']['output'];
+  displayName: Scalars['Int']['output'];
+  healthCheck: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  isRequired: Scalars['Int']['output'];
+  lastHealthCheck: Scalars['Int']['output'];
+  metadata: Scalars['Int']['output'];
+  name: Scalars['Int']['output'];
+  status: Scalars['Int']['output'];
+  tags: Scalars['Int']['output'];
+  updatedAt: Scalars['Int']['output'];
+  updatedBy: Scalars['Int']['output'];
+  url: Scalars['Int']['output'];
+  version: Scalars['Int']['output'];
+};
+
+export type PluginRegistryCreateInput = {
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  dependencies?: InputMaybe<PluginRegistryCreatedependenciesInput>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  healthCheck?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  isRequired?: InputMaybe<Scalars['Boolean']['input']>;
+  lastHealthCheck?: InputMaybe<Scalars['DateTime']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  name: Scalars['String']['input'];
+  status?: InputMaybe<PluginStatusEnum>;
+  tags?: InputMaybe<PluginRegistryCreatetagsInput>;
+  updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  updatedBy?: InputMaybe<Scalars['String']['input']>;
+  url: Scalars['String']['input'];
+  version?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type PluginRegistryCreatedependenciesInput = {
+  set: Array<Scalars['String']['input']>;
+};
+
+export type PluginRegistryCreatetagsInput = {
+  set: Array<Scalars['String']['input']>;
+};
+
+export type PluginRegistryMaxAggregate = {
+  __typename?: 'PluginRegistryMaxAggregate';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdBy?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  displayName?: Maybe<Scalars['String']['output']>;
+  healthCheck?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  isRequired?: Maybe<Scalars['Boolean']['output']>;
+  lastHealthCheck?: Maybe<Scalars['DateTime']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<PluginStatusEnum>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedBy?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+  version?: Maybe<Scalars['String']['output']>;
+};
+
+export type PluginRegistryMinAggregate = {
+  __typename?: 'PluginRegistryMinAggregate';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdBy?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  displayName?: Maybe<Scalars['String']['output']>;
+  healthCheck?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  isRequired?: Maybe<Scalars['Boolean']['output']>;
+  lastHealthCheck?: Maybe<Scalars['DateTime']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<PluginStatusEnum>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedBy?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+  version?: Maybe<Scalars['String']['output']>;
+};
+
+export enum PluginStatusEnum {
+  Active = 'ACTIVE',
+  Degraded = 'DEGRADED',
+  Error = 'ERROR',
+  Inactive = 'INACTIVE',
+  Maintenance = 'MAINTENANCE'
+}
+
 export type Query = {
   __typename?: 'Query';
   _service: _Service;
+  checkAllPluginsHealth: Array<HealthCheckResult>;
+  checkPluginHealth: Scalars['Boolean']['output'];
   checkUserExists: Scalars['Boolean']['output'];
+  getActivePlugins: Array<PluginRegistry>;
+  getGatewaySubgraphs: Array<GatewaySubgraph>;
+  getPlugin: PluginRegistry;
+  getPlugins: Array<PluginRegistry>;
   getRoleByKey: Role;
   getRolesByKeys: Array<Role>;
   me: User;
@@ -208,8 +370,20 @@ export type Query = {
 };
 
 
+export type QueryCheckPluginHealthArgs = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryCheckUserExistsArgs = {
   data: CheckUserExistDto;
+};
+
+
+export type QueryGetPluginArgs = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 
