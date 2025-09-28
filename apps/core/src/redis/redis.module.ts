@@ -8,7 +8,7 @@ import { RedisService } from './redis.service';
       provide: 'REDIS_CONNECTION',
       useFactory: () => {
         return new Redis({
-          host: process.env.REDIS_HOST || '', // Redis host
+          host: process.env.REDIS_HOST || '127.0.0.1', 
           port: parseInt(process.env.REDIS_PORT || '6379', 10), // Ensure port is a number
           password: process.env.REDIS_PASSWORD || '', // Redis password
           db: parseInt(process.env.REDIS_DB || '0', 10), // Ensure db is a number

@@ -1,17 +1,17 @@
 services:
-  user-database:
+  core-database:
     image: "postgres:latest"
-    container_name: "user-database-dev"
+    container_name: "core-database-dev"
     ports:
       - "5432:5432"
     volumes:
-      - userdata:/var/lib/postgresql/data
+      - core_database_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-bune-cms}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-bune-cms}
-      POSTGRES_DB: ${DB_DATABASE:-user-svc}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME:-bune-cms} -d ${DB_DATABASE:-user-svc}'"]
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}'"]
       interval: 30s
       timeout: 30s
       retries: 3
@@ -40,6 +40,4 @@ networks:
     driver: bridge
 
 volumes:
-  userdata:
-  api_gateway_node_modules:
-  payment_service_node_modules:
+  core_database_data:
