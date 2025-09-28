@@ -15,6 +15,12 @@ import { LRUCache } from 'lru-cache';
 import { DynamicGatewayModule } from './dynamic-gateway/dynamic-gateway.module';
 import { DynamicGatewayService } from './dynamic-gateway/dynamic-gateway.service';
 import { GatewayConfigFactory } from './dynamic-gateway/gateway-config.factory';
+import { GatewayHealthService } from './services/gateway-health.service';
+import { GatewayCacheService } from './services/gateway-cache.service';
+import { GraphQLExecutorService } from './services/graphql-executor.service';
+import { StartupDisplayService } from './services/startup-display.service';
+import { GatewayUrlResolver } from './resolvers/gateway-url-resolver';
+import { SofaApiFactory } from './factories/sofa-api.factory';
 // Initialize cache with LRU (Least Recently Used)
 const cache = new LRUCache<string, any>({
   max: 100, // Maximum number of items in cache
@@ -170,6 +176,13 @@ const handleAuth = async ({ req }) => {
       enableDatadog: false,
     }),
   ],
-  providers: [],
+  providers: [
+    GatewayHealthService,
+    GatewayCacheService,
+    GatewayUrlResolver,
+    GraphQLExecutorService,
+    SofaApiFactory,
+    StartupDisplayService,
+  ],
 })
 export class AppModule {}

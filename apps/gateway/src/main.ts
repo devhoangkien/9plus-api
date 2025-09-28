@@ -1,62 +1,78 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggerService } from '@bune/common';
-import chalk from 'chalk';
-import figlet from 'figlet';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { createSchema } from 'graphql-yoga';
-import { useSofa } from 'sofa-api';
-
+import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
+import { DynamicGatewayService } from './dynamic-gateway/dynamic-gateway.service';
+import { GatewayHealthService } from './services/gateway-health.service';
+import { GatewayCacheService } from './services/gateway-cache.service';
+import { GraphQLExecutorService } from './services/graphql-executor.service';
+import { StartupDisplayService } from './services/startup-display.service';
+import { GatewayUrlResolver } from './resolvers/gateway-url-resolver';
+import { SofaApiFactory } from './factories/sofa-api.factory';
+/**
+ * Bootstrap function using injected services for better maintainability
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const logger = app.get(LoggerService);
   
+  // Get services from DI container
+  const logger = app.get(LoggerService);
+  const dynamicGatewayService = app.get(DynamicGatewayService);
+  const healthService = app.get(GatewayHealthService);
+  const cacheService = app.get(GatewayCacheService);
+  const urlResolver = app.get(GatewayUrlResolver);
+  const executorService = app.get(GraphQLExecutorService);
+  const sofaFactory = app.get(SofaApiFactory);
+  const startupDisplay = app.get(StartupDisplayService);
+
   logger.log('🚀 Starting application...');
   
-  // Setup Sofa REST API from generated federated schema
-  const schemaPath = join(__dirname, 'generated', 'schema.graphql');
-  const typeDefs = readFileSync(schemaPath, 'utf-8');
+  // Load subgraphs dynamically
+  const subgraphs = await dynamicGatewayService.loadSubgraphs();
   
-  // Build schema from the generated SDL
-  const federatedSchema = createSchema({
-    typeDefs,
-  });
+  // Display subgraph info
+  startupDisplay.displaySubgraphInfo(subgraphs);
   
-  // Create Sofa API directly
-  const sofa = useSofa({
-    schema: federatedSchema,
-    basePath: '/api',
-    swaggerUI: {
-      endpoint: '/swagger',
-    },
-    openAPI: {
-      info: {
-        title: 'NinePlus CMS REST API',
-        version: '1.0.0',
-        description: 'API documentation for NinePlus CMS - Generated from GraphQL Federation Schema',
-      },
-    },
-
+  // Create Apollo Gateway
+  const gateway = new ApolloGateway({
+    supergraphSdl: new IntrospectAndCompose({
+      subgraphs: subgraphs,
+    }),
   });
 
-  // Mount the Sofa REST API
+  // Load federated schema
+  const { schema } = await gateway.load();
+  
+  // Create Sofa API using factory
+  const sofa = sofaFactory.createSofaApi(schema);
+
+  // Mount Sofa API
   app.use('/api', sofa);
   
-  const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-
-  const ninePlusCmsArt = figlet.textSync('NinePlus CMS', {
-    font: 'Slant',
-    horizontalLayout: 'default',
-    verticalLayout: 'default',
+  // Add health check endpoint
+  app.getHttpAdapter().get('/health', async (req, res) => {
+    const health = await healthService.checkHealth();
+    res.status(health.status === 'healthy' ? 200 : 503).json(health);
   });
 
-  console.log(chalk.blueBright(ninePlusCmsArt));
-  console.log(chalk.greenBright('by devhoangkien')); 
-  logger.log(`✅ Application is running on: ${chalk.redBright(`http://localhost:${port}`)}`);
-  logger.log(`🔗 GraphQL endpoint: ${chalk.yellowBright(`http://localhost:${port}/graphql`)}`);
-  logger.log(`🔗 REST API endpoint: ${chalk.cyanBright(`http://localhost:${port}/api`)}`);
-  logger.log(`📖 Swagger UI: ${chalk.greenBright(`http://localhost:${port}/api/swagger`)}`);
+  // Add cache stats endpoint
+  app.getHttpAdapter().get('/cache/stats', (req, res) => {
+    const stats = cacheService.getStats();
+    res.json(stats);
+  });
+
+  // Add cache clear endpoint
+  app.getHttpAdapter().post('/cache/clear', (req, res) => {
+    cacheService.clear();
+    res.json({ message: 'Cache cleared successfully' });
+  });
+  
+  // Start the server
+  const port = urlResolver.getPort();
+  await app.listen(port);
+
+  // Display startup information
+  startupDisplay.displayStartupInfo();
 }
+
 bootstrap();

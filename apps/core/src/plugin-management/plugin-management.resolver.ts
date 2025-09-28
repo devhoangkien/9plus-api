@@ -74,8 +74,10 @@ export class PluginManagementResolver {
     return this.pluginsManagementService.healthCheck({ id, name });
   }
 
-  @Query(() => [HealthCheckResult])
+  @Query(() => [HealthCheckResult], {nullable: 'itemsAndList'})
   async checkAllPluginsHealth() {
+
+    console.log('Checking health of all plugins...');
     return this.pluginsManagementService.healthCheckAll();
   }
 

@@ -30,7 +30,6 @@ import {  PrismaModule } from './prisma/prisma.module';
       driver: YogaFederationDriver,
       autoSchemaFile: {
         federation: 2,
-        path: './schema.gql',
       },
       // includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production', 
     }),
