@@ -94,53 +94,78 @@ Before getting started, ensure you have the following installed:
 
 ### 📦 Installation
 
-1. **Clone the repository with submodules**:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/anineplus/anineplus-api.git
    cd anineplus-api
-   git submodule update --init --recursive
    ```
 
-2. **Set up environment variables**:
+2. **Complete setup (recommended)**:
    ```bash
-   # Copy environment files manually or use the script
-   cp example.env .env
-   cd apps/gateway && cp example.env .env && cd ..
-   cd apps/core && cp example.env .env && cd ..
-   cd plugins/payment && cp example.env .env && cd ..
-   # Note: Plugin env files will be created when submodules are properly initialized
+   # Make scripts executable (Linux/Mac)
+   bun run make-executable
    
-   # Or use the automated script (requires Bun)
-   bun run env
+   # Complete setup with event-driven architecture
+   bun run dev:full
    ```
 
-3. **Install dependencies** (choose one method):
-   
-   **Method A: Using Bun (recommended)**:
+3. **Manual setup** (alternative):
    ```bash
-   # Install Bun if not already installed
-   curl -fsSL https://bun.sh/install | bash
+   # Setup environment files
+   bun run env:setup
    
-   # Install dependencies and link libraries
-   bun run bune-i
-   ```
+   # Install all dependencies
+   bun run install:all
    
-   **Method B: Using npm/node**:
-   ```bash
-   cd apps/gateway && npm install && cd ..
-   cd apps/core && npm install && cd ..
-   cd plugins/payment && npm install && cd ..
-   # Plugin dependencies will be available once submodules are initialized
+   # Setup event-driven infrastructure
+   bun run event-driven:setup
+   
+   # Start development environment
+   bun run event-driven:start
    ```
 
-4. **Start the development environment**:
+4. **Verify setup**:
    ```bash
-   # Using Docker (recommended for complete environment)
-   docker compose -f docker-compose-dev.yaml up -d
+   # Check system health
+   bun run verify
    
-   # Or build and start everything (requires Bun)
-   bun start
+   # Test complete system
+   bun run test:full
    ```
+
+### 🎯 Event-Driven Architecture
+
+This project now includes a complete **Event-Driven Architecture** with:
+
+- **Kafka**: Message broker for event streaming
+- **Elasticsearch**: Search engine and event storage
+- **Kibana**: Data visualization and monitoring
+- **Logstash**: Log processing and aggregation
+- **Searcher Service**: Kafka consumer → Elasticsearch indexer
+- **Logger Service**: Log collection and shipping
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   API Gateway   │────│   Core Service   │────│ Payment Plugin  │
+│  (GraphQL Fed)  │    │     (Events)     │    │    (Events)     │
+│     :3001       │    │     :3000        │    │     :3100       │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │ (Kafka Events)
+         ┌───────────────────────┼───────────────────────┐
+         │                       │                       │
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Searcher Svc    │────│     Kafka        │────│   Logger Svc    │
+│   :3002         │    │     :9092        │    │     :3003       │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Elasticsearch   │    │   PostgreSQL     │    │ ELK Stack       │
+│   :9200         │    │     :5432        │    │ (Kibana:5601)   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
 
 ## 🛠️ Development
 
@@ -164,20 +189,51 @@ bun run docker:dev:build  # First time only
 bun run dev              # Start all services
 ```
 
-### Available Scripts
+### 📋 Available Scripts
 
-| Command | Description | Requirements |
-|---------|-------------|--------------|
-| `bun run env` | Set up environment files from examples | Bun |
-| `bun run libs-i` | Link shared libraries between services | Bun |
-| `bun run bune-i` | Install all dependencies and link libraries | Bun |
-| `bun run bune-lint` | Run linting across all services | Bun |
-| `bun run bune-build` | Build all services | Bun |
-| `docker compose build` | Build Docker images | Docker |
-| `docker compose up -d` | Start production containers | Docker |
-| `docker compose -f docker-compose-dev.yaml up -d` | Start development containers | Docker |
-| `docker compose down` | Stop and remove containers | Docker |
-| `bun start` | Complete setup and start production | Bun + Docker |
+> **📖 For complete scripts documentation, see [SCRIPTS.md](./SCRIPTS.md)**
+
+#### 🚀 Quick Commands
+
+| Command | Description |
+|---------|-------------|
+| `bun run dev:full` | **Complete setup and start (recommended)** |
+| `bun run test:full` | **Test complete event-driven system** |
+| `bun run verify` | **Health check and system verification** |
+
+#### ⚙️ Setup & Configuration
+
+| Command | Description |
+|---------|-------------|
+| `bun run env:setup` | Setup environment files from examples |
+| `bun run install:all` | Install dependencies for all services |
+| `bun run make-executable` | Make all scripts executable (Linux/Mac) |
+| `bun run validate` | Validate development environment |
+
+#### 🏗️ Development
+
+| Command | Description |
+|---------|-------------|
+| `bun run event-driven:setup` | Setup Kafka + ELK infrastructure |
+| `bun run event-driven:start` | Start all services in development mode |
+| `bun run app:build` | Build all services and plugins |
+| `bun run app:lint` | Run linting and code quality checks |
+
+#### 🐳 Docker & Infrastructure
+
+| Command | Description |
+|---------|-------------|
+| `bun run infra:up` | Start Kafka + ELK infrastructure |
+| `bun run infra:down` | Stop infrastructure services |
+| `bun run docker:dev:up` | Start development containers |
+| `bun run docker:dev:down` | Stop development containers |
+
+#### 🧹 Maintenance
+
+| Command | Description |
+|---------|-------------|
+| `bun run cleanup` | Interactive cleanup of environment |
+| `bun run verify` | Comprehensive system health check |
 
 ### Development Workflow
 

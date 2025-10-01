@@ -6,13 +6,34 @@
     "gateway": "cd apps/gateway && bun dev",
     "gateway:codegen": "cd apps/gateway && bun run codegen",
     "core": "cd apps/core && bun dev",
+    "searcher": "cd apps/searcher && bun dev",
+    "logger": "cd apps/logger && bun dev",
     "payment": "cd plugins/payment && bun dev",
-    "env": "sh ./scripts/setup-env.sh",
+    
+    "env:setup": "sh ./scripts/setup-env.sh",
     "i:libs": "sh ./scripts/link-libs.sh",
     "i:all": "bun run i:libs && sh ./scripts/install.sh",
+    "install:all": "sh ./scripts/install.sh",
     "app:lint": "sh ./scripts/lint.sh",
     "app:build": "sh ./scripts/build.sh",
     "validate-dev": "sh ./scripts/validate-dev-env.sh",
+    "validate": "sh ./scripts/validate-dev-env.sh",
+    "verify": "sh ./scripts/verify-env.sh",
+    "cleanup": "sh ./scripts/cleanup.sh",
+    "make-executable": "sh ./scripts/make-executable.sh",
+    
+    "event-driven:setup": "sh ./scripts/setup-event-driven.sh",
+    "event-driven:start": "sh ./scripts/start-dev-event-driven.sh", 
+    "event-driven:test": "sh ./scripts/test-event-driven.sh",
+    "event-driven:dev": "sh ./scripts/start-dev-event-driven.sh",
+    
+    "infra:kafka": "cd infra/kafka-connect && docker compose up -d",
+    "infra:elk": "cd infra/elastic-stack && docker compose up -d",
+    "infra:up": "bun run infra:kafka && bun run infra:elk",
+    "infra:down": "cd infra/kafka-connect && docker compose down && cd ../elastic-stack && docker compose down",
+    "infra:logs": "cd infra/kafka-connect && docker compose logs -f",
+    "infra:status": "cd infra/kafka-connect && docker compose ps && cd ../elastic-stack && docker compose ps",
+    
     "docker:build": "docker compose build",
     "docker:start": "docker compose up -d",
     "docker:dev": "docker compose -f docker-compose-dev.yaml up -d",
@@ -23,7 +44,10 @@
     "docker:dev:restart": "docker compose -f docker-compose-dev.yaml restart",
     "docker:down": "docker compose down",
     "start": "bun run install && bun run lint && bun run build && bun run docker:build && bun run docker:start",
-    "dev": "bun run docker:dev:up"
+    "dev": "bun run docker:dev:up",
+    
+    "dev:full": "bun run event-driven:setup && bun run event-driven:start",
+    "test:full": "bun run event-driven:test"
   },
   "repository": {
     "type": "git",
