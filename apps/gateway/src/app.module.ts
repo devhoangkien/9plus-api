@@ -24,7 +24,7 @@ import { SofaApiFactory } from './factories/sofa-api.factory';
 // Initialize cache with LRU (Least Recently Used)
 const cache = new LRUCache<string, any>({
   max: 100, // Maximum number of items in cache
-  ttl: 1000 * 60 * 5, // Cache lifetime (5 minutes)
+  ttl: 1000 * 60 * 1, // Cache lifetime (1 minute)
 });
 
 // GraphQL call with cache

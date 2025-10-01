@@ -59,6 +59,22 @@ else
     fi
 fi
 
+# Check service-specific .env files
+services=("core" "gateway" "searcher" "logger")
+for service in "${services[@]}"; do
+    service_path="apps/$service"
+    if [ -d "$service_path" ]; then
+        if [ -f "$service_path/.env" ]; then
+            echo -e "${GREEN}✓${NC} $service/.env file exists"
+        elif [ -f "$service_path/.env.example" ]; then
+            cp "$service_path/.env.example" "$service_path/.env"
+            echo -e "${GREEN}✓${NC} $service/.env created from .env.example"
+        else
+            echo -e "${YELLOW}⚠${NC} $service/.env.example not found"
+        fi
+    fi
+done
+
 # Check if git submodules are initialized
 echo ""
 echo "📦 Checking git submodules..."
@@ -109,12 +125,76 @@ check_port 6379 "Redis"
 check_port 50051 "User Service"
 check_port 50052 "Payment Service"
 
+# New services for event-driven architecture
+check_port 2181 "Zookeeper"
+check_port 9092 "Kafka"
+check_port 8080 "Kafka UI"
+check_port 8083 "Kafka Connect"
+check_port 9200 "Elasticsearch"
+check_port 5601 "Kibana"
+check_port 5044 "Logstash"
+check_port 3003 "Searcher Service"
+check_port 3004 "Logger Service"
+
+# Check for required environment variables
+echo ""
+echo "🔧 Checking required environment variables..."
+
+# Load .env file
+if [ -f ".env" ]; then
+    export $(cat .env | grep -v '^#' | grep -v '^$' | xargs) 2>/dev/null
+fi
+
+# Check essential variables
+essential_vars=(
+    "DATABASE_URL:Database connection"
+    "JWT_SECRET:JWT authentication"
+    "REDIS_HOST:Redis cache"
+)
+
+for var_desc in "${essential_vars[@]}"; do
+    var_name=$(echo $var_desc | cut -d':' -f1)
+    var_purpose=$(echo $var_desc | cut -d':' -f2)
+    
+    if [ -z "${!var_name}" ]; then
+        echo -e "${RED}✗${NC} Missing $var_name ($var_purpose)"
+    else
+        echo -e "${GREEN}✓${NC} $var_name is set ($var_purpose)"
+    fi
+done
+
+# Check event-driven architecture variables (optional)
+event_vars=(
+    "KAFKA_BROKERS:Kafka message broker"
+    "ELASTICSEARCH_URL:Elasticsearch search engine"
+)
+
+echo ""
+echo "🚀 Event-Driven Architecture variables (optional):"
+for var_desc in "${event_vars[@]}"; do
+    var_name=$(echo $var_desc | cut -d':' -f1)
+    var_purpose=$(echo $var_desc | cut -d':' -f2)
+    
+    if [ -z "${!var_name}" ]; then
+        echo -e "${YELLOW}⚠${NC} Optional: $var_name not set ($var_purpose)"
+    else
+        echo -e "${GREEN}✓${NC} $var_name is set ($var_purpose)"
+    fi
+done
+
 echo ""
 echo "🎉 Environment validation complete!"
 echo ""
-echo "To start the development environment, run:"
+echo "To start the development environment:"
+echo ""
+echo "📋 Basic setup:"
 echo "  bun run docker:dev:build"
 echo "  bun run docker:dev:up"
 echo ""
-echo "Or simply:"
-echo "  bun run dev"
+echo "🚀 Event-driven setup:"
+echo "  chmod +x scripts/setup-event-driven.sh"
+echo "  ./scripts/setup-event-driven.sh"
+echo ""
+echo "🛠️  Development mode:"
+echo "  chmod +x scripts/start-dev-event-driven.sh"
+echo "  ./scripts/start-dev-event-driven.sh"

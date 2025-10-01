@@ -3,7 +3,7 @@ import { LoggerService } from '@bune/common';
 import { useSofa } from 'sofa-api';
 import { Response as FetsResponse } from 'fets';
 import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
-import { GraphQLExecutorService } from '../services/graphql-executor.service';
+import { GraphQLExecutorService } from 'src/services/graphql-executor.service';
 
 @Injectable()
 export class SofaApiFactory {
@@ -33,11 +33,6 @@ export class SofaApiFactory {
           version: '1.0.0',
           description: 'API documentation for NinePlus CMS - Generated from GraphQL Federation Schema',
         },
-        servers: [
-          {
-            url: this.urlResolver.getBaseUrl(),
-          },
-        ],
       },
       execute: executeWithFetch,
       errorHandler: this.createErrorHandler(),

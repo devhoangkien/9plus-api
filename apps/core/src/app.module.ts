@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/nestjs-federation'
 import { PluginManagementModule } from './plugin-management/plugin-management.module';
 import {  PrismaModule } from './prisma/prisma.module';
+import { KafkaModule } from './kafka/kafka.module';
 
 // Import GraphQL enums to register them
 
@@ -41,6 +42,7 @@ import {  PrismaModule } from './prisma/prisma.module';
     PermissionsModule,
     RedisModule,
     PluginManagementModule,
+    KafkaModule,
   ],
   
 })

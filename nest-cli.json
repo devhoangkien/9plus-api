@@ -17,6 +17,24 @@
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
+    },
+    "searcher": {
+      "type": "application",
+      "root": "apps/searcher",
+      "entryFile": "main",
+      "sourceRoot": "apps/searcher/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/searcher/tsconfig.app.json"
+      }
+    },
+    "logger": {
+      "type": "application",
+      "root": "apps/logger",
+      "entryFile": "main",
+      "sourceRoot": "apps/logger/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/logger/tsconfig.app.json"
+      }
     }
   },
   "compilerOptions": {

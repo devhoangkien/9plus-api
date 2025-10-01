@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: anineplus-elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=anineplus-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=true
+      - xpack.security.authc.api_key.enabled=true
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9200:9200"
+    networks:
+      - anineplus-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -u elastic:changeme -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: anineplus-logstash
+    volumes:
+      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
+    networks:
+      - anineplus-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: anineplus-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changeme
+      SERVER_NAME: kibana.anineplus.local
+      SERVER_HOST: "0.0.0.0"
+    volumes:
+      - ./config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    networks:
+      - anineplus-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.10.0
+    container_name: anineplus-filebeat
+    user: root
+    volumes:
+      - ./config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+      - ../apps:/var/log/anineplus:ro
+    networks:
+      - anineplus-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command: ["--strict.perms=false"]
+
+volumes:
+  elasticsearch_data:
+  filebeat_data:
+
+networks:
+  anineplus-network:
+    external: true

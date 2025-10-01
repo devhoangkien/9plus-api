@@ -11,13 +11,17 @@ services:
       - "frontend"
       - "backend"
       - "userdomain"
+      - "anineplus-network"
     expose:
       - "50051"
     depends_on:
-      - "user-database"
+      - "core-database"
       - "cache-service"
+      - "kafka"
     env_file:
       - .env
+    environment:
+      - KAFKA_BROKERS=kafka:29092
     healthcheck:
       test: ["CMD", "/bin/grpc_health_probe", "-addr=:50051"]
       interval: 30s
@@ -102,10 +106,165 @@ services:
       retries: 3
     restart: "on-failure"
 
+  # New services
+  searcher:
+    image: "searcher:dev"
+    container_name: "searcher"
+    build:
+      context: "./apps/searcher"
+    networks:
+      - "backend"
+      - "anineplus-network"
+    expose:
+      - "3003"
+    depends_on:
+      - "kafka"
+      - "elasticsearch"
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    healthcheck:
+      test: ["CMD", "wget", "localhost:3003/health -q -O - > /dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: "on-failure"
+
+  logger:
+    image: "logger:dev"
+    container_name: "logger"
+    build:
+      context: "./apps/logger"
+    networks:
+      - "backend"
+      - "anineplus-network"
+    expose:
+      - "3004"
+    depends_on:
+      - "elasticsearch"
+      - "logstash"
+    env_file:
+      - .env
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    volumes:
+      - ./apps:/var/log/anineplus:ro
+    healthcheck:
+      test: ["CMD", "wget", "localhost:3004/health -q -O - > /dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: "on-failure"
+
+  # Infrastructure services
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: anineplus-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - anineplus-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka
+    container_name: anineplus-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - anineplus-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: anineplus-elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=anineplus-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - anineplus-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: anineplus-logstash
+    volumes:
+      - ./infra/elastic-stack/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./infra/elastic-stack/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+      - "5044:5044"
+      - "5000:5000"
+    environment:
+      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
+    networks:
+      - anineplus-network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: anineplus-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changeme
+    volumes:
+      - ./infra/elastic-stack/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    networks:
+      - anineplus-network
+    depends_on:
+      - elasticsearch
+
 networks:
   frontend:
   backend:
   userdomain:
+  anineplus-network:
+    driver: bridge
 
 volumes:
   userdata:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_data:
+  elasticsearch_data:
