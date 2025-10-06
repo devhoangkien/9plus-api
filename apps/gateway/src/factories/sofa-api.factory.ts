@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LoggerService } from '@bune/common';
+import { LoggerService } from '@anineplus/common';
 import { useSofa } from 'sofa-api';
 import { Response as FetsResponse } from 'fets';
 import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';

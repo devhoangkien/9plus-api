@@ -9,7 +9,7 @@ import {
   CaslActionEnum,
   CaslGuard,
   CheckPermissions,
-} from '@bune/casl-authorization';
+} from '@anineplus/authorization';
 import { ResourceEnum } from 'src/common/enums';
 import { User } from 'prisma/@generated';
 

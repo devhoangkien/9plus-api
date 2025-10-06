@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@apollo/gateway": "^2.9.3",
-    "@bune/common": "link:@bune/common",
     "@graphql-tools/executor": "^1.4.9",
     "@graphql-yoga/nestjs-federation": "^3.13.3",
     "@graphql-yoga/plugin-sofa": "^3.16.0",

@@ -7,8 +7,6 @@ import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LocalAuthGuard } from './guards/local-auth.guard';
 import { TwoFactorService } from './two-factor.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
@@ -37,8 +35,6 @@ import { RedisModule } from '../redis/redis.module';
     JwtStrategy,
     LocalStrategy,
     GoogleStrategy,
-    JwtAuthGuard,
-    LocalAuthGuard,
     TwoFactorService,
     PasswordService,
     TokenService,
@@ -46,8 +42,6 @@ import { RedisModule } from '../redis/redis.module';
   controllers: [],
   exports: [
     AuthService,
-    JwtAuthGuard,
-    LocalAuthGuard,
     TwoFactorService,
     PasswordService,
     TokenService,

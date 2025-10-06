@@ -1,12 +1,11 @@
 import { Resolver, Mutation, Args, Context, Query } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AuthService, } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginResponse } from 'src/users/dtos';
 import { LoginUserInput, RegisterUserInput } from 'src/users/inputs';
 import { User } from 'prisma/@generated';
-
+import { AuthGuard } from '@anineplus/authorization';
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) { }
@@ -55,7 +54,7 @@ export class AuthResolver {
     return this.authService.refreshToken(refreshToken);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Mutation(() => Boolean)
   async logout(
     @CurrentUser() user: User,
@@ -65,7 +64,7 @@ export class AuthResolver {
     return true;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Mutation(() => Boolean)
   async changePassword(
     @CurrentUser() user: User,
@@ -91,14 +90,14 @@ export class AuthResolver {
     return true;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Mutation(() => String) // Returning QR code URL as string for simplicity
   async setupTwoFactor(@CurrentUser() user: User): Promise<string> {
     const result = await this.authService.setupTwoFactor(user.id);
     return result.qrCodeUrl;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Mutation(() => Boolean)
   async enableTwoFactor(
     @CurrentUser() user: User,
@@ -107,7 +106,7 @@ export class AuthResolver {
     return this.authService.enableTwoFactor(user.id, token);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Mutation(() => Boolean)
   async disableTwoFactor(
     @CurrentUser() user: User,
@@ -116,13 +115,13 @@ export class AuthResolver {
     return this.authService.disableTwoFactor(user.id, password);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Query(() => User)
   async me(@CurrentUser() user: User): Promise<User> {
     return user;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Query(() => Boolean)
   async validateToken(): Promise<boolean> {
     return true;

@@ -1,4 +1,4 @@
-### @bune/casl-authorization
+### @anineplus/casl-authorization
 
 A lightweight and flexible authorization package for NestJS using CASL (Content Access Security Layer). This package helps implement role-based access control (RBAC) and fine-grained permissions in GraphQL microservices.
 
@@ -7,7 +7,7 @@ A lightweight and flexible authorization package for NestJS using CASL (Content 
 ## Installation  
 
 ```bash
-npm install @bune/casl-authorization
+npm install @anineplus/casl-authorization
 ```
 
 ---
@@ -55,7 +55,7 @@ Use `CaslGuard` to check permissions before executing a GraphQL query or mutatio
 ```typescript
 import { Resolver, Query } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { CaslGuard } from '@bune/casl-authorization';
+import { CaslGuard } from '@anineplus/casl-authorization';
 
 @Resolver()
 export class SampleResolver {

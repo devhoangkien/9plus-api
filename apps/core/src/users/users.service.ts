@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, HttpStatus } from '
 import { JwtService } from '@nestjs/jwt';
 import { hashPassword, verifyPassword } from '../common/functions';
 import { ERROR_MESSAGES, ROLE_USER } from '../common/constants';
-import { createGraphQLError } from '@bune/common';
+import { createGraphQLError } from '@anineplus/common';
 import { RedisService } from '../redis/redis.service';
 import { LoginUserInput, RegisterUserInput } from './inputs';
 import { CheckUserExistDto, LoginResponse } from './dtos';

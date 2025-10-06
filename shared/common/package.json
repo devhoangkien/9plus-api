@@ -1,5 +1,5 @@
 {
-  "name": "@bune/common",
+  "name": "@anineplus/common",
   "version": "0.0.1",
   "description": "Bune Common for NestJS microservices",
   "main": "dist/index",

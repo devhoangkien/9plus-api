@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { LoggerService } from '@bune/common';
+import { LoggerService } from '@anineplus/common';
 import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
 import { DynamicGatewayService } from './dynamic-gateway/dynamic-gateway.service';
 import { GatewayHealthService } from './services/gateway-health.service';

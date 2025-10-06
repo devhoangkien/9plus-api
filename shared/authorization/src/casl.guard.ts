@@ -3,7 +3,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { AbilityFactory } from './ability.factory';
 import { CHECK_PERMISSIONS } from './check-permissions.decorator';
-import { ICaslPermission } from './interfaces';
+import { ICaslPermission } from './casl.interfaces';
 
 @Injectable()
 export class CaslGuard implements CanActivate {

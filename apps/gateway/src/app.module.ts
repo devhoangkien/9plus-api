@@ -4,7 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { verify, decode } from 'jsonwebtoken';
 import { UNAUTHORIZED, UNAUTHORIZED_MESSAGE } from './app.constants';
-import { LoggerModule, createGraphQLError } from '@bune/common';
+import { LoggerModule, createGraphQLError } from '@anineplus/common';
 import {
   YogaGatewayDriver,
   YogaGatewayDriverConfig,

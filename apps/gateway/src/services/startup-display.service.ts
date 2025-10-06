@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LoggerService } from '@bune/common';
+import { LoggerService } from '@anineplus/common';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import { GatewayCacheService } from './gateway-cache.service';

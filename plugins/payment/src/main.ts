@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GqlAllExceptionsFilter, GqlValidationPipe } from '@bune/common';
-import { LoggerService } from '@bune/common';
+import { GqlAllExceptionsFilter, GqlValidationPipe } from '@anineplus/common';
+import { LoggerService } from '@anineplus/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

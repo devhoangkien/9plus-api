@@ -1,5 +1,5 @@
 {
-  "name": "@bune/casl-authorization",
+  "name": "@anineplus/authorization",
   "version": "0.0.7",
   "description": "CASL Authorization package for NestJS microservices",
   "main": "dist/index",

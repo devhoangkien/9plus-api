@@ -6,5 +6,3 @@ export * from './validation';
 export * from './constants/index';
 export * from './logger.module';
 export * from './logger.service';
-
-export * from './interfaces';
