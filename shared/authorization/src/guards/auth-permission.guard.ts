@@ -13,7 +13,7 @@ import {
   IPermissionService,
   AUTH_METADATA_KEYS,
   PermissionDefinition,
-} from '../interfaces/auth.interface';
+} from '../interfaces';
 
 /**
  * Combined Authentication + Permission Guard

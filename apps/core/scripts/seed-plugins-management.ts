@@ -1,14 +1,14 @@
-import { PluginsManagementService } from '../src/plugin-management/plugin-management.service';
-import { PrismaService } from 'nestjs-prisma';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { WebhookService } from '../src/plugin-management/webhook.service';
 import { ConfigService } from '@nestjs/config';
+import { PluginManagementService } from 'src/plugin-management/plugin-management.service';
 
 // This script seeds the service registry with initial services
 async function seedPluginsManagement() {
   const configService = new ConfigService();
   const prisma = new PrismaService();
   const webhookService = new WebhookService(configService);
-  const pluginsManagement = new PluginsManagementService(prisma, webhookService);
+  const pluginsManagement = new PluginManagementService(prisma, webhookService);
 
   console.log('🌱 Seeding service registry...');
 

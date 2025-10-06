@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { IAuthService, AUTH_METADATA_KEYS } from '../interfaces/auth.interface';
+import { IAuthService, AUTH_METADATA_KEYS } from '../interfaces';
 
 /**
  * Generic Authentication Guard

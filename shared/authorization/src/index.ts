@@ -9,4 +9,4 @@ export * from './enums';
 // Export guards, decorators, auth interfaces from moved modules
 export * from './guards';
 export * from './decorators';
-export * from './interfaces/auth.interface'; // Auth interfaces (from folder)
+export * from './interfaces'; // Auth interfaces (from interfaces folder)

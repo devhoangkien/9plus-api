@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { AUTH_METADATA_KEYS, PermissionDefinition } from '../interfaces/auth.interface';
+import { AUTH_METADATA_KEYS, PermissionDefinition } from '../interfaces';
 
 /**
  * Mark endpoint as public (skip authentication)
