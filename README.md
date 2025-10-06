@@ -1,692 +1,635 @@
-# ANINEPLUS EDU CMS API
+<div align="center">
 
-**A comprehensive educational content management system built with NestJS GraphQL microservices architecture**
+# 🚀 9Plus CMS Backend Platform
+
+**Enterprise-grade CMS backend with microservices architecture, SSO, real-time search, event-driven messaging, and centralized logging**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
-[![Bun](https://img.shields.io/badge/Bun-1.0+-black.svg)](https://bun.sh/)
-[![NestJS](https://img.shields.io/badge/NestJS-10+-red.svg)](https://nestjs.com/)
-[![GraphQL](https://img.shields.io/badge/GraphQL-16+-pink.svg)](https://graphql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-94%25-3178C6.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933.svg)](https://nodejs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11+-E0234E.svg)](https://nestjs.com/)
+[![GraphQL](https://img.shields.io/badge/GraphQL-16+-E10098.svg)](https://graphql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-## 🏗️ Architecture Overview
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [API](#-api-examples) • [Contributing](#-contributing)
 
-This project implements a **microservices architecture** using GraphQL Federation, designed for scalability and modularity in educational content management.
+</div>
 
+---
+
+## 📖 Overview
+
+**9Plus CMS** is a production-ready content management system backend built with modern microservices architecture. It provides enterprise-grade features including plugin system, SSO authentication, Elasticsearch search, Kafka event streaming, and ELK stack logging.
+
+### ✨ Features
+
+- 🏗️ **Microservices Architecture** - GraphQL Federation & gRPC communication
+- 🔌 **Dynamic Plugin System** - Hot-reload plugins via Git submodules
+- 🔐 **Enterprise Security** - SSO, JWT, OAuth2, RBAC with CASL
+- 🔍 **Real-time Search** - Elasticsearch powered full-text search
+- 📊 **Event-Driven** - Apache Kafka for async messaging
+- 📝 **Centralized Logging** - ELK Stack (Elasticsearch, Logstash, Kibana)
+- 🚀 **Developer Experience** - TypeScript, Hot reload, Auto-generation
+- 🐳 **Container-Native** - Docker & Kubernetes ready
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph Client["🌐 Client Layer"]
+        WEB[Web App]
+        MOBILE[Mobile App]
+        ADMIN[Admin Panel]
+    end
+    
+    subgraph Gateway["🔀 API Gateway"]
+        GW[GraphQL Federation<br/>:3000]
+    end
+    
+    subgraph Services["⚙️ Microservices"]
+        CORE[Core Service<br/>gRPC :50051]
+        PAYMENT[Payment Service<br/>gRPC :50052]
+        PLUGIN[Plugin Services]
+    end
+    
+    subgraph Data["💾 Data Layer"]
+        PG[(PostgreSQL<br/>:5432)]
+        REDIS[(Redis<br/>:6379)]
+        MONGO[(MongoDB)]
+        ELASTIC[(Elasticsearch)]
+        KAFKA[Apache Kafka]
+    end
+    
+    subgraph Logging["📊 Observability"]
+        ELK[ELK Stack]
+    end
+    
+    WEB --> GW
+    MOBILE --> GW
+    ADMIN --> GW
+    GW --> CORE
+    GW --> PAYMENT
+    GW --> PLUGIN
+    CORE --> PG
+    CORE --> REDIS
+    CORE --> KAFKA
+    PAYMENT --> PG
+    PLUGIN --> MONGO
+    Services -.Logs.-> ELK
+    CORE --> ELASTIC
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   API Gateway   │────│   User Service   │    │ Payment Service │
-│  (GraphQL Fed)  │    │     (gRPC)       │    │     (gRPC)      │
-│     :3000       │    │     :50051       │    │     :50052      │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ PostgreSQL DB   │    │  Redis Cache     │    │ Shared Libraries│
-│   :5432         │    │    :6379         │    │ (@bune/common)  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
 
-### 🧩 Core Components
+### 🛠️ Tech Stack
 
-- **API Gateway**: GraphQL Federation gateway handling client requests and service orchestration
-- **User Service**: Handles authentication, user management, and authorization
-- **Payment Service**: Manages payment processing and subscription logic
-- **Shared Libraries**: Common utilities, validation, and authorization logic
-- **PostgreSQL**: Primary database for persistent data storage
-- **Redis**: Caching layer for improved performance
+| Category | Technologies |
+|----------|-------------|
+| **Backend** | Node.js 20+, TypeScript, NestJS 11+ |
+| **API** | GraphQL Federation, gRPC, REST |
+| **Databases** | PostgreSQL, MongoDB, Redis |
+| **Search** | Elasticsearch |
+| **Messaging** | Apache Kafka |
+| **Logging** | ELK Stack (Elasticsearch, Logstash, Kibana) |
+| **Auth** | JWT, OAuth2, OpenID Connect, CASL |
+| **Container** | Docker, Docker Compose, Kubernetes |
+| **Runtime** | Bun 1.0+ (recommended), Node.js |
 
-## 📁 Project Structure
-
-```
-anineplus-api/
-├── apps/                       # Applications (Git submodules)
-│   ├── api-gateway/           # GraphQL Federation Gateway
-│   │   ├── src/
-│   │   │   ├── main.ts         # Application entry point
-│   │   │   ├── app.module.ts   # Main application module
-│   │   │   └── common/         # Gateway-specific utilities
-│   ├── Dockerfile              # Container configuration
-│   └── package.json            # Dependencies and scripts
-├── apps/                       # Applications (Git submodules)
-│   ├── core/                   # Core management service
-│   └── payment-service/        # Payment processing microservice
-├── libs/                       # Shared libraries
-│   ├── common/                 # Common utilities and services
-│   │   ├── src/
-│   │   │   ├── logger.service.ts
-│   │   │   ├── validation.ts
-│   │   │   └── constants/
-│   │   └── package.json
-│   └── casl-authorization/     # Authorization framework
-│       ├── src/
-│       │   ├── casl.guard.ts
-│       │   └── check-permissions.decorator.ts
-│       └── package.json
-├── scripts/                    # Build and setup scripts
-│   ├── setup-env.sh           # Environment setup
-│   ├── install.sh             # Dependencies installation
-│   ├── build.sh               # Build all services
-│   └── lint.sh                # Code linting
-├── docs/                       # Documentation
-│   ├── core.md                # Core service API docs
-│   └── change-logs.md         # Version history
-├── docker-compose.yaml        # Production container orchestration
-├── docker-compose-dev.yaml    # Development container orchestration
-├── example.env                # Environment variables template
-├── .gitmodules                # Git submodules configuration
-└── README.md                  # This file
-```
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-Before getting started, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) 20+
+- [Bun](https://bun.sh/) 1.0+ (recommended)
+- [Docker](https://www.docker.com/) & Docker Compose
+- Git with submodule support
 
-- **Node.js** (v20 or higher)
-- **Bun** (v1.0 or higher) - [Install Bun](https://bun.sh/docs/installation)
-- **Docker** and **Docker Compose**
-- **Git** with submodule support
-
-### 📦 Installation
-
-1. **Clone the repository with submodules**:
-   ```bash
-   git clone https://github.com/anineplus/anineplus-api.git
-   cd anineplus-api
-   git submodule update --init --recursive
-   ```
-
-2. **Set up environment variables**:
-   ```bash
-   # Copy environment files manually or use the script
-   cp example.env .env
-   cd apps/gateway && cp example.env .env && cd ..
-   cd apps/core && cp example.env .env && cd ..
-   cd plugins/payment && cp example.env .env && cd ..
-   # Note: Plugin env files will be created when submodules are properly initialized
-   
-   # Or use the automated script (requires Bun)
-   bun run env
-   ```
-
-3. **Install dependencies** (choose one method):
-   
-   **Method A: Using Bun (recommended)**:
-   ```bash
-   # Install Bun if not already installed
-   curl -fsSL https://bun.sh/install | bash
-   
-   # Install dependencies and link libraries
-   bun run bune-i
-   ```
-   
-   **Method B: Using npm/node**:
-   ```bash
-   cd apps/gateway && npm install && cd ..
-   cd apps/core && npm install && cd ..
-   cd plugins/payment && npm install && cd ..
-   # Plugin dependencies will be available once submodules are initialized
-   ```
-
-4. **Start the development environment**:
-   ```bash
-   # Using Docker (recommended for complete environment)
-   docker compose -f docker-compose-dev.yaml up -d
-   
-   # Or build and start everything (requires Bun)
-   bun start
-   ```
-
-## 🛠️ Development
-
-> **📖 For detailed development setup with hot reload, see [DEVELOPMENT.md](./DEVELOPMENT.md)**
-
-The development environment supports automatic code reloading and includes all services:
-- API Gateway (port 3000) - GraphQL endpoint
-- User Service (port 50051) - gRPC microservice  
-- Payment Service (port 50052) - gRPC microservice
-- PostgreSQL (port 5432) - Database
-- Redis (port 6379) - Cache
-
-### Quick Development Start
+### Installation
 
 ```bash
-# Validate your environment
-bun run validate-dev
+# 1. Clone repository with submodules
+git clone --recursive https://github.com/devhoangkien/anineplus-api.git
+cd anineplus-api
 
-# Start development environment with hot reload
-bun run docker:dev:build  # First time only
-bun run dev              # Start all services
+# 2. Setup environment
+bun run env
+
+# 3. Install dependencies
+bun run i:all
+
+# 4. Start development environment
+bun run docker:dev
 ```
 
-### Available Scripts
-
-| Command | Description | Requirements |
-|---------|-------------|--------------|
-| `bun run env` | Set up environment files from examples | Bun |
-| `bun run libs-i` | Link shared libraries between services | Bun |
-| `bun run bune-i` | Install all dependencies and link libraries | Bun |
-| `bun run bune-lint` | Run linting across all services | Bun |
-| `bun run bune-build` | Build all services | Bun |
-| `docker compose build` | Build Docker images | Docker |
-| `docker compose up -d` | Start production containers | Docker |
-| `docker compose -f docker-compose-dev.yaml up -d` | Start development containers | Docker |
-| `docker compose down` | Stop and remove containers | Docker |
-| `bun start` | Complete setup and start production | Bun + Docker |
-
-### Development Workflow
-
-1. **Start development containers**:
-   ```bash
-   docker compose -f docker-compose-dev.yaml up -d
-   ```
-
-2. **Monitor logs**:
-   ```bash
-   docker compose -f docker-compose-dev.yaml logs -f
-   ```
-
-3. **Access services**:
-   - API Gateway: http://localhost:3000
-   - GraphQL Playground: http://localhost:3000/graphql
-
-### Working with Submodules
-
-This project uses Git submodules for applications. To work with them:
+### Verify Installation
 
 ```bash
-# Initialize and update submodules
-git submodule update --init --recursive
+# Check health
+curl http://localhost:3000/healthz
 
-# Update submodules to latest commits
-git submodule update --remote --recursive
-
-# Work in a specific submodule
-cd apps/core
-git checkout main
-# Make changes, commit, and push
-git add .
-git commit -m "Your changes"
-git push origin main
-
-# Update parent repository to reference new submodule commit
-cd ../..
-git add apps/core
-git commit -m "Update core submodule"
-git push
+# Access GraphQL Playground
+open http://localhost:3000/graphql
 ```
+
+**🎉 Done! Your API is running at http://localhost:3000**
+
+---
+
+## 📁 Project Structure
+
+```
+anineplus-api/
+├── apps/                    # Microservices (Git submodules)
+│   ├── gateway/            # API Gateway (GraphQL Federation) :3000
+│   ├── core/               # Core Service (Auth, Users) :50051
+│   └── payment/            # Payment Service :50052
+├── libs/                    # Shared libraries
+│   ├── common/             # Common utilities, logger, decorators
+│   └── casl-authorization/ # RBAC authorization with CASL
+├── plugins/                 # Plugin services (Git submodules)
+├── scripts/                 # Automation scripts
+├── docs/                    # Documentation
+├── docker-compose.yaml      # Production
+├── docker-compose-dev.yaml  # Development
+└── package.json
+```
+
+---
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-The project uses environment files for configuration. Key variables include:
+Copy `example.env` to `.env` and configure:
 
-#### Database Configuration
 ```env
-DB_HOST=user-database
+# Database
+DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=bune-cms
-DB_PASSWORD=bune-cms
-DB_DATABASE=user-svc
-DB_SCHEMA=public
-DB_SYNC=true
-```
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_DATABASE=nineplusdb
 
-#### Redis Configuration
-```env
-REDIS_HOST=cache-service
+# Redis
+REDIS_HOST=localhost
 REDIS_PORT=6379
+
+# JWT
+JWT_ACCESSTOKEN_SECRET=your-secret-here
+JWT_REFRESHTOKEN_SECRET=your-refresh-secret
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+# Services
+GATEWAY_PORT=3000
+CORE_SERVICE_URL=localhost:50051
+PAYMENT_SERVICE_URL=localhost:50052
+
+# Kafka
+KAFKA_BROKERS=localhost:9092
+
+# Elasticsearch
+ELASTICSEARCH_NODE=http://localhost:9200
 ```
 
-#### JWT Authentication
-```env
-JWT_ACCESSTOKEN_SECRET=your-access-token-secret
-JWT_REFRESHTOKEN_SECRET=your-refresh-token-secret
-JWT_ISSUER=application
-JWT_AUDIENCE=public
-```
+### Generate Secrets
 
-#### Service URLs
-```env
-USERS_SVC_URL=user-service:50051
-PAYMENTS_SVC_URL=payment-service:50051
-```
-
-### 🔐 Generating JWT Secrets
-
-Generate secure JWT secrets using the provided script:
 ```bash
+# Generate JWT secrets
 bash scripts/generate-jwt-secret.sh
+
+# Or manually
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-## 📋 Services Documentation
+---
 
-### API Gateway
+## 💻 Development
 
-The API Gateway serves as the entry point for all client requests, implementing GraphQL Federation to combine schemas from multiple microservices.
+### Available Scripts
 
-**Features:**
-- GraphQL Federation gateway
-- Request routing and load balancing
-- Authentication middleware
-- Rate limiting and caching
-- Health checks
+| Command | Description |
+|---------|-------------|
+| `bun run env` | Setup environment files |
+| `bun run i:all` | Install all dependencies |
+| `bun run gateway` | Run API Gateway |
+| `bun run core` | Run Core service |
+| `bun run payment` | Run Payment service |
+| `bun run app:lint` | Lint all services |
+| `bun run app:build` | Build all services |
+| `bun run docker:dev` | Start dev environment |
+| `bun run docker:dev:logs` | View logs |
 
-**Endpoints:**
-- `GET /healthz` - Health check endpoint
-- `POST /graphql` - GraphQL endpoint
-- `GET /graphql` - GraphQL Playground (development only)
+### Development Workflow
 
-### User Service
+```bash
+# Start infrastructure
+docker compose up -d postgres redis kafka elasticsearch
 
-Handles all user-related operations including authentication, profile management, and authorization.
+# Run services (in separate terminals)
+bun run gateway  # Terminal 1
+bun run core     # Terminal 2
+bun run payment  # Terminal 3
 
-**Features:**
-- User registration and authentication
-- JWT token management
-- Role-based access control (RBAC)
-- Password reset functionality
-- User profile management
+# Or use Docker for everything
+bun run docker:dev
+```
 
-**gRPC Port:** 50051
+### Working with Submodules
 
-For detailed API documentation, see [Core Service Documentation](docs/core.md).
+```bash
+# Update submodules
+git submodule update --init --recursive
 
-### Payment Service
+# Update to latest
+git submodule update --remote --recursive
 
-Manages payment processing, subscription management, and billing operations.
+# Work on submodule
+cd apps/core
+git checkout -b feature/new-feature
+# Make changes...
+git push origin feature/new-feature
+```
 
-**Features:**
-- Payment processing
-- Subscription management
-- Invoice generation
-- Payment history tracking
-- Webhook handling
+---
 
-**gRPC Port:** 50052
-
-## 📚 API Usage Examples
+## 📚 API Examples
 
 ### GraphQL API
 
-The API Gateway provides a unified GraphQL endpoint that federates schemas from all microservices.
+Access GraphQL Playground at **http://localhost:3000/graphql**
 
-#### Basic User Operations
+#### Authentication
 
 ```graphql
-# User Registration
-mutation RegisterUser {
-  registerUser(input: {
+# Register
+mutation {
+  register(input: {
+    email: "user@example.com"
+    password: "SecurePass123!"
     username: "johndoe"
-    email: "john@example.com"
-    password: "securepassword123"
   }) {
     id
-    username
     email
-    createdAt
+    username
   }
 }
 
-# User Login
-mutation LoginUser {
-  loginUser(input: {
-    email: "john@example.com"
-    password: "securepassword123"
+# Login
+mutation {
+  login(input: {
+    email: "user@example.com"
+    password: "SecurePass123!"
   }) {
     accessToken
     refreshToken
     user {
       id
-      username
       email
+      username
+      roles
     }
   }
 }
 
-# Get User Profile
-query GetUserProfile($id: ID!) {
-  user(id: $id) {
+# Get Profile
+query {
+  me {
     id
-    username
     email
-    roles
+    username
     profile {
       firstName
       lastName
-      avatar
     }
   }
 }
 ```
 
-#### Payment Operations
+#### User Management
 
 ```graphql
-# Create Payment
-mutation CreatePayment {
-  createPayment(input: {
-    amount: 2999
-    currency: "USD"
-    description: "Course subscription"
-    userId: "user-id-here"
+# Update Profile
+mutation {
+  updateProfile(input: {
+    firstName: "John"
+    lastName: "Doe"
   }) {
     id
-    amount
-    status
-    paymentUrl
+    profile {
+      firstName
+      lastName
+    }
   }
 }
 
-# Get Payment History
-query GetPaymentHistory($userId: ID!) {
-  paymentHistory(userId: $userId) {
-    id
-    amount
-    status
-    createdAt
-    description
+# Query Users
+query {
+  users(page: 1, limit: 10) {
+    items {
+      id
+      username
+      email
+    }
+    total
+    hasMore
   }
 }
 ```
 
-### REST API Endpoints
-
-#### Health Check
-```bash
-curl -X GET http://localhost:3000/healthz
-```
-
-#### GraphQL Endpoint
-```bash
-# Query via curl
-curl -X POST http://localhost:3000/graphql \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-jwt-token" \
-  -d '{
-    "query": "query { user(id: \"1\") { username email } }"
-  }'
-```
-
-### Authentication
-
-All protected operations require a JWT token in the Authorization header:
+### REST API
 
 ```bash
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Install dependencies first
-cd apps/gateway && npm install
-
-# Run all tests
-npm run test
-
-# Run tests with coverage
-npm run test:cov
-
-# Run E2E tests
-npm run test:e2e
-
-# Watch mode for development
-npm run test:watch
-
-# For applications (when submodules are initialized)
-cd apps/core && npm test
-cd plugins/payment && npm test
-```
-
-### Test Structure
-
-```
-test/
-├── unit/           # Unit tests for individual components
-├── integration/    # Integration tests for service interactions
-└── e2e/           # End-to-end tests for complete workflows
-```
-
-### Testing with Docker
-
-```bash
-# Run tests in Docker environment
-docker compose -f docker-compose-dev.yaml up -d
-docker compose exec api-gateway npm test
-```
-
-## 🐳 Docker Deployment
-
-### Production Deployment
-
-1. **Build images**:
-   ```bash
-   docker compose build
-   ```
-
-2. **Start services**:
-   ```bash
-   docker compose up -d
-   ```
-
-3. **Verify deployment**:
-   ```bash
-   curl http://localhost:3000/healthz
-   ```
-
-### Development with Docker
-
-For development with hot reloading:
-```bash
-docker compose -f docker-compose-dev.yaml up -d
-```
-
-### Container Health Checks
-
-All services include health checks:
-- **API Gateway**: HTTP health endpoint
-- **User Service**: gRPC health probe
-- **Databases**: Connection verification
-
-## 📊 Monitoring and Logging
-
-### Logging
-
-The application uses structured logging with different levels:
-
-- **Error**: Critical errors and exceptions
-- **Warn**: Warning conditions
-- **Info**: General application flow
-- **Debug**: Detailed debugging information
-
-### Accessing Logs
-
-```bash
-# View all service logs
-docker compose logs -f
-
-# View specific service logs
-docker compose logs -f api-gateway
-docker compose logs -f core
-
-# View logs for development environment
-docker compose -f docker-compose-dev.yaml logs -f
-```
-
-## 🔒 Security Considerations
-
-### Authentication & Authorization
-
-- **JWT Tokens**: Short-lived access tokens with refresh token rotation
-- **Role-Based Access Control (RBAC)**: Implemented via CASL authorization library
-- **Password Security**: Bcrypt hashing with salt rounds
-- **Rate Limiting**: Implemented at API Gateway level
-
-### Environment Security
-
-```bash
-# Generate secure JWT secrets
-bash scripts/generate-jwt-secret.sh
-
-# Use strong database credentials
-DB_PASSWORD=your-strong-password-here
-
-# Enable SSL in production
-NODE_ENV=production
-```
-
-### Best Practices
-
-1. **Never commit `.env` files** - Use example files instead
-2. **Rotate JWT secrets** regularly in production
-3. **Use HTTPS** in production environments
-4. **Implement proper CORS** policies
-5. **Keep dependencies updated** - Run `npm audit` regularly
-
-## ⚡ Performance Optimization
-
-### Caching Strategy
-
-- **Redis Caching**: Implemented for frequently accessed data
-- **GraphQL Query Caching**: Automatic caching of repeated queries
-- **Database Optimization**: Proper indexing and query optimization
-
-### Monitoring
-
-```bash
-# Monitor container resources
-docker stats
-
-# Check service health
+# Health Check
 curl http://localhost:3000/healthz
 
-# Monitor logs for performance issues
-docker compose logs -f --tail=100
+# Login via REST
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"SecurePass123!"}'
+
+# Authenticated Request
+curl http://localhost:3000/api/users/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
-
-### Scaling Recommendations
-
-1. **Horizontal Scaling**: Run multiple instances behind a load balancer
-2. **Database Optimization**: Use read replicas for read-heavy workloads
-3. **Service Mesh**: Consider Istio for production deployments
-4. **CDN Integration**: For static asset delivery
-
-### Common Issues
-
-#### 1. Port Already in Use
-```bash
-# Check what's using port 3000
-lsof -i :3000
-
-# Kill the process
-kill -9 <PID>
-```
-
-#### 2. Docker Build Issues
-```bash
-# Clean Docker cache
-docker system prune -a
-
-# Rebuild without cache
-docker compose build --no-cache
-```
-
-#### 3. Database Connection Issues
-```bash
-# Check database container status
-docker compose ps
-
-# Reset database
-docker compose down -v
-docker compose up -d user-database
-```
-
-#### 4. Submodule Issues
-```bash
-# Update submodules
-git submodule update --remote --recursive
-
-# Reset submodules
-git submodule foreach --recursive git clean -fd
-git submodule foreach --recursive git reset --hard
-```
-
-### Debug Mode
-
-Run services in debug mode:
-```bash
-# Gateway debug mode
-cd apps/gateway && bun debug
-
-# Core Service debug mode
-cd apps/core && bun debug
-
-# Payment Plugin debug mode
-cd plugins/payment && bun debug
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these guidelines:
-
-### Development Setup
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Follow the coding standards and run linting: `bun run bune-lint`
-4. Write tests for new functionality
-5. Ensure all tests pass: `bun run test`
-6. Commit changes: `git commit -m 'Add amazing feature'`
-7. Push to the branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-### Code Standards
-
-- Follow TypeScript best practices
-- Use ESLint and Prettier for code formatting
-- Write comprehensive tests for new features
-- Document public APIs and complex logic
-- Follow conventional commit messages
-
-### Pull Request Process
-
-1. Update documentation if needed
-2. Add tests for new features
-3. Ensure CI/CD checks pass
-4. Request review from maintainers
-5. Address feedback and merge conflicts
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Authors
-
-- **DevHoangKien** - *Initial work* - [devhoangkien](https://github.com/devhoangkien)
-
-## 🙏 Acknowledgments
-
-- NestJS team for the amazing framework
-- GraphQL Federation for microservices composition
-- The open-source community for inspiration and tools
-
-## 📞 Support
-
-For support and questions:
-
-- **Issues**: [GitHub Issues](https://github.com/anineplus/anineplus-api/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/anineplus/anineplus-api/discussions)
-- **Email**: devhoangkien@gmail.com
 
 ---
 
-**Made with ❤️ for educational technology**
+## 🧪 Testing
+
+```bash
+# Run all tests
+bun test
+
+# With coverage
+bun test --coverage
+
+# Watch mode
+bun test --watch
+
+# E2E tests
+bun test:e2e
+
+# Test specific service
+cd apps/core && bun test
+```
+
+---
+
+## 🚢 Deployment
+
+### Docker Deployment
+
+```bash
+# Production
+docker compose build
+docker compose up -d
+
+# Development
+docker compose -f docker-compose-dev.yaml up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+### Kubernetes Deployment
+
+```bash
+# Apply configurations
+kubectl apply -f k8s/
+
+# Check status
+kubectl get pods -n nineplus
+
+# View logs
+kubectl logs -f deployment/gateway -n nineplus
+```
+
+---
+
+## 📊 Monitoring & Logging
+
+### ELK Stack
+
+```bash
+# Access Kibana
+open http://localhost:5601
+
+# Create index pattern: logs-*
+# View and analyze logs
+```
+
+### Log Levels
+
+- **ERROR** - Critical errors
+- **WARN** - Warning conditions
+- **INFO** - General information
+- **DEBUG** - Detailed debugging
+
+### View Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f gateway
+```
+
+---
+
+## 🔒 Security
+
+### Best Practices
+
+- ✅ JWT with short expiration & refresh token rotation
+- ✅ RBAC with CASL authorization
+- ✅ Bcrypt password hashing (12 rounds)
+- ✅ Rate limiting on API Gateway
+- ✅ Input validation & sanitization
+- ✅ CORS & security headers
+- ✅ Environment variable encryption
+- ✅ TLS/SSL in production
+
+### Security Checklist
+
+```bash
+# Generate secure secrets
+bash scripts/generate-jwt-secret.sh
+
+# Scan dependencies
+npm audit
+
+# Fix vulnerabilities
+npm audit fix
+
+# Enable production mode
+NODE_ENV=production
+```
+
+---
+
+## ⚡ Performance
+
+### Caching Strategy
+
+- Redis caching for frequently accessed data
+- GraphQL query caching
+- Database connection pooling
+- Proper indexing
+
+### Scaling
+
+```bash
+# Horizontal scaling with Docker
+docker compose up --scale gateway=3 --scale core=2
+
+# Kubernetes scaling
+kubectl scale deployment gateway --replicas=5
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Port already in use:**
+```bash
+lsof -i :3000
+kill -9 <PID>
+```
+
+**Docker build issues:**
+```bash
+docker system prune -a
+docker compose build --no-cache
+```
+
+**Database connection:**
+```bash
+docker compose ps
+docker compose logs postgres
+docker compose down -v && docker compose up -d postgres
+```
+
+**Submodule issues:**
+```bash
+git submodule update --remote --recursive
+git submodule foreach git reset --hard
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Follow** coding standards: `bun run app:lint`
+4. **Add** tests for new features
+5. **Commit** changes: `git commit -m 'feat: add amazing feature'`
+6. **Push** to branch: `git push origin feature/amazing-feature`
+7. **Open** a Pull Request
+
+### Commit Convention
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation
+- `style:` Formatting
+- `refactor:` Code restructuring
+- `test:` Tests
+- `chore:` Maintenance
+
+---
+
+## 🗺️ Roadmap
+
+### Current (v1.0)
+- [x] Microservices architecture
+- [x] GraphQL Federation
+- [x] SSO integration
+- [x] Elasticsearch search
+- [x] Kafka messaging
+- [x] ELK logging
+
+### Upcoming (v1.1 - Q2 2025)
+- [ ] GraphQL subscriptions
+- [ ] WebSocket support
+- [ ] Multi-tenancy
+- [ ] API versioning
+
+### Future (v2.0 - Q4 2025)
+- [ ] Service mesh (Istio)
+- [ ] Distributed tracing
+- [ ] AI/ML integration
+- [ ] Mobile SDK
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file.
+
+```
+MIT License - Copyright (c) 2025 DevHoangKien
+Permission is hereby granted, free of charge, to any person obtaining a copy...
+```
+
+---
+
+## 💬 Support & Community
+
+### Get Help
+
+- 📖 **Documentation**: [docs/](./docs)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/devhoangkien/anineplus-api/issues)
+- 💡 **Discussions**: [GitHub Discussions](https://github.com/devhoangkien/anineplus-api/discussions)
+- 📧 **Email**: devhoangkien@gmail.com
+- 🔒 **Security**: Report vulnerabilities via email
+
+### Links
+
+- [Architecture Documentation](docs/ARCHITECTURE.md)
+- [API Documentation](docs/API.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
+
+---
+
+## 🙏 Acknowledgments
+
+Built with amazing open-source projects:
+[NestJS](https://nestjs.com/) • [GraphQL](https://graphql.org/) • [Apollo](https://www.apollographql.com/) • [Elasticsearch](https://www.elastic.co/) • [Kafka](https://kafka.apache.org/) • [PostgreSQL](https://www.postgresql.org/) • [Redis](https://redis.io/) • [Docker](https://www.docker.com/) • [TypeScript](https://www.typescriptlang.org/)
+
+---
+
+## 📊 Stats
+
+![GitHub stars](https://img.shields.io/github/stars/devhoangkien/anineplus-api?style=social)
+![GitHub forks](https://img.shields.io/github/forks/devhoangkien/anineplus-api?style=social)
+![GitHub issues](https://img.shields.io/github/issues/devhoangkien/anineplus-api)
+![GitHub contributors](https://img.shields.io/github/contributors/devhoangkien/anineplus-api)
+![GitHub last commit](https://img.shields.io/github/last-commit/devhoangkien/anineplus-api)
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it helpful!**
+
+Made with ❤️ by [DevHoangKien](https://github.com/devhoangkien) and [Contributors](https://github.com/devhoangkien/anineplus-api/graphs/contributors)
+
+[⬆ Back to Top](#-9plus-cms-backend-platform)
+
+</div>
