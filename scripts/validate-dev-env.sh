@@ -75,7 +75,7 @@ echo ""
 echo -e "${BLUE}📁 Checking project structure...${NC}"
 
 # Core structure
-required_dirs=("apps/core" "apps/gateway" "libs/common" "libs/casl-authorization")
+required_dirs=("apps/core" "apps/gateway" "shared/common" "shared/casl-authorization")
 for dir in "${required_dirs[@]}"; do
     if [ -d "$dir" ]; then
         echo -e "${GREEN}✓${NC} $dir exists"

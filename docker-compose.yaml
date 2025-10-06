@@ -1,214 +1,340 @@
-version: "3"
-
 services:
-
+  # Core API Service
   core:
-    image: "core:dev"
-    container_name: "core"
+    image: "anineplus/core:latest"
+    container_name: "anineplus-core"
     build:
       context: "./apps/core"
+      dockerfile: Dockerfile
     networks:
-      - "frontend"
-      - "backend"
-      - "userdomain"
       - "anineplus-network"
-    expose:
-      - "50051"
-    depends_on:
-      - "core-database"
-      - "cache-service"
-      - "kafka"
-    env_file:
-      - .env
-    environment:
-      - KAFKA_BROKERS=kafka:29092
-    healthcheck:
-      test: ["CMD", "/bin/grpc_health_probe", "-addr=:50051"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: "on-failure"
-
-  gateway:
-    image: "gateway:dev"
-    container_name: "gateway"
-    build:
-      context: "./apps/gateway"
-    networks:
-      - "frontend"
     ports:
       - "3000:3000"
     depends_on:
-      - "cache-service"
-      - "core"
+      core-database:
+        condition: service_healthy
+      cache-service:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     env_file:
       - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@core-database:5432/${DB_DATABASE}
+      REDIS_HOST: cache-service
+      KAFKA_BROKERS: kafka:29092
     healthcheck:
-      test: ["CMD", "wget", "localhost:3000/healthz -q -O - > /dev/null 2>&1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 5
-    restart: "on-failure"
+      start_period: 60s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
 
+  # API Gateway Service  
+  gateway:
+    image: "anineplus/gateway:latest"
+    container_name: "anineplus-gateway"
+    build:
+      context: "./apps/gateway"
+      dockerfile: Dockerfile
+    networks:
+      - "anineplus-network"
+    ports:
+      - "3001:3001"
+    depends_on:
+      cache-service:
+        condition: service_healthy
+      core:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      CORE_SERVICE_URL: http://core:3000
+      PAYMENT_SERVICE_URL: http://payment:3100
+      REDIS_HOST: cache-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # Searcher Service (Kafka Consumer -> Elasticsearch)
+  searcher:
+    image: "anineplus/searcher:latest"
+    container_name: "anineplus-searcher"
+    build:
+      context: "./apps/searcher"
+      dockerfile: Dockerfile
+    networks:
+      - "anineplus-network"
+    ports:
+      - "3002:3002"
+    depends_on:
+      kafka:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      KAFKA_BROKERS: kafka:29092
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KAFKA_GROUP_ID: searcher-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # Logger Service (Log Aggregation -> ELK)
+  logger:
+    image: "anineplus/logger:latest"
+    container_name: "anineplus-logger"
+    build:
+      context: "./apps/logger"
+      dockerfile: Dockerfile
+    networks:
+      - "anineplus-network"
+    ports:
+      - "3003:3003"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      LOG_LEVEL: info
+    volumes:
+      - ./logs:/shared/logs:ro
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+  # Payment Plugin (Optional)
   payment:
-    image: "payment:dev"
-    container_name: "payment"
+    image: "anineplus/payment:latest"
+    container_name: "anineplus-payment"
     build:
       context: "./plugins/payment"
+      dockerfile: Dockerfile
     networks:
-      - "frontend"
-      - "backend"
-    expose:
-      - "50052"
+      - "anineplus-network"
+    ports:
+      - "3100:3100"
     depends_on:
-      - "core"
-      - "cache-service"
+      core:
+        condition: service_healthy
+      core-database:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@core-database:5432/anineplus_payment
+      CORE_SERVICE_URL: http://core:3000
     healthcheck:
-      test: ["CMD", "wget", "localhost:3002/healthz -q -O - > /dev/null 2>&1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3100/health"]
       interval: 30s
       timeout: 10s
       retries: 5
-    restart: "on-failure"
+      start_period: 30s
+    restart: "unless-stopped"
+    profiles:
+      - payment
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
 
+  # PostgreSQL Database
   core-database:
-    image: "postgres:latest"
-    container_name: "core-database"
+    image: "postgres:18-alpine"
+    container_name: "anineplus-database"
     networks:
-      - "userdomain"
-    expose:
-      - "5432"
+      - "anineplus-network"
+    ports:
+      - "5432:5432"
     volumes:
-      - userdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME}'"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
       interval: 30s
-      timeout: 30s
-      retries: 3
-    restart: "on-failure"
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
 
+  # Redis Cache
   cache-service:
-    image: "redis:latest"
-    container_name: "cache-service"
+    image: "redis:7-alpine"
+    container_name: "anineplus-redis"
     networks:
-      - "frontend"
-      - "backend"
-    expose:
-      - "6379"
-    healthcheck:
-      test: ["CMD-SHELL", "sh -c 'redis-cli PING'"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-    restart: "on-failure"
-
-  # New services
-  searcher:
-    image: "searcher:dev"
-    container_name: "searcher"
-    build:
-      context: "./apps/searcher"
-    networks:
-      - "backend"
       - "anineplus-network"
-    expose:
-      - "3003"
-    depends_on:
-      - "kafka"
-      - "elasticsearch"
-    env_file:
-      - .env
-    environment:
-      - KAFKA_BROKERS=kafka:29092
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-    healthcheck:
-      test: ["CMD", "wget", "localhost:3003/health -q -O - > /dev/null 2>&1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: "on-failure"
-
-  logger:
-    image: "logger:dev"
-    container_name: "logger"
-    build:
-      context: "./apps/logger"
-    networks:
-      - "backend"
-      - "anineplus-network"
-    expose:
-      - "3004"
-    depends_on:
-      - "elasticsearch"
-      - "logstash"
-    env_file:
-      - .env
-    environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "6379:6379"
     volumes:
-      - ./apps:/var/log/anineplus:ro
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
     healthcheck:
-      test: ["CMD", "wget", "localhost:3004/health -q -O - > /dev/null 2>&1"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
-      retries: 5
-    restart: "on-failure"
+      retries: 3
+      start_period: 10s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
 
-  # Infrastructure services
+
+
+  # Infrastructure Services
+  
+  # Zookeeper for Kafka coordination
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     hostname: zookeeper
     container_name: anineplus-zookeeper
+    networks:
+      - anineplus-network
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
-    networks:
-      - anineplus-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
 
+  # Kafka Message Broker
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     hostname: kafka
     container_name: anineplus-kafka
-    depends_on:
-      - zookeeper
+    networks:
+      - anineplus-network
     ports:
       - "9092:9092"
+      - "9101:9101"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
     volumes:
       - kafka_data:/var/lib/kafka/data
-    networks:
-      - anineplus-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
 
+  # Elasticsearch Search Engine
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
     container_name: anineplus-elasticsearch
+    networks:
+      - anineplus-network
+    ports:
+      - "9200:9200"
+      - "9300:9300"
     environment:
-      - node.name=elasticsearch
+      - node.name=anineplus-elasticsearch
       - cluster.name=anineplus-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=changeme
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
     ulimits:
@@ -217,54 +343,77 @@ services:
         hard: -1
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    networks:
-      - anineplus-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '0.5'
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.10.0
-    container_name: anineplus-logstash
-    volumes:
-      - ./infra/elastic-stack/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
-      - ./infra/elastic-stack/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-    ports:
-      - "5044:5044"
-      - "5000:5000"
-    environment:
-      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
-    networks:
-      - anineplus-network
-    depends_on:
-      - elasticsearch
-
+  # Kibana Dashboard
   kibana:
     image: docker.elastic.co/kibana/kibana:8.10.0
     container_name: anineplus-kibana
-    ports:
-      - "5601:5601"
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
-      ELASTICSEARCH_USERNAME: elastic
-      ELASTICSEARCH_PASSWORD: changeme
-    volumes:
-      - ./infra/elastic-stack/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     networks:
       - anineplus-network
+    ports:
+      - "5601:5601"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      XPACK_SECURITY_ENABLED: "false"
+      SERVER_NAME: anineplus-kibana
+      SERVER_HOST: "0.0.0.0"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.3'
 
 networks:
-  frontend:
-  backend:
-  userdomain:
   anineplus-network:
+    name: anineplus-network
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
-  userdata:
+  # Database volumes
+  postgres_data:
+    driver: local
+    
+  # Cache volumes  
+  redis_data:
+    driver: local
+    
+  # Kafka ecosystem volumes
   zookeeper_data:
+    driver: local
   zookeeper_logs:
+    driver: local
   kafka_data:
+    driver: local
+    
+  # Elasticsearch volumes
   elasticsearch_data:
+    driver: local
+    
+  # Application logs
+  app_logs:
+    driver: local

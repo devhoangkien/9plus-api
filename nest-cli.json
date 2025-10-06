@@ -1,21 +1,21 @@
 {
   "projects": {
-    "casl-authorization": {
+    "authorization": {
       "type": "library",
-      "root": "libs/casl-authorization",
+      "root": "shared/authorization",
       "entryFile": "index",
-      "sourceRoot": "libs/casl-authorization/src",
+      "sourceRoot": "shared/authorization/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/casl-authorization/tsconfig.lib.json"
+        "tsConfigPath": "shared/authorization/tsconfig.lib.json"
       }
     },
     "common": {
       "type": "library",
-      "root": "libs/common",
+      "root": "shared/common",
       "entryFile": "index",
-      "sourceRoot": "libs/common/src",
+      "sourceRoot": "shared/common/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
+        "tsConfigPath": "shared/common/tsconfig.lib.json"
       }
     },
     "searcher": {

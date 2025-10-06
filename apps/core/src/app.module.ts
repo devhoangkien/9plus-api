@@ -12,6 +12,7 @@ import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/
 import { PluginManagementModule } from './plugin-management/plugin-management.module';
 import {  PrismaModule } from './prisma/prisma.module';
 import { KafkaModule } from './kafka/kafka.module';
+import { BetterAuthModule } from './auth/better-auth.module';
 
 // Import GraphQL enums to register them
 
@@ -37,6 +38,7 @@ import { KafkaModule } from './kafka/kafka.module';
     
     // Core modules
     AuthModule,
+    BetterAuthModule,
     UsersModule,
     RolesModule,
     PermissionsModule,

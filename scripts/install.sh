@@ -54,7 +54,7 @@ install_deps "plugins/payment" "Payment Plugin"
 # Install libraries
 echo ""
 echo -e "${YELLOW}📚 Installing shared libraries...${NC}"
-install_deps "libs/common" "Common Library"
+install_deps "shared/common" "Common Library"
 install_deps "libs/casl-authorization" "CASL Authorization Library"
 
 echo ""

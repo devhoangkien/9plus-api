@@ -74,8 +74,8 @@ if confirm "📦 Remove node_modules directories?"; then
     rm -rf plugins/payment/node_modules
     
     # Libraries
-    rm -rf libs/common/node_modules
-    rm -rf libs/casl-authorization/node_modules
+    rm -rf shared/common/node_modules
+    rm -rf shared/casl-authorization/node_modules
     
     echo -e "${GREEN}✅ node_modules removed${NC}"
 fi
@@ -96,8 +96,8 @@ if confirm "🏗️  Remove built files (dist directories)?"; then
     rm -rf plugins/payment/dist
     
     # Libraries
-    rm -rf libs/common/dist
-    rm -rf libs/casl-authorization/dist
+    rm -rf shared/common/dist
+    rm -rf shared/casl-authorization/dist
     
     echo -e "${GREEN}✅ Built files removed${NC}"
 fi

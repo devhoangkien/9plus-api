@@ -31,7 +31,7 @@ build_service() {
 
 # Build shared libraries first
 echo -e "${YELLOW}📚 Building shared libraries...${NC}"
-build_service "libs/common" "Common Library"
+build_service "shared/common" "Common Library"
 build_service "libs/casl-authorization" "CASL Authorization Library"
 
 echo ""

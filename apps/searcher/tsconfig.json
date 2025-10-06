@@ -9,7 +9,6 @@
     "target": "ES2020",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -17,9 +16,13 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
-      "@anineplus/common": ["../../libs/common/src"],
-      "@anineplus/casl-authorization": ["../../libs/casl-authorization/src"]
+      "@anineplus/common": ["../../shared/common/src"],
+      "@anineplus/common/*": ["../../shared/common/src/*"],
+      "@anineplus/authorization": ["../../shared/authorization/src"],
+      "@anineplus/authorization/*": ["../../shared/authorization/src/*"]
     }
   }
 }

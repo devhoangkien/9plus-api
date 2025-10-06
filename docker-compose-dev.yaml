@@ -1,43 +1,383 @@
 services:
+  # Core Database
   core-database:
-    image: "postgres:latest"
+    image: "postgres:18-alpine"
     container_name: "core-database-dev"
     ports:
       - "5432:5432"
     volumes:
       - core_database_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./infra/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - postgres_logs:/var/log/postgresql
     environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-anineplus_core}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      # Pass app user credentials to init script
+      DB_USERNAME: ${DB_USERNAME:-anineplus_user}
+      DB_PASSWORD: ${DB_PASSWORD:-anineplus_pass}
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}'"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-anineplus_core}"]
       interval: 30s
-      timeout: 30s
-      retries: 3
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     restart: "unless-stopped"
     networks:
-      - backend
+      - anineplus-network
 
+  # Redis Cache
   cache-service:
-    image: "redis:latest"
+    image: "redis:7-alpine"
     container_name: "cache-service-dev"
     ports:
       - "6379:6379"
+    volumes:
+      - cache_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping"]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 30s
-      timeout: 30s
+      timeout: 10s
       retries: 3
+      start_period: 10s
     restart: "unless-stopped"
     networks:
-      - backend
+      - anineplus-network
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: "zookeeper-dev"
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_INIT_LIMIT: 5
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 2181 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Kafka Message Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: "kafka-dev"
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: "elasticsearch-dev"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1g"
+      - bootstrap.memory_lock=true
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: "kibana-dev"
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      XPACK_SECURITY_ENABLED: "false"
+      SERVER_NAME: kibana-dev
+      SERVER_HOST: "0.0.0.0"
+      LOGGING_ROOT_LEVEL: warn
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Core Service
+  core:
+    build:
+      context: .
+      dockerfile: ./apps/core/dockerfile.dev
+    container_name: "core-service-dev"
+    ports:
+      - "3000:3000"
+    depends_on:
+      core-database:
+        condition: service_healthy
+      cache-service:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-postgres}@core-database:5432/${DB_DATABASE:-anineplus_core}
+      REDIS_HOST: cache-service
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+    volumes:
+      - ./apps/core:/app
+      - core_node_modules:/app/node_modules
+      - ./libs:/app/libs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Gateway Service
+  gateway:
+    build:
+      context: .
+      dockerfile: ./apps/gateway/Dockerfile.dev
+    container_name: "gateway-service-dev"
+    ports:
+      - "3001:3001"
+    depends_on:
+      core:
+        condition: service_healthy
+      cache-service:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      CORE_SERVICE_URL: http://core:3000
+      PAYMENT_SERVICE_URL: http://payment:3100
+      REDIS_HOST: cache-service
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+    volumes:
+      - ./apps/gateway:/app
+      - gateway_node_modules:/app/node_modules
+      - ./libs:/app/libs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Searcher Service
+  searcher:
+    build:
+      context: .
+      dockerfile: ./apps/searcher/Dockerfile.dev
+    container_name: "searcher-service-dev"
+    ports:
+      - "3002:3002"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      KAFKA_BROKERS: kafka:29092
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KAFKA_GROUP_ID: searcher-service
+    volumes:
+      - ./apps/searcher:/app
+      - searcher_node_modules:/app/node_modules
+      - ./libs:/app/libs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Logger Service
+  logger:
+    build:
+      context: .
+      dockerfile: ./apps/logger/Dockerfile.dev
+    container_name: "logger-service-dev"
+    ports:
+      - "3003:3003"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      LOG_LEVEL: debug
+      WATCH_DIRECTORIES: /app/logs,/shared/logs
+    volumes:
+      - ./apps/logger:/app
+      - logger_node_modules:/app/node_modules
+      - ./libs:/app/libs
+      - ./logs:/shared/logs:ro
+      - ./apps/core/logs:/app/logs/core:ro
+      - ./apps/gateway/logs:/app/logs/gateway:ro
+      - ./apps/searcher/logs:/app/logs/searcher:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3003/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    networks:
+      - anineplus-network
+
+  # Payment Plugin (Optional)
+  payment:
+    build:
+      context: .
+      dockerfile: ./plugins/payment/Dockerfile.dev
+    container_name: "payment-plugin-dev"
+    ports:
+      - "3100:3100"
+    depends_on:
+      core-database:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-postgres}@core-database:5432/anineplus_payment
+      KAFKA_BROKERS: kafka:29092
+      CORE_SERVICE_URL: http://core:3000
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+    volumes:
+      - ./plugins/payment:/app
+      - payment_node_modules:/app/node_modules
+      - ./libs:/app/libs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3100/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: "unless-stopped"
+    profiles:
+      - payment
+    networks:
+      - anineplus-network
 
 networks:
-  frontend:
+  anineplus-network:
+    name: anineplus-network
     driver: bridge
-  backend:
-    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
+  # Database volumes
   core_database_data:
+    driver: local
+  postgres_logs:
+    driver: local
+  
+  # Cache volumes
+  cache_data:
+    driver: local
+  
+  # Kafka & Zookeeper volumes
+  kafka_data:
+    driver: local
+  zookeeper_data:
+    driver: local  
+  zookeeper_logs:
+    driver: local
+  
+  # Elasticsearch volumes
+  elasticsearch_data:
+    driver: local
+  
+  # Node modules volumes (for faster development)
+  core_node_modules:
+    driver: local
+  gateway_node_modules:
+    driver: local
+  searcher_node_modules:
+    driver: local
+  logger_node_modules:
+    driver: local
+  payment_node_modules:
+    driver: local

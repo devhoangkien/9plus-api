@@ -38,7 +38,7 @@ Trong `app.module.ts`, import `LoggerModule` và sử dụng `forRoot()`:
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { LoggerModule } from '@libs/common/logger/logger.module';
+import { LoggerModule } from '@anineplus/common/logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -56,7 +56,7 @@ Inject `LoggerService` vào bất kỳ service hoặc controller nào:
 
 ```typescript
 import { Controller, Get } from '@nestjs/common';
-import { LoggerService } from '@libs/common/logger/logger.service';
+import { LoggerService } from '@anineplus/common/logger/logger.service';
 
 @Controller('example')
 export class ExampleController {

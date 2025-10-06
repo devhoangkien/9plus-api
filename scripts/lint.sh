@@ -40,7 +40,7 @@ lint_service() {
 
 # Lint shared libraries
 echo -e "${YELLOW}📚 Linting shared libraries...${NC}"
-lint_service "libs/common" "Common Library"
+lint_service "shared/common" "Common Library"
 lint_service "libs/casl-authorization" "CASL Authorization Library"
 
 echo ""
