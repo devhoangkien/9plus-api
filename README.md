@@ -145,11 +145,11 @@ anineplus-api/
 ├── apps/                    # Microservices (Git submodules)
 │   ├── gateway/            # API Gateway (GraphQL Federation) :3000
 │   ├── core/               # Core Service (Auth, Users) :50051
-│   └── payment/            # Payment Service :50052
 ├── libs/                    # Shared libraries
 │   ├── common/             # Common utilities, logger, decorators
 │   └── casl-authorization/ # RBAC authorization with CASL
 ├── plugins/                 # Plugin services (Git submodules)
+│   └── payment/            # Payment Service :50052
 ├── scripts/                 # Automation scripts
 ├── docs/                    # Documentation
 ├── docker-compose.yaml      # Production
