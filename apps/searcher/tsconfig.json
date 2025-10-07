@@ -17,7 +17,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@anineplus/common": ["../../shared/common/src"],
       "@anineplus/common/*": ["../../shared/common/src/*"],

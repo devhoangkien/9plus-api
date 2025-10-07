@@ -6,7 +6,7 @@
     "gateway": "cd apps/gateway && bun dev",
     "gateway:codegen": "cd apps/gateway && bun run codegen",
     "core": "cd apps/core && bun dev",
-    "searcher": "cd apps/searcher && bun dev",
+    "searcher": "cd apps/searcher && bun start:dev",
     "logger": "cd apps/logger && bun dev",
     "payment": "cd plugins/payment && bun dev",
     

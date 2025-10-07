@@ -10,14 +10,19 @@ const path = require('path');
 
 // Try multiple possible paths
 const possiblePaths = [
-  path.join(__dirname, '../node_modules/kafkajs/src/network/requestQueue/index.js'),
+  path.join(__dirname, '../apps/searcher/node_modules/kafkajs/src/network/requestQueue/index.js'),
   path.join(__dirname, '../apps/core/node_modules/kafkajs/src/network/requestQueue/index.js'),
+  path.join(__dirname, '../node_modules/kafkajs/src/network/requestQueue/index.js'),
 ];
+
+console.log('Searching for KafkaJS in:', possiblePaths);
 
 let filePath = null;
 for (const p of possiblePaths) {
+  console.log('Checking:', p);
   if (fs.existsSync(p)) {
     filePath = p;
+    console.log('Found at:', p);
     break;
   }
 }
@@ -27,6 +32,7 @@ if (!filePath) {
   process.exit(0);
 }
 
+console.log('Using file:', filePath);
 let content = fs.readFileSync(filePath, 'utf8');
 
 // Check if already patched

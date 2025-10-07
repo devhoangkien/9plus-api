@@ -158,6 +158,9 @@ export class UsersService {
           fullName: input.firstName && input.lastName 
             ? `${input.firstName} ${input.lastName}` 
             : input.firstName || input.lastName,
+            name: input.firstName || input.lastName || input.email,
+          status: input.status || UserStatusEnum.PENDING_VERIFICATION,
+          loginMethod: input.loginMethod  ||LoginMethod.LOCAL,
         },
         include: {
           roles: true,

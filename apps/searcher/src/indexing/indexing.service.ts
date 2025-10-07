@@ -21,6 +21,12 @@ export class IndexingService implements OnModuleInit {
 
   private async initializeIndices() {
     try {
+      // Check if Elasticsearch is ready
+      if (!this.elasticsearchService.isReady()) {
+        this.logger.warn('⚠️ Elasticsearch not ready. Indices will be created when Elasticsearch becomes available.');
+        return;
+      }
+
       // User index
       await this.elasticsearchService.createIndex('users', {
         properties: {
@@ -42,6 +48,7 @@ export class IndexingService implements OnModuleInit {
           updatedAt: { type: 'date' },
         },
       });
+      console.log('Created users index');
 
       // Role index
       await this.elasticsearchService.createIndex('roles', {
@@ -77,7 +84,8 @@ export class IndexingService implements OnModuleInit {
       this.logger.log('✅ Elasticsearch indices initialized');
     } catch (error) {
       this.logger.error('❌ Failed to initialize indices:', error);
-      throw error;
+      // Don't throw - allow service to start
+      this.logger.warn('⚠️ Service will continue without Elasticsearch indices');
     }
   }
 

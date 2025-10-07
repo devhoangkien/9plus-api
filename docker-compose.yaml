@@ -334,9 +334,12 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - xpack.security.enabled=false
+      # Enable security with basic authentication
+      - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
+      # Set elastic user password
+      - ELASTIC_PASSWORD=anineplus@123
     ulimits:
       memlock:
         soft: -1
@@ -344,7 +347,7 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: ["CMD-SHELL", "curl -u elastic:anineplus@123 -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -369,7 +372,9 @@ services:
         condition: service_healthy
     environment:
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-      XPACK_SECURITY_ENABLED: "false"
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: anineplus@123
+      XPACK_SECURITY_ENABLED: "true"
       SERVER_NAME: anineplus-kibana
       SERVER_HOST: "0.0.0.0"
     healthcheck:
