@@ -107,7 +107,7 @@ export class CheckPermissionInput {
 
 // ============ Output Types ============
 
-@ObjectType()
+@ObjectType('OrganizationType')
 export class Organization {
   @Field()
   id: string;
@@ -128,7 +128,7 @@ export class Organization {
   metadata?: Record<string, any>;
 }
 
-@ObjectType()
+@ObjectType('MemberType')
 export class Member {
   @Field()
   id: string;
@@ -146,7 +146,7 @@ export class Member {
   createdAt: Date;
 }
 
-@ObjectType()
+@ObjectType('InvitationType')
 export class Invitation {
   @Field()
   id: string;
@@ -173,7 +173,7 @@ export class Invitation {
   inviterId: string;
 }
 
-@ObjectType()
+@ObjectType('OrganizationRoleType')
 export class OrganizationRole {
   @Field()
   id: string;
@@ -194,7 +194,7 @@ export class OrganizationRole {
   updatedAt?: Date;
 }
 
-@ObjectType()
+@ObjectType('TeamType')
 export class Team {
   @Field()
   id: string;
@@ -212,7 +212,7 @@ export class Team {
   updatedAt?: Date;
 }
 
-@ObjectType()
+@ObjectType('FullOrganizationType')
 export class FullOrganization {
   @Field(() => Organization)
   organization: Organization;
@@ -224,7 +224,7 @@ export class FullOrganization {
   teams?: Team[];
 }
 
-@ObjectType()
+@ObjectType('PermissionCheckResponseType')
 export class PermissionCheckResponse {
   @Field()
   hasPermission: boolean;
@@ -233,7 +233,7 @@ export class PermissionCheckResponse {
   message?: string;
 }
 
-@ObjectType()
+@ObjectType('BasicOrgResponseType')
 export class BasicOrgResponse {
   @Field()
   success: boolean;

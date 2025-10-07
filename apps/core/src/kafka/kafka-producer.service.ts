@@ -21,22 +21,42 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
   private kafka: Kafka;
   private producer: Producer;
   private readonly logger = new Logger(KafkaProducerService.name);
+  private isEnabled: boolean = true;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {
+    // Check if Kafka is disabled
+    this.isEnabled = this.configService.get('KAFKA_ENABLED', 'true') !== 'false';
+  }
 
   async onModuleInit() {
+    if (!this.isEnabled) {
+      this.logger.warn('⚠️  Kafka is disabled. Skipping initialization.');
+      return;
+    }
+
     try {
       this.kafka = new Kafka({
         clientId: 'core-service',
         brokers: this.configService.get('KAFKA_BROKERS', 'localhost:9092').split(','),
+        connectionTimeout: 10000, // 10 seconds
+        requestTimeout: 30000, // 30 seconds
         retry: {
           retries: 5,
+          initialRetryTime: 300,
+          maxRetryTime: 30000,
+          multiplier: 2,
+          factor: 0.2,
         },
       });
 
       this.producer = this.kafka.producer({
+        maxInFlightRequests: 1, // Reduce to 1 to avoid race conditions
+        idempotent: false,
         retry: {
           retries: 3,
+          initialRetryTime: 300,
+          maxRetryTime: 30000,
+          multiplier: 2,
         },
       });
 
@@ -44,18 +64,30 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('✅ Kafka producer connected');
     } catch (error) {
       this.logger.error('❌ Failed to initialize Kafka producer:', error);
-      throw error;
+      // Don't throw - let the app continue without Kafka
+      this.logger.warn('⚠️  Application will continue without Kafka support');
     }
   }
 
   async onModuleDestroy() {
-    if (this.producer) {
+    if (!this.isEnabled || !this.producer) {
+      return;
+    }
+    
+    try {
       await this.producer.disconnect();
       this.logger.log('Kafka producer disconnected');
+    } catch (error) {
+      this.logger.error('Error disconnecting Kafka producer:', error);
     }
   }
 
   async publishEvent(payload: EventPayload): Promise<void> {
+    if (!this.isEnabled || !this.producer) {
+      this.logger.debug('Kafka is disabled, skipping event publish');
+      return;
+    }
+
     try {
       const topic = `${payload.entityType}.${payload.eventType}`;
       
@@ -126,6 +158,11 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
   // Method to publish batch events
   async publishBatchEvents(payloads: EventPayload[]): Promise<void> {
+    if (!this.isEnabled || !this.producer) {
+      this.logger.debug('Kafka is disabled, skipping batch events publish');
+      return;
+    }
+
     try {
       const messagesByTopic = new Map<string, any[]>();
 
@@ -172,6 +209,10 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
   // Health check method
   async isHealthy(): Promise<boolean> {
+    if (!this.isEnabled || !this.kafka) {
+      return false;
+    }
+
     try {
       // Try to get metadata to check connection
       await this.kafka.admin().fetchTopicMetadata();
@@ -184,6 +225,11 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
   // Method to create topics if they don't exist
   async ensureTopicsExist(): Promise<void> {
+    if (!this.isEnabled || !this.kafka) {
+      this.logger.debug('Kafka is disabled, skipping topic creation');
+      return;
+    }
+
     const admin = this.kafka.admin();
     
     try {

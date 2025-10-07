@@ -1,8 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization } from 'better-auth/plugins';
-import { PrismaClient } from '@prisma/client';
 import { ac, roles } from './permissions';
+import { PrismaClient } from 'prisma/@generated/client';
 
 const prisma = new PrismaClient();
 

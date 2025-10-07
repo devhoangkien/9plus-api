@@ -9,8 +9,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
-  IAuthService,
-  IPermissionService,
   AUTH_METADATA_KEYS,
   PermissionDefinition,
 } from '../interfaces';
@@ -48,12 +46,16 @@ import {
 @Injectable()
 export class AuthPermissionGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
     @Inject('AUTH_SERVICE')
-    private readonly authService: IAuthService,
+    private readonly authService: any,
     @Inject('PERMISSION_SERVICE')
-    private readonly permissionService: IPermissionService,
+    private readonly permissionService: any,
   ) {}
+
+  private get reflector(): Reflector {
+    // Lazy load Reflector to avoid circular dependency issues
+    return new Reflector();
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if endpoint is public

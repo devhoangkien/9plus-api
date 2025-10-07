@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD, Reflector } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
-import { CaslAuthorizationModule } from '@anineplus/authorization';
+import { CaslAuthorizationModule, AuthGuard, PermissionGuard, AuthPermissionGuard } from '@anineplus/authorization';
 import { LoggerModule } from '@anineplus/common';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
@@ -38,7 +39,7 @@ import { BetterAuthModule } from './auth/better-auth.module';
     
     // Core modules
     AuthModule,
-    BetterAuthModule,
+    BetterAuthModule, // This module provides 'AUTH_SERVICE' and 'PERMISSION_SERVICE' globally
     UsersModule,
     RolesModule,
     PermissionsModule,
@@ -46,6 +47,7 @@ import { BetterAuthModule } from './auth/better-auth.module';
     PluginManagementModule,
     KafkaModule,
   ],
-  
+  // Don't register guards as providers here
+  // Use @UseGuards() decorator in resolvers instead
 })
 export class AppModule {}

@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { AuthGuard, PermissionGuard, AuthPermissionGuard } from '@anineplus/authorization';
 import { BetterAuthService } from './better-auth.service';
 import { BetterAuthResolver } from './better-auth.resolver';
 import { OrganizationService } from './organization.service';
 import { OrganizationResolver } from './organization.resolver';
 
+@Global() // Make this module global so services are available everywhere
 @Module({
   controllers: [],
   providers: [
@@ -15,13 +16,13 @@ import { OrganizationResolver } from './organization.resolver';
     // Provide service tokens for guards
     {
       provide: 'AUTH_SERVICE',
-      useClass: BetterAuthService,
+      useExisting: BetterAuthService,
     },
     {
       provide: 'PERMISSION_SERVICE',
-      useClass: OrganizationService,
+      useExisting: OrganizationService,
     },
-    // Provide guards
+    // Provide guards (no need for Reflector anymore)
     AuthGuard,
     PermissionGuard,
     AuthPermissionGuard,
@@ -29,6 +30,9 @@ import { OrganizationResolver } from './organization.resolver';
   exports: [
     BetterAuthService,
     OrganizationService,
+    'AUTH_SERVICE',
+    'PERMISSION_SERVICE',
+    // Export guards for use in other modules
     AuthGuard,
     PermissionGuard,
     AuthPermissionGuard,

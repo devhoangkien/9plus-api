@@ -8,22 +8,21 @@ import {
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
-  IPermissionService,
   AUTH_METADATA_KEYS,
   PermissionDefinition,
 } from '../interfaces';
 
 /**
  * Generic Permission Guard
- * Works with any service implementing IPermissionService
+ * Works with any permission service injected via 'PERMISSION_SERVICE' token
  * 
  * Note: This guard requires authentication context (sessionToken)
  * Use with AuthGuard or ensure context has sessionToken
  * 
  * Usage:
- * 1. Implement IPermissionService in your permission service
- * 2. Provide PERMISSION_SERVICE token in your module
- * 3. Use @UseGuards(AuthGuard, PermissionGuard) + @RequirePermissions()
+ * 1. Provide your permission service with 'PERMISSION_SERVICE' token
+ * 2. Use @UseGuards(AuthGuard, PermissionGuard) + @RequirePermissions()
+ * 3. Service must have hasPermission(token, permissions, orgId) method
  * 
  * @example
  * ```typescript
@@ -46,10 +45,14 @@ import {
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
     @Inject('PERMISSION_SERVICE')
-    private readonly permissionService: IPermissionService,
+    private readonly permissionService: any,
   ) {}
+
+  private get reflector(): Reflector {
+    // Lazy load Reflector to avoid circular dependency issues
+    return new Reflector();
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Get required permissions from decorator

@@ -7,16 +7,16 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { IAuthService, AUTH_METADATA_KEYS } from '../interfaces';
+import { AUTH_METADATA_KEYS } from '../interfaces';
 
 /**
  * Generic Authentication Guard
- * Works with any service implementing IAuthService
+ * Works with any auth service injected via 'AUTH_SERVICE' token
  * 
  * Usage:
- * 1. Implement IAuthService in your auth service
- * 2. Provide AUTH_SERVICE token in your module
- * 3. Use @UseGuards(AuthGuard) or apply globally
+ * 1. Provide your auth service with 'AUTH_SERVICE' token
+ * 2. Use @UseGuards(AuthGuard) or apply globally
+ * 3. Service must have getSession(token) method
  * 
  * @example
  * ```typescript
@@ -38,9 +38,13 @@ import { IAuthService, AUTH_METADATA_KEYS } from '../interfaces';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
-    @Inject('AUTH_SERVICE') private readonly authService: IAuthService,
+    @Inject('AUTH_SERVICE') private readonly authService: any,
   ) {}
+
+  private get reflector(): Reflector {
+    // Lazy load Reflector to avoid circular dependency issues
+    return new Reflector();
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if endpoint is public

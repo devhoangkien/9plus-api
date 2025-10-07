@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IPermissionService } from '@anineplus/authorization';
 import { auth } from './auth.config';
 
 @Injectable()
-export class OrganizationService implements IPermissionService {
+export class OrganizationService {
   private readonly logger = new Logger(OrganizationService.name);
   private readonly authApi = auth.api;
 
