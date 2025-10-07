@@ -1,7 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { organization } from 'better-auth/plugins';
-import { ac, roles } from './permissions';
+import { organization, admin } from 'better-auth/plugins';
+import { ac, roles } from './permissions.unified';
+import { seedOrganizationPermissions } from '../../prisma/seeds/permissions.seed';
 import { PrismaClient } from 'prisma/@generated/client';
 
 const prisma = new PrismaClient();
@@ -77,18 +78,49 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    // ========================================
+    // ADMIN PLUGIN - Global/System Level Permissions
+    // ========================================
+    admin({
+      // Access control configuration
+      ac: ac.global,
+      roles: roles.global,
+
+      // Admin roles that can perform admin operations
+      adminRoles: ['admin', 'superAdmin'],
+
+      // Specific user IDs that should always be admin (optional)
+      // adminUserIds: ['user-id-1', 'user-id-2'],
+
+      // Default role for new users
+      defaultRole: 'user',
+
+      // Impersonation session duration (1 hour)
+      impersonationSessionDuration: 60 * 60,
+
+      // Default ban settings
+      defaultBanReason: 'Violation of terms of service',
+      defaultBanExpiresIn: undefined, // Permanent ban by default
+      bannedUserMessage: 'Your account has been suspended. Please contact support.',
+    }),
+
+    // ========================================
+    // ORGANIZATION PLUGIN - Organization Level Permissions
+    // ========================================
     organization({
       // Access control configuration
-      ac,
-      roles,
+      ac: ac.organization,
+      // Note: roles are now managed dynamically in database
+      // Static roles are removed in favor of dynamic permissions
 
       // Dynamic Access Control (DAC) - allows creating roles at runtime
+      // All permissions are stored in the database
       dynamicAccessControl: {
         enabled: true,
         maximumRolesPerOrganization: async (organizationId) => {
           // Dynamic limit based on organization plan
           // TODO: Implement plan checking logic
-          return 20; // Default limit
+          return 50; // Default limit for custom roles
         },
       },
 
@@ -146,7 +178,16 @@ export const auth = betterAuth({
         // After creating organization
         async afterCreateOrganization({ organization, member, user }) {
           console.log('Organization created:', organization.name);
-          // TODO: Setup default resources, send notifications, etc.
+          
+          // Automatically seed default permissions for new organization
+          try {
+            await seedOrganizationPermissions(organization.id);
+            console.log('✅ Default permissions seeded for organization:', organization.name);
+          } catch (error) {
+            console.error('❌ Failed to seed permissions for organization:', organization.name, error);
+          }
+          
+          // TODO: Send notifications, create default resources, etc.
         },
 
         // Before adding member
