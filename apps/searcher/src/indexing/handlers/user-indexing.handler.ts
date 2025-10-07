@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { KafkaConsumerService, KafkaMessage } from '../../kafka/kafka-consumer.service';
 import { IndexingService } from '../indexing.service';
-import { RequestContextService } from '@anineplus/common';
 
 @Injectable()
 export class UserIndexingHandler implements OnModuleInit {
@@ -10,7 +9,6 @@ export class UserIndexingHandler implements OnModuleInit {
   constructor(
     private kafkaConsumerService: KafkaConsumerService,
     private indexingService: IndexingService,
-    private requestContextService: RequestContextService,
   ) {}
 
   onModuleInit() {
@@ -23,7 +21,7 @@ export class UserIndexingHandler implements OnModuleInit {
   }
 
   private async handleUserCreated(message: KafkaMessage) {
-    const requestId = this.requestContextService.getRequestId();
+    const requestId = message.value?.requestId || 'unknown';
     try {
       const userData = message.value;
       await this.indexingService.indexUser(userData);
@@ -35,7 +33,7 @@ export class UserIndexingHandler implements OnModuleInit {
   }
 
   private async handleUserUpdated(message: KafkaMessage) {
-    const requestId = this.requestContextService.getRequestId();
+    const requestId = message.value?.requestId || 'unknown';
     try {
       const userData = message.value;
       await this.indexingService.updateUser(userData.id, userData);
@@ -47,7 +45,7 @@ export class UserIndexingHandler implements OnModuleInit {
   }
 
   private async handleUserDeleted(message: KafkaMessage) {
-    const requestId = this.requestContextService.getRequestId();
+    const requestId = message.value?.requestId || 'unknown';
     try {
       const { id } = message.value;
       await this.indexingService.deleteUser(id);

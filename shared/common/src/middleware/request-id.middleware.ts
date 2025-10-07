@@ -1,5 +1,4 @@
 import { Injectable, NestMiddleware, Inject } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
 import { RequestContextService } from '../services/request-context.service';
 
 /**
@@ -10,7 +9,7 @@ export function createRequestIdMiddleware(serviceName: string) {
   class DynamicRequestIdMiddleware implements NestMiddleware {
     constructor(private readonly contextService: RequestContextService) {}
 
-    use(req: Request, res: Response, next: NextFunction) {
+    use(req: any, res: any, next: any) {
       // Get requestId from header (forwarded from Gateway or other services)
       // or generate new one if not present
       const requestId = 
@@ -49,7 +48,7 @@ export function createRequestIdMiddleware(serviceName: string) {
 export class RequestIdMiddleware implements NestMiddleware {
   constructor(private readonly contextService: RequestContextService) {}
 
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: any, res: any, next: any) {
     const requestId = 
       req.headers['x-request-id'] as string ||
       req.headers['x-correlation-id'] as string ||

@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Kafka, Consumer, EachMessagePayload, Producer, Partitioners } from 'kafkajs';
-import { RequestContextService } from '@anineplus/common';
 
 export interface KafkaMessage {
   topic: string;
@@ -35,7 +34,6 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private configService: ConfigService,
-    private requestContextService: RequestContextService,
   ) {}
 
   async onModuleInit() {
@@ -161,54 +159,43 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
         timestamp: message.timestamp,
       };
 
-      // Get requestId from message or generate new one
-      const requestId = kafkaMessage.value?.requestId || this.requestContextService.generateRequestId();
+      // Get requestId from message for logging
+      const requestId = kafkaMessage.value?.requestId || 'unknown';
       
-      // Run within request context for proper tracking
-      await this.requestContextService.run(
-        { 
-          requestId, 
-          timestamp: new Date(),
-          service: 'searcher',
-        },
-        async () => {
-          this.logger.debug(`[${requestId}] 📨 Processing message from ${topic} (offset: ${message.offset}, attempt: ${attemptCount + 1})`);
+      this.logger.debug(`[${requestId}] 📨 Processing message from ${topic} (offset: ${message.offset}, attempt: ${attemptCount + 1})`);
 
-          // Find and execute handler
-          const handler = this.messageHandlers.get(topic);
-          if (handler) {
-            await handler(kafkaMessage);
-            
-            // Commit offset chỉ khi xử lý thành công
-            await this.consumer.commitOffsets([
-              {
-                topic,
-                partition,
-                offset: (BigInt(message.offset) + BigInt(1)).toString(),
-              },
-            ]);
-            
-            this.logger.debug(`[${requestId}] ✅ Message processed and committed (offset: ${message.offset})`);
-          } else {
-            this.logger.warn(`[${requestId}] ⚠️ No handler found for topic: ${topic}`);
-            // Vẫn commit để không block queue
-            await this.consumer.commitOffsets([
-              {
-                topic,
-                partition,
-                offset: (BigInt(message.offset) + BigInt(1)).toString(),
-              },
-            ]);
-          }
-        }
-      );
+      // Find and execute handler
+      const handler = this.messageHandlers.get(topic);
+      if (handler) {
+        await handler(kafkaMessage);
+        
+        // Commit offset chỉ khi xử lý thành công
+        await this.consumer.commitOffsets([
+          {
+            topic,
+            partition,
+            offset: (BigInt(message.offset) + BigInt(1)).toString(),
+          },
+        ]);
+        
+        this.logger.debug(`[${requestId}] ✅ Message processed and committed (offset: ${message.offset})`);
+      } else {
+        this.logger.warn(`[${requestId}] ⚠️ No handler found for topic: ${topic}`);
+        // Vẫn commit để không block queue
+        await this.consumer.commitOffsets([
+          {
+            topic,
+            partition,
+            offset: (BigInt(message.offset) + BigInt(1)).toString(),
+          },
+        ]);
+      }
     } catch (error) {
-      const requestId = this.requestContextService.getRequestId();
-      this.logger.error(`[${requestId}] ❌ Failed to process message from topic ${topic} (offset: ${message.offset}):`, error);
+      this.logger.error(`❌ Failed to process message from topic ${topic} (offset: ${message.offset}):`, error);
       
       // Retry logic
       if (attemptCount < this.MAX_RETRIES) {
-        this.logger.warn(`[${requestId}] 🔄 Retrying message (attempt ${attemptCount + 1}/${this.MAX_RETRIES})...`);
+        this.logger.warn(`🔄 Retrying message (attempt ${attemptCount + 1}/${this.MAX_RETRIES})...`);
         
         // Thêm delay trước khi retry (exponential backoff)
         const delayMs = Math.min(1000 * Math.pow(2, attemptCount), 10000);
