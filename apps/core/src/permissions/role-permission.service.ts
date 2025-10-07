@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from 'prisma/@generated/client';
+import { PrismaClient, RoleStatusEnum } from 'prisma/@generated/client';
 
 @Injectable()
 export class RolePermissionService {
@@ -291,7 +291,7 @@ export class RolePermissionService {
       name?: string;
       description?: string;
       level?: number;
-      status?: string;
+      status?: RoleStatusEnum;
     },
   ) {
     return this.prisma.role.update({

@@ -3,8 +3,7 @@
  * Seeds system-wide roles, permissions and their relationships
  */
 
-import { PrismaClient } from "prisma/@generated/client";
-
+import { PrismaClient } from 'prisma/@generated/client';
 
 const prisma = new PrismaClient();
 
@@ -314,7 +313,8 @@ export const SYSTEM_ROLES = [
   {
     key: 'super-admin',
     name: 'Super Administrator',
-    description: 'Full system control with unrestricted access to all features and settings',
+    description:
+      'Full system control with unrestricted access to all features and settings',
     level: 100,
     isSystemRole: true,
     status: 'ACTIVE',
@@ -361,7 +361,8 @@ export const SYSTEM_ROLES = [
   {
     key: 'admin',
     name: 'Administrator',
-    description: 'User management and system monitoring capabilities without full system access',
+    description:
+      'User management and system monitoring capabilities without full system access',
     level: 50,
     isSystemRole: true,
     status: 'ACTIVE',
@@ -591,7 +592,9 @@ async function displaySummary() {
       if (!grouped[perm.resource]) {
         grouped[perm.resource] = [];
       }
-      grouped[perm.resource].push(`${perm.action}${perm.scope !== 'ALL' ? ` (${perm.scope})` : ''}`);
+      grouped[perm.resource].push(
+        `${perm.action}${perm.scope !== 'ALL' ? ` (${perm.scope})` : ''}`,
+      );
     }
 
     for (const [resource, actions] of Object.entries(grouped)) {

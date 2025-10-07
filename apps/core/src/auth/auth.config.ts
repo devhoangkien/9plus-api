@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, admin } from 'better-auth/plugins';
-import { ac, roles } from './permissions.unified';
+import { ac } from './access-control.config';
 import { seedOrganizationPermissions } from '../../prisma/seeds/permissions.seed';
 import { PrismaClient } from 'prisma/@generated/client';
 
@@ -83,8 +83,9 @@ export const auth = betterAuth({
     // ========================================
     admin({
       // Access control configuration
-      ac: ac.global,
-      roles: roles.global,
+      // Note: Using shared AC instance for consistency
+      // Admin plugin uses this for global user permissions (ban, verify, etc.)
+      // ac: ac, // Commented out - admin plugin doesn't require AC for basic operations
 
       // Admin roles that can perform admin operations
       adminRoles: ['admin', 'superAdmin'],
@@ -109,7 +110,8 @@ export const auth = betterAuth({
     // ========================================
     organization({
       // Access control configuration
-      ac: ac.organization,
+      // Uses the unified AC instance for all organization-level permissions
+      ac: ac,
       // Note: roles are now managed dynamically in database
       // Static roles are removed in favor of dynamic permissions
 
