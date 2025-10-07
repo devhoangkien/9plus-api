@@ -4,6 +4,7 @@ import { print } from 'graphql';
 import fetch from 'node-fetch';
 import { GatewayCacheService } from './gateway-cache.service';
 import { GatewayUrlResolver } from 'src/resolvers/gateway-url-resolver';
+import { RequestContextService } from '@anineplus/common';
 
 @Injectable()
 export class GraphQLExecutorService {
@@ -13,6 +14,7 @@ export class GraphQLExecutorService {
     private readonly configService: ConfigService,
     private readonly urlResolver: GatewayUrlResolver,
     private readonly cacheService: GatewayCacheService,
+    private readonly contextService: RequestContextService,
   ) {}
 
   /**
@@ -76,13 +78,17 @@ export class GraphQLExecutorService {
       10
     );
 
+    // Get requestId from context for distributed tracing
+    const requestId = this.contextService.getRequestId();
+
     const response = await fetch(this.urlResolver.getGraphQLUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'authorization': contextValue?.authorization ?? '',
         'user-agent': 'Gateway-REST-Proxy/1.0',
-        'x-request-id': this.generateRequestId(),
+        'x-request-id': requestId,
+        'x-correlation-id': requestId,
       },
       body: JSON.stringify({
         query,
@@ -101,8 +107,9 @@ export class GraphQLExecutorService {
 
   /**
    * Generate unique request ID for tracing
+   * @deprecated Use RequestContextService.generateRequestId() instead
    */
   private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return this.contextService.generateRequestId();
   }
 }

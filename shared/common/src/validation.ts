@@ -5,6 +5,7 @@ export class GqlValidationPipe extends ValidationPipe {
   constructor() {
     super({
       exceptionFactory: (errors:any) => {
+        console.log('Validation errors:', errors);
         const errorMessages = errors.map((error: any) => {
           const childrenError = error.children.map((children: any) => {
             const property = children.property;

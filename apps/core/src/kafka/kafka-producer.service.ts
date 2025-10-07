@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Kafka, Producer } from 'kafkajs';
+import { RequestContextService } from '@anineplus/common';
 
 export interface EventPayload {
   id: string;
@@ -8,6 +9,7 @@ export interface EventPayload {
   entityType: 'user' | 'role' | 'permission';
   timestamp: string;
   data: any;
+  requestId?: string;
   metadata?: {
     userId?: string;
     correlationId?: string;
@@ -23,7 +25,10 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(KafkaProducerService.name);
   private isEnabled: boolean = true;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private requestContextService: RequestContextService,
+  ) {
     // Check if Kafka is disabled
     this.isEnabled = this.configService.get('KAFKA_ENABLED', 'true') !== 'false';
   }
@@ -90,11 +95,13 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
     try {
       const topic = `${payload.entityType}.${payload.eventType}`;
+      const requestId = this.requestContextService.getRequestId();
       
       const message = {
         key: payload.id,
         value: JSON.stringify({
           ...payload,
+          requestId, // Add requestId for tracking
           timestamp: payload.timestamp || new Date().toISOString(),
         }),
         headers: {
@@ -102,6 +109,7 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
           entityType: payload.entityType,
           correlationId: payload.metadata?.correlationId || payload.id,
           source: payload.metadata?.source || 'core-service',
+          requestId: requestId, // Also in headers for easy access
         },
       };
 
@@ -110,9 +118,10 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
         messages: [message],
       });
 
-      this.logger.debug(`Event published to topic ${topic}: ${payload.id}`);
+      this.logger.debug(`[${requestId}] 🚀 Event published to topic ${topic}: ${payload.id}`);
     } catch (error) {
-      this.logger.error(`Failed to publish event:`, error);
+      const requestId = this.requestContextService.getRequestId();
+      this.logger.error(`[${requestId}] ❌ Failed to publish event:`, error);
       throw error;
     }
   }

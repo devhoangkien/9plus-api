@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LoggerService } from '@anineplus/common';
+import { LoggerService, RequestContextService } from '@anineplus/common';
 import { useSofa } from 'sofa-api';
 import { Response as FetsResponse } from 'fets';
 import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
@@ -13,6 +13,7 @@ export class SofaApiFactory {
     private readonly urlResolver: GatewayUrlResolver,
     private readonly executorService: GraphQLExecutorService,
     private readonly loggerService: LoggerService,
+    private readonly contextService: RequestContextService,
   ) {}
 
   /**
@@ -44,31 +45,43 @@ export class SofaApiFactory {
    */
   private createErrorHandler() {
     return (errors: any[]) => {
-      const errorMessage = errors[0]?.message ?? 'Unknown GraphQL error';
-      this.loggerService.error(`❌ GraphQL Error: ${errorMessage}`, JSON.stringify(errors));
+      const firstError = errors[0];
+      const errorMessage = firstError?.message ?? 'Unknown GraphQL error';
+      
+      // Extract nested error from response body if exists
+      const nestedError = firstError?.extensions?.response?.body?.errors?.[0];
+      const actualMessage = nestedError?.message || errorMessage;
+      const messageCode = nestedError?.extensions?.messageCode ?? null;
+      const statusCode = firstError?.extensions?.response?.status || 500;
+      
+      // Get requestId from context for distributed tracing
+      const requestId = this.contextService.getRequestId();
+      
+      this.loggerService.error(
+        `❌ GraphQL Error [${requestId}]: ${actualMessage}`, 
+        JSON.stringify({ 
+          ...errors, 
+          requestId,
+        })
+      );
       
       return new FetsResponse(
         JSON.stringify({ 
-          error: errorMessage,
-          code: 'GRAPHQL_ERROR',
+          message: actualMessage,
+          messageCode: messageCode,
+          code: statusCode,
           timestamp: new Date().toISOString(),
-          requestId: this.generateErrorId(),
+          requestId: requestId,
         }),
         {
-          status: 500,
+          status: statusCode,
           headers: { 
             'Content-Type': 'application/json',
-            'X-Error-Source': 'GraphQL-Gateway'
+            'X-Error-Source': 'GraphQL-Gateway',
+            'X-Request-Id': requestId,
           },
         },
       );
     };
-  }
-
-  /**
-   * Generate unique error ID for tracking
-   */
-  private generateErrorId(): string {
-    return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

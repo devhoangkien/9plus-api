@@ -49,8 +49,6 @@ export class StartupDisplayService {
     this.loggerService.log(`🔗 GraphQL endpoint: ${chalk.yellowBright(`${baseUrl}/graphql`)}`);
     this.loggerService.log(`🔗 REST API endpoint: ${chalk.cyanBright(`${baseUrl}/api`)}`);
     this.loggerService.log(`📖 Swagger UI: ${chalk.greenBright(`${baseUrl}/api/swagger`)}`);
-    this.loggerService.log(`🏥 Health check: ${chalk.magenta(`${baseUrl}/health`)}`);
-    this.loggerService.log(`📊 Cache stats: ${chalk.gray(`${baseUrl}/cache/stats`)}`);
   }
 
   /**

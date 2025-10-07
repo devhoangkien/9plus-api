@@ -1,10 +1,10 @@
-import { Module, BadRequestException, HttpStatus } from '@nestjs/common';
+import { Module, BadRequestException, HttpStatus, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { IntrospectAndCompose, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { verify, decode } from 'jsonwebtoken';
 import { UNAUTHORIZED, UNAUTHORIZED_MESSAGE } from './app.constants';
-import { LoggerModule, createGraphQLError } from '@anineplus/common';
+import { LoggerModule, createGraphQLError, RequestContextService, createRequestIdMiddleware } from '@anineplus/common';
 import {
   YogaGatewayDriver,
   YogaGatewayDriverConfig,
@@ -21,6 +21,9 @@ import { GraphQLExecutorService } from './services/graphql-executor.service';
 import { StartupDisplayService } from './services/startup-display.service';
 import { GatewayUrlResolver } from './resolvers/gateway-url-resolver';
 import { SofaApiFactory } from './factories/sofa-api.factory';
+
+// Create Gateway-specific middleware
+const GatewayRequestIdMiddleware = createRequestIdMiddleware('gateway');
 
 // Initialize cache with LRU (Least Recently Used)
 const cache = new LRUCache<string, any>({
@@ -184,6 +187,12 @@ const handleAuth = async ({ req }) => {
     GraphQLExecutorService,
     SofaApiFactory,
     StartupDisplayService,
+    RequestContextService,
+    GatewayRequestIdMiddleware,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(GatewayRequestIdMiddleware).forRoutes('*');
+  }
+}

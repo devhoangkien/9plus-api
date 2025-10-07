@@ -12,6 +12,7 @@ import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 import { UsersModule } from '../users/users.module';
 import { RedisModule } from '../redis/redis.module';
+import { RequestContextService } from '@anineplus/common';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { RedisModule } from '../redis/redis.module';
     TwoFactorService,
     PasswordService,
     TokenService,
+    RequestContextService,
   ],
   controllers: [],
   exports: [
@@ -45,6 +47,7 @@ import { RedisModule } from '../redis/redis.module';
     TwoFactorService,
     PasswordService,
     TokenService,
+    RequestContextService,
   ],
 })
 export class AuthModule {}
