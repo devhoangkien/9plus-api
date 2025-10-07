@@ -38,7 +38,7 @@
     "docker:start": "docker compose up -d",
     "docker:dev": "docker compose -f docker-compose-dev.yaml up -d",
     "docker:dev:build": "docker compose -f docker-compose-dev.yaml build",
-    "docker:dev:up": "docker compose -f docker-compose-dev.yaml up",
+    "docker:dev:up": "docker compose -f docker-compose-dev.yaml up -d",
     "docker:dev:logs": "docker compose -f docker-compose-dev.yaml logs -f",
     "docker:dev:down": "docker compose -f docker-compose-dev.yaml down",
     "docker:dev:restart": "docker compose -f docker-compose-dev.yaml restart",

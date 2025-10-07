@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { auth } from './auth.config';
+import { auth } from 'auth';
 
 @Injectable()
 export class OrganizationService {

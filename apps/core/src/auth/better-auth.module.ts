@@ -1,41 +1,42 @@
 import { Module, Global } from '@nestjs/common';
-import { AuthGuard, PermissionGuard, AuthPermissionGuard } from '@anineplus/authorization';
+import { AuthGuard } from '@anineplus/authorization';
 import { BetterAuthService } from './better-auth.service';
 import { BetterAuthResolver } from './better-auth.resolver';
-import { OrganizationService } from './organization.service';
-import { OrganizationResolver } from './organization.resolver';
 
-@Global() // Make this module global so services are available everywhere
+/**
+ * BetterAuthModule
+ * 
+ * Core authentication module using Better Auth:
+ * - User sign up, sign in, sign out
+ * - Email verification
+ * - Password reset
+ * - Session management
+ * - OAuth providers (Google, GitHub, etc.)
+ * 
+ * This module is @Global() to make AuthGuard and BetterAuthService available everywhere
+ * 
+ * Note: PermissionGuard and AuthPermissionGuard are in OrganizationModule
+ * because they depend on PERMISSION_SERVICE
+ */
+@Global()
 @Module({
   controllers: [],
   providers: [
     BetterAuthService,
     BetterAuthResolver,
-    OrganizationService,
-    OrganizationResolver,
-    // Provide service tokens for guards
+    // Provide service token for AuthGuard
     {
       provide: 'AUTH_SERVICE',
       useExisting: BetterAuthService,
     },
-    {
-      provide: 'PERMISSION_SERVICE',
-      useExisting: OrganizationService,
-    },
-    // Provide guards (no need for Reflector anymore)
+    // Only provide AuthGuard (no permission dependencies)
     AuthGuard,
-    PermissionGuard,
-    AuthPermissionGuard,
   ],
   exports: [
     BetterAuthService,
-    OrganizationService,
     'AUTH_SERVICE',
-    'PERMISSION_SERVICE',
-    // Export guards for use in other modules
+    // Only export AuthGuard
     AuthGuard,
-    PermissionGuard,
-    AuthPermissionGuard,
   ],
 })
 export class BetterAuthModule {}

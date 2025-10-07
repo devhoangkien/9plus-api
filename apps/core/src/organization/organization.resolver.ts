@@ -6,27 +6,32 @@ import {
   Context,
 } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard, AuthPermissionGuard, RequirePermissions } from '@anineplus/authorization';
+import { AuthGuard } from '@anineplus/authorization';
 import { OrganizationService } from './organization.service';
 import {
   CreateOrganizationInput,
   UpdateOrganizationInput,
   InviteMemberInput,
   UpdateMemberRoleInput,
-  CreateRoleInput,
-  UpdateRoleInput,
   CreateTeamInput,
-  CheckPermissionInput,
   Organization,
   Member,
   Invitation,
-  OrganizationRole,
   Team,
   FullOrganization,
-  PermissionCheckResponse,
   BasicOrgResponse,
-} from './dto/organization.types';
+} from './dto/better-auth-organization.dto';
 
+/**
+ * OrganizationResolver
+ * 
+ * Handles GraphQL queries/mutations for:
+ * - Organizations: CRUD operations
+ * - Members: Invite, remove, update roles
+ * - Teams: Create and manage teams
+ * 
+ * Note: Permission-related queries are in PermissionResolver
+ */
 @Resolver()
 export class OrganizationResolver {
   constructor(private readonly organizationService: OrganizationService) {}
@@ -38,6 +43,8 @@ export class OrganizationResolver {
     }
     return authHeader.substring(7);
   }
+
+  // ========== Organization Queries ==========
 
   @Query(() => [Organization])
   @UseGuards(AuthGuard)
@@ -61,6 +68,8 @@ export class OrganizationResolver {
     ) as any;
   }
 
+  // ========== Member Queries ==========
+
   @Query(() => [Member])
   @UseGuards(AuthGuard)
   async listMembers(
@@ -71,33 +80,7 @@ export class OrganizationResolver {
     return this.organizationService.listMembers(sessionToken, organizationId) as any;
   }
 
-  @Query(() => PermissionCheckResponse)
-  @UseGuards(AuthGuard)
-  async checkPermission(
-    @Args('input') input: CheckPermissionInput,
-    @Context() context: any,
-  ): Promise<PermissionCheckResponse> {
-    const sessionToken = this.extractSessionToken(context);
-    const result = await this.organizationService.hasPermission(
-      sessionToken,
-      input.permissions,
-      input.organizationId,
-    );
-    return {
-      hasPermission: result?.success || false,
-      message: result?.error ?? undefined,
-    };
-  }
-
-  @Query(() => [OrganizationRole])
-  @UseGuards(AuthGuard)
-  async listRoles(
-    @Args('organizationId', { nullable: true }) organizationId?: string,
-    @Context() context?: any,
-  ): Promise<OrganizationRole[]> {
-    const sessionToken = this.extractSessionToken(context);
-    return this.organizationService.listRoles(sessionToken, organizationId) as any;
-  }
+  // ========== Team Queries ==========
 
   @Query(() => [Team])
   @UseGuards(AuthGuard)
@@ -206,53 +189,7 @@ export class OrganizationResolver {
     ) as any;
   }
 
-  @Mutation(() => OrganizationRole)
-  @UseGuards(AuthGuard)
-  async createRole(
-    @Args('input') input: CreateRoleInput,
-    @Context() context: any,
-  ): Promise<OrganizationRole> {
-    const sessionToken = this.extractSessionToken(context);
-    return this.organizationService.createRole(
-      sessionToken,
-      input.role,
-      input.permission,
-      input.organizationId,
-    ) as any;
-  }
-
-  @Mutation(() => OrganizationRole)
-  @UseGuards(AuthGuard)
-  async updateRole(
-    @Args('input') input: UpdateRoleInput,
-    @Context() context: any,
-  ): Promise<OrganizationRole> {
-    const sessionToken = this.extractSessionToken(context);
-    return this.organizationService.updateRole(
-      sessionToken,
-      input.roleId,
-      {
-        permission: input.permission,
-        roleName: input.roleName,
-      },
-      input.organizationId,
-    ) as any;
-  }
-
-  @Mutation(() => BasicOrgResponse)
-  @UseGuards(AuthGuard)
-  async deleteRole(
-    @Args('roleId') roleId: string,
-    @Args('organizationId', { nullable: true }) organizationId?: string,
-    @Context() context?: any,
-  ): Promise<BasicOrgResponse> {
-    const sessionToken = this.extractSessionToken(context);
-    await this.organizationService.deleteRole(sessionToken, roleId, organizationId);
-    return {
-      success: true,
-      message: 'Role deleted successfully',
-    };
-  }
+  // ========== Team Mutations ==========
 
   @Mutation(() => Team)
   @UseGuards(AuthGuard)

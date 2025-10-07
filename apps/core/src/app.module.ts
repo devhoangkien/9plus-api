@@ -14,6 +14,7 @@ import { PluginManagementModule } from './plugin-management/plugin-management.mo
 import {  PrismaModule } from './prisma/prisma.module';
 import { KafkaModule } from './kafka/kafka.module';
 import { BetterAuthModule } from './auth/better-auth.module';
+import { OrganizationModule } from './organization/organization.module';
 
 // Import GraphQL enums to register them
 
@@ -39,10 +40,11 @@ import { BetterAuthModule } from './auth/better-auth.module';
     
     // Core modules
     AuthModule,
-    BetterAuthModule, // This module provides 'AUTH_SERVICE' and 'PERMISSION_SERVICE' globally
+    BetterAuthModule, // Provides AUTH_SERVICE globally
+    OrganizationModule, // Handles organization, members, teams
+    PermissionsModule, // Provides PERMISSION_SERVICE globally
     UsersModule,
     RolesModule,
-    PermissionsModule,
     RedisModule,
     PluginManagementModule,
     KafkaModule,
