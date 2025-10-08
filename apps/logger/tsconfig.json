@@ -18,11 +18,5 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@anineplus/common": ["../../shared/common/src"],
-      "@anineplus/common/*": ["../../shared/common/src/*"],
-      "@anineplus/authorization": ["../../shared/authorization/src"],
-      "@anineplus/authorization/*": ["../../shared/authorization/src/*"]
-    }
   }
 }

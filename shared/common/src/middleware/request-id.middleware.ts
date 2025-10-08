@@ -7,7 +7,7 @@ import { RequestContextService } from '../services/request-context.service';
 export function createRequestIdMiddleware(serviceName: string) {
   @Injectable()
   class DynamicRequestIdMiddleware implements NestMiddleware {
-    constructor(private readonly contextService: RequestContextService) {}
+    constructor(public readonly contextService: RequestContextService) {}
 
     use(req: any, res: any, next: any) {
       // Get requestId from header (forwarded from Gateway or other services)

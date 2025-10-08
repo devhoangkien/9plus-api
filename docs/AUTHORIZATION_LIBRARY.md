@@ -29,19 +29,7 @@ shared/authorization/
 
 ### 1. Configure TypeScript Paths
 
-Add to your service's `tsconfig.json`:
 
-```json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@anineplus/authorization": ["../../shared/authorization/src"],
-      "@anineplus/authorization/*": ["../../shared/authorization/src/*"]
-    }
-  }
-}
-```
 
 ### 2. Import Guards & Decorators
 

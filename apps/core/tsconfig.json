@@ -21,12 +21,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "resolveJsonModule": true,
-    "types": ["bun-types"],
-    "paths": {
-      "@anineplus/common": ["../../shared/common/src"],
-      "@anineplus/common/*": ["../../shared/common/src/*"],
-      "@anineplus/authorization": ["../../shared/authorization/src"],
-      "@anineplus/authorization/*": ["../../shared/authorization/src/*"]
-    }
+    "types": ["bun-types"]
   }
 }

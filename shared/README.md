@@ -35,23 +35,7 @@ import { LoggerService, AllExceptionsFilter } from '@anineplus/common';
 import { AuthGuard, RequirePermissions, Public } from '@anineplus/authorization';
 ```
 
-### TypeScript Configuration
 
-Add to your service's `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@anineplus/common": ["../../shared/common/src"],
-      "@anineplus/common/*": ["../../shared/common/src/*"],
-      "@anineplus/authorization": ["../../shared/authorization/src"],
-      "@anineplus/authorization/*": ["../../shared/authorization/src/*"]
-    }
-  }
-}
-```
 
 ## 🔧 How It Works
 
