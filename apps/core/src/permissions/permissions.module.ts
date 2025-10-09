@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
-import { PermissionGuard, AuthPermissionGuard } from '@anineplus/authorization';
 import { PermissionsService } from './permissions.service';
 import { PermissionResolver } from './permissions.resolver';
+import { AuthPermissionGuard, PermissionGuard } from '@anineplus/authorization';
 
 /**
  * PermissionsModule

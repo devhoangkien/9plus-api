@@ -35,6 +35,8 @@
     "auth:hash-password": "node -e \"const bcrypt = require('bcrypt'); bcrypt.hash(process.argv[1], 12).then(console.log)\""
   },
   "dependencies": {
+    "@anineplus/authorization": "link:@anineplus/authorization",
+    "@anineplus/common": "link:@anineplus/common",
     "@apollo/federation": "^0.38.1",
     "@apollo/server": "^4.11.3",
     "@apollo/subgraph": "^2.10.0",

@@ -25,6 +25,8 @@
     "services:health": "bun run scripts/check-services.ts"
   },
   "dependencies": {
+    "@anineplus/authorization": "link:@anineplus/authorization",
+    "@anineplus/common": "link:@anineplus/common",
     "@apollo/gateway": "^2.9.3",
     "@graphql-tools/executor": "^1.4.9",
     "@graphql-yoga/nestjs-federation": "^3.13.3",

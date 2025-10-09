@@ -3,7 +3,7 @@ import { LoggerService } from '@anineplus/common';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import { GatewayCacheService } from './gateway-cache.service';
-import { GatewayUrlResolver } from 'src/resolvers/gateway-url-resolver';
+import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
 
 @Injectable()
 export class StartupDisplayService {

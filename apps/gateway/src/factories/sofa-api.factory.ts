@@ -3,7 +3,7 @@ import { LoggerService, RequestContextService } from '@anineplus/common';
 import { useSofa } from 'sofa-api';
 import { Response as FetsResponse } from 'fets';
 import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
-import { GraphQLExecutorService } from 'src/services/graphql-executor.service';
+import { GraphQLExecutorService } from '../services/graphql-executor.service';
 
 @Injectable()
 export class SofaApiFactory {

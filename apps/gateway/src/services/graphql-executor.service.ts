@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { print } from 'graphql';
 import fetch from 'node-fetch';
 import { GatewayCacheService } from './gateway-cache.service';
-import { GatewayUrlResolver } from 'src/resolvers/gateway-url-resolver';
+import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
 import { RequestContextService } from '@anineplus/common';
 
 @Injectable()

@@ -3,7 +3,6 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
-import { CaslAuthorizationModule, AuthGuard, PermissionGuard, AuthPermissionGuard } from '@anineplus/authorization';
 import { LoggerModule, RequestContextService, createRequestIdMiddleware } from '@anineplus/common';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
@@ -31,7 +30,6 @@ const CoreRequestIdMiddleware = createRequestIdMiddleware('core');
       enableLoki: false,
       enableDatadog: false,
     }),
-    CaslAuthorizationModule, 
     PrismaModule,
     GraphQLModule.forRoot<YogaFederationDriverConfig>({
       driver: YogaFederationDriver,

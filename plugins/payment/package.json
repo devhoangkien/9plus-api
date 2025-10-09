@@ -27,6 +27,8 @@
     "db:init": "npm run db:migrate-save --name 'initial version' && npm run db:migrate-up && npm run seed"
   },
   "dependencies": {
+     "@anineplus/authorization": "link:@anineplus/authorization",
+    "@anineplus/common": "link:@anineplus/common",
     "@graphql-yoga/nestjs-federation": "^3.16.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
