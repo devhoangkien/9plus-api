@@ -1,0 +1,44 @@
+# Production Dockerfile for Gateway Service
+# Build from root context: docker build -f apps/gateway/Dockerfile.prod .
+
+FROM oven/bun:latest AS build
+
+WORKDIR /workspace
+
+# Copy shared libraries first
+COPY shared ./shared
+
+# Copy gateway service files
+COPY apps/gateway ./apps/gateway
+
+# Install dependencies in gateway service
+WORKDIR /workspace/apps/gateway
+RUN bun install 
+
+# Build the application
+RUN bun run build
+
+# Production stage
+FROM oven/bun:latest AS production
+
+WORKDIR /app
+
+# Copy built application and dependencies
+COPY --from=build /workspace/apps/gateway/dist ./dist
+COPY --from=build /workspace/apps/gateway/package.json ./
+COPY --from=build /workspace/apps/gateway/node_modules ./node_modules
+COPY --from=build /workspace/shared /workspace/shared
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start the application
+CMD ["bun", "run", "dist/main.js"]

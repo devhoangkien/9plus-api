@@ -1,0 +1,47 @@
+# Production Dockerfile for Core Service
+# Build from root context: docker build -f apps/core/Dockerfile.prod .
+
+FROM oven/bun:latest AS build
+
+WORKDIR /workspace
+
+# Copy shared libraries first
+COPY shared ./shared
+
+# Copy core service files
+COPY apps/core ./apps/core
+
+# Install dependencies in core service
+WORKDIR /workspace/apps/core
+RUN bun install 
+
+# Build the application
+RUN bun run build
+
+# Production stage
+FROM oven/bun:latest AS production
+
+WORKDIR /app
+
+# Copy built application and dependencies
+COPY --from=build /workspace/apps/core/dist ./dist
+COPY --from=build /workspace/apps/core/package.json ./
+COPY --from=build /workspace/apps/core/node_modules ./node_modules
+COPY --from=build /workspace/shared /workspace/shared
+
+# Copy prisma files for migrations
+COPY --from=build /workspace/apps/core/prisma ./prisma
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Start the application
+CMD ["bun", "run", "dist/main.js"]

@@ -4,8 +4,10 @@
 services:
   core:
     build:
-      context: ./apps/core
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/core/Dockerfile.prod
+      args:
+        - NODE_ENV=production
     image: "9plus/core:latest"
     container_name: "9plus-core-prod"
     networks:
@@ -33,8 +35,10 @@ services:
 
   gateway:
     build:
-      context: ./apps/gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/gateway/Dockerfile.prod
+      args:
+        - NODE_ENV=production
     image: "9plus/gateway:latest"
     container_name: "9plus-gateway-prod"
     networks:
@@ -59,8 +63,10 @@ services:
 
   searcher:
     build:
-      context: ./apps/searcher
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/searcher/Dockerfile.prod
+      args:
+        - NODE_ENV=production
     image: "9plus/searcher:latest"
     container_name: "9plus-searcher-prod"
     networks:
@@ -84,8 +90,10 @@ services:
 
   logger:
     build:
-      context: ./apps/logger
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/logger/Dockerfile.prod
+      args:
+        - NODE_ENV=production
     image: "9plus/logger:latest"
     container_name: "9plus-logger-prod"
     networks:

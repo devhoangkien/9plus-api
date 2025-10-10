@@ -1,0 +1,50 @@
+# Production Dockerfile for Searcher Service
+# Build from root context: docker build -f apps/searcher/Dockerfile.prod .
+
+FROM node:20-alpine AS build
+
+WORKDIR /workspace
+
+# Copy package files first
+COPY apps/searcher/package*.json ./apps/searcher/
+COPY shared/authorization/package*.json ./shared/authorization/
+COPY shared/common/package*.json ./shared/common/
+
+# Install shared libraries first
+WORKDIR /workspace/shared/authorization
+RUN npm install --production
+
+WORKDIR /workspace/shared/common
+RUN npm install --production
+
+# Copy all source code
+WORKDIR /workspace
+COPY shared ./shared
+COPY apps/searcher ./apps/searcher
+
+# Install searcher dependencies (will use already installed shared libs)
+WORKDIR /workspace/apps/searcher
+RUN npm install --production
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Copy application files
+COPY --from=build /workspace/apps/searcher/dist ./dist
+COPY --from=build /workspace/apps/searcher/node_modules ./node_modules
+COPY --from=build /workspace/apps/searcher/package.json ./package.json
+COPY --from=build /workspace/shared /workspace/shared
+
+# Set environment
+ENV NODE_ENV=production
+
+# Expose port
+EXPOSE 3002
+
+# Start the application
+CMD ["node", "dist/main.js"]
