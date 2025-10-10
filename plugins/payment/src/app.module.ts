@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule } from '@bune/common';
+import { LoggerModule } from '@anineplus/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/nestjs-federation'
 @Module({

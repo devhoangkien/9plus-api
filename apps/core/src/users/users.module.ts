@@ -4,11 +4,13 @@ import { UsersResolver } from './users.resolver';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from 'src/redis/redis.module';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
   imports: [
     RedisModule,
     ConfigModule,
+    KafkaModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

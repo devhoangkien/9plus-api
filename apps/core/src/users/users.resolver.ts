@@ -9,7 +9,7 @@ import {
   CaslActionEnum,
   CaslGuard,
   CheckPermissions,
-} from '@bune/casl-authorization';
+} from '@anineplus/authorization';
 import { ResourceEnum } from 'src/common/enums';
 import { User } from 'prisma/@generated';
 
@@ -17,15 +17,7 @@ import { User } from 'prisma/@generated';
 export class UsersResolver {
   constructor(private readonly userService: UsersService) {}
 
-  @Mutation(() => User)
-  async register(@Args('input') input: RegisterUserInput) {
-    return this.userService.register(input);
-  }
-
-  @Mutation(() => LoginResponse)
-  async login(@Args('input') input: LoginUserInput) {
-    return this.userService.login(input);
-  }
+ 
 
   @Query(() => User)
   @UseGuards(AuthGuard)
@@ -41,13 +33,4 @@ export class UsersResolver {
     return this.userService.checkUserExists(data);
   }
 
-  @Mutation(() => Boolean)
-  async logout(@Context() context) {
-    const headers = context.req.headers;
-    const token = headers['authorization'];
-    if (!token) {
-      return true;
-    }
-    return this.userService.logout(token);
-  }
 }

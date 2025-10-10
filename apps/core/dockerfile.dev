@@ -7,16 +7,16 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /v
 # Set the working directory
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package.json  ./
+# Copy shared libraries first
+COPY shared /app/shared
 
+# Copy package files first for better caching
+COPY apps/core/package.json ./
 
 # Build & link libs THEN install dependencies for main app
-RUN cd /app/libs/casl-authorization && bun i && bun run build && bun link \
- && cd /app/libs/common && bun i && bun run build && bun link \
- && cd /app \
- && bun install 
-#--production=false 2>/dev/null || bun install --ignore-scripts 2>/dev/null || echo "Some packages failed to install, continuing..."
+RUN 
+    cd /app && \
+    bun install
 
 # Copy prisma schema first
 # COPY microservice/user-service/prisma ./prisma
@@ -25,7 +25,7 @@ RUN cd /app/libs/casl-authorization && bun i && bun run build && bun link \
 RUN bunx prisma generate || npx prisma generate || echo "Prisma generate completed with warnings"
 
 # Copy source code and config files
-COPY . .
+COPY apps/core .
 # COPY nest-cli.json tsconfig*.json eslint.config.mjs .prettierrc ./
 
 # Set environment variables for development

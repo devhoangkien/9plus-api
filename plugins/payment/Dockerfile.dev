@@ -1,35 +1,37 @@
-# Use Bun as the base image
-FROM oven/bun:latest AS build
+# Development Dockerfile for Payment Plugin
+FROM oven/bun:1.2.19-alpine
+
+# Install system dependencies
+RUN apk add --no-cache curl netcat-openbsd
 
 # Set the working directory
 WORKDIR /app
 
+# Copy shared libraries first
+COPY shared /app/shared
+
 # Copy package files first for better caching
-COPY package.json bun.lock ./
+COPY plugins/payment/package.json plugins/payment/bun.lock* ./
 
 # Install dependencies
 RUN bun install --frozen-lockfile
 
-# Copy the rest of the application
-COPY . .
+# Copy source code
+COPY plugins/payment .
 
-# Build the application
-RUN bun run build
+# Create logs directory
+RUN mkdir -p logs
 
-# Use a lightweight Bun image for production
-FROM oven/bun:latest AS production
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV PORT=3100
 
-WORKDIR /app
+# Expose the development port
+EXPOSE 3100
 
-# Copy only necessary files from the build stage
-COPY --from=build /app /app
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3100/health || exit 1
 
-# Set environment variables
-ARG PORT=50052  # Default port if not provided
-ENV PORT=${PORT}
-
-# Expose the application port dynamically
-EXPOSE ${PORT}
-
-# Start the NestJS application using Bun
-CMD ["bun", "run", "start:prod"]
+# Start the application in development mode with hot reloading
+CMD ["bun", "run", "start:dev"]

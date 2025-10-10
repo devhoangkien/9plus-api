@@ -7,15 +7,17 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /v
 # Set the working directory
 WORKDIR /app
 
+# Copy shared libraries first
+COPY shared /app/shared
+
 # Copy package files first for better caching
-COPY package.json  ./
+COPY apps/gateway/package.json ./
 
-# Install dependencies, allowing failures for problematic packages
-RUN bun install --production=false 2>/dev/null || bun install --ignore-scripts 2>/dev/null || echo "Some packages failed to install, continuing..."
-
+# Install dependencies
+RUN cd /app && bun install
 
 # Copy source code and config files
-COPY . .
+COPY apps/gateway .
 
 # Set environment variables for development
 ENV NODE_ENV=development

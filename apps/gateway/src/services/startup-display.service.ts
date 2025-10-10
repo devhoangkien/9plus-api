@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LoggerService } from '@bune/common';
+import { LoggerService } from '@anineplus/common';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import { GatewayCacheService } from './gateway-cache.service';
-import { GatewayUrlResolver } from 'src/resolvers/gateway-url-resolver';
+import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
 
 @Injectable()
 export class StartupDisplayService {
@@ -49,8 +49,6 @@ export class StartupDisplayService {
     this.loggerService.log(`🔗 GraphQL endpoint: ${chalk.yellowBright(`${baseUrl}/graphql`)}`);
     this.loggerService.log(`🔗 REST API endpoint: ${chalk.cyanBright(`${baseUrl}/api`)}`);
     this.loggerService.log(`📖 Swagger UI: ${chalk.greenBright(`${baseUrl}/api/swagger`)}`);
-    this.loggerService.log(`🏥 Health check: ${chalk.magenta(`${baseUrl}/health`)}`);
-    this.loggerService.log(`📊 Cache stats: ${chalk.gray(`${baseUrl}/cache/stats`)}`);
   }
 
   /**

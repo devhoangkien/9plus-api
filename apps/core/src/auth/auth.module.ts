@@ -7,13 +7,12 @@ import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LocalAuthGuard } from './guards/local-auth.guard';
 import { TwoFactorService } from './two-factor.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 import { UsersModule } from '../users/users.module';
 import { RedisModule } from '../redis/redis.module';
+import { RequestContextService } from '@anineplus/common';
 
 @Module({
   imports: [
@@ -37,20 +36,18 @@ import { RedisModule } from '../redis/redis.module';
     JwtStrategy,
     LocalStrategy,
     GoogleStrategy,
-    JwtAuthGuard,
-    LocalAuthGuard,
     TwoFactorService,
     PasswordService,
     TokenService,
+    RequestContextService,
   ],
   controllers: [],
   exports: [
     AuthService,
-    JwtAuthGuard,
-    LocalAuthGuard,
     TwoFactorService,
     PasswordService,
     TokenService,
+    RequestContextService,
   ],
 })
 export class AuthModule {}

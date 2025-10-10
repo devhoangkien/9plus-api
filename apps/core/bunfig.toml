@@ -1,4 +1,11 @@
 [watch]
+# Watch shared directories for changes
+paths = [
+  "src/**/*",
+  "../../shared/common/src/**/*",
+  "../../shared/authorization/src/**/*"
+]
+
 # Global ignore patterns for the workspace
 ignore = [
   "**/node_modules/**",

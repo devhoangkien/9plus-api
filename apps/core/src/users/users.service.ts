@@ -2,11 +2,12 @@ import { Injectable, NotFoundException, BadRequestException, HttpStatus } from '
 import { JwtService } from '@nestjs/jwt';
 import { hashPassword, verifyPassword } from '../common/functions';
 import { ERROR_MESSAGES, ROLE_USER } from '../common/constants';
-import { createGraphQLError } from '@bune/common';
+import { createGraphQLError } from '@anineplus/common';
 import { RedisService } from '../redis/redis.service';
 import { LoginUserInput, RegisterUserInput } from './inputs';
 import { CheckUserExistDto, LoginResponse } from './dtos';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { KafkaProducerService } from '../kafka/kafka-producer.service';
 
 export interface CreateUserInput {
   email: string;
@@ -46,6 +47,7 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private readonly redisService: RedisService,
+    private readonly kafkaProducerService: KafkaProducerService,
   ) {}
 
   async register(input: RegisterUserInput): Promise<any> {
@@ -74,7 +76,7 @@ export class UsersService {
       );
     }
     const username = input.email.split('@')[0];
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: input.email,
         username: username,
@@ -85,7 +87,32 @@ export class UsersService {
           },
         },
       },
+      include: {
+        roles: true,
+      },
     });
+
+    // Publish user created event to Kafka
+    try {
+      await this.kafkaProducerService.publishUserEvent('created', {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: user.roles,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }, {
+        source: 'user-registration',
+        correlationId: `user-${user.id}`,
+      });
+    } catch (error) {
+      console.error('Failed to publish user created event:', error);
+      // Continue execution - don't fail user creation if event publishing fails
+    }
+
+    return user;
   }
 
   async login(input: LoginUserInput): Promise<LoginResponse> {
@@ -131,11 +158,36 @@ export class UsersService {
           fullName: input.firstName && input.lastName 
             ? `${input.firstName} ${input.lastName}` 
             : input.firstName || input.lastName,
+            name: input.firstName || input.lastName || input.email,
+          status: input.status || UserStatusEnum.PENDING_VERIFICATION,
+          loginMethod: input.loginMethod  ||LoginMethod.LOCAL,
         },
         include: {
           roles: true,
         },
       });
+
+      // Publish user created event to Kafka
+      try {
+        await this.kafkaProducerService.publishUserEvent('created', {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          phone: user.phone,
+          roles: user.roles,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        }, {
+          source: 'user-management',
+          correlationId: `user-${user.id}`,
+        });
+      } catch (error) {
+        console.error('Failed to publish user created event:', error);
+        // Continue execution - don't fail user creation if event publishing fails
+      }
 
       return user;
     } catch (error) {
@@ -164,7 +216,7 @@ export class UsersService {
         roles: true,
 
 
-        notificationSettings: true,
+
       },
     });
   }
@@ -212,23 +264,54 @@ export class UsersService {
     }
 
     try {
-      // const user = await this.prisma.user.update({
-      //   where: { id },
-      //   data: {
-      //     ...input,
-      //     fullName: input.firstName && input.lastName 
-      //       ? `${input.firstName} ${input.lastName}` 
-      //       : input.fullName,
-      //     updatedAt: new Date(),
-      //   },
-      //   include: {
-      //     roles: true,
-      //     teacherProfile: true,
-      //     studentProfile: true,
-      //   },
-      // });
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...input,
+          fullName: input.firstName && input.lastName 
+            ? `${input.firstName} ${input.lastName}` 
+            : input.fullName,
+          updatedAt: new Date(),
+        },
+        include: {
+          roles: true,
+        },
+      });
 
-      // return user;
+      // Publish user updated event to Kafka
+      try {
+        await this.kafkaProducerService.publishUserEvent('updated', {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          phone: user.phone,
+          avatar: user.avatar,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          address: user.address,
+          status: user.status,
+          roles: user.roles,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        }, {
+          source: 'user-management',
+          correlationId: `user-${user.id}`,
+          previousData: {
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            fullName: existingUser.fullName,
+            phone: existingUser.phone,
+          }
+        });
+      } catch (error) {
+        console.error('Failed to publish user updated event:', error);
+        // Continue execution - don't fail user update if event publishing fails
+      }
+
+      return user;
     } catch (error) {
       throw error;
     }
@@ -249,6 +332,25 @@ export class UsersService {
         username: `${existingUser.username}_deleted_${Date.now()}`,
       },
     });
+
+    // Publish user deleted event to Kafka
+    try {
+      await this.kafkaProducerService.publishUserEvent('deleted', {
+        id: existingUser.id,
+        email: existingUser.email,
+        username: existingUser.username,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        fullName: existingUser.fullName,
+        deletedAt: new Date().toISOString(),
+      }, {
+        source: 'user-management',
+        correlationId: `user-${existingUser.id}`,
+      });
+    } catch (error) {
+      console.error('Failed to publish user deleted event:', error);
+      // Continue execution - don't fail user deletion if event publishing fails
+    }
 
     return true;
   }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GatewayUrlResolver } from 'src/resolvers/gateway-url-resolver';
+import { GatewayUrlResolver } from '../resolvers/gateway-url-resolver';
 
 @Injectable()
 export class GatewayHealthService {

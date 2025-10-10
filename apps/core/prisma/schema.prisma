@@ -1,3 +1,4 @@
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -7,7 +8,7 @@ generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearchPostgres"]
   binaryTargets   = ["native", "linux-arm64-openssl-1.0.x", "linux-arm64-openssl-3.0.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
-  output   = "../prisma/@generated/client"
+  output          = "../prisma/@generated/client"
 }
 
 generator nestgraphql {
@@ -43,141 +44,6 @@ generator nestgraphql {
   prismaClientImport                    = "true"
 }
 
-model User {
-  id                       String         @id @default(cuid())
-  /// @FieldType('Scalars.GraphQLEmailAddress')
-  email                    String         @unique
-  phone                    String?        @unique
-  /// @HideField()
-  password                 String
-  username                 String         @unique @default(cuid())
-  firstName                String?
-  lastName                 String?
-  fullName                 String?
-  avatar                   String?
-  dateOfBirth              DateTime?
-  gender                   GenderEnum?
-  address                  String?
-  status                   UserStatusEnum @default(INACTIVE)
-  emailVerified            Boolean        @default(false)
-  phoneVerified            Boolean        @default(false)
-  twoFactorEnabled         Boolean        @default(false)
-  isFirstLogin             Boolean        @default(true)
-  loginMethod              LoginMethod    @default(LOCAL)
-  lastLogin                DateTime?
-  lastLoginIP              String?
-  passwordResetToken       String?
-  passwordResetExpires     DateTime?
-  emailVerificationToken   String?
-  emailVerificationExpires DateTime?
-  failedLoginAttempts      Int            @default(0)
-  lockoutExpires           DateTime?
-  twoFactorSecret          String?
-  createdAt                DateTime       @default(now())
-  updatedAt                DateTime       @updatedAt
-  deletedAt                DateTime?
-  createdBy                String?
-  updatedBy                String?
-  userSessions             UserSession[]
-  roles                    Role[]         @relation("UserRoles")
-
-  @@index([email])
-  @@index([username])
-  @@index([phone])
-  @@index([status])
-  @@index([emailVerified])
-  @@index([lastLogin])
-  @@map("users")
-}
-
-model UserSession {
-  id           String   @id @default(cuid())
-  userId       String
-  sessionToken String   @unique
-  refreshToken String?  @unique
-  deviceInfo   String?
-  ipAddress    String?
-  userAgent    String?
-  isActive     Boolean  @default(true)
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  lastActivity DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([sessionToken])
-  @@index([isActive])
-  @@index([expiresAt])
-  @@map("user_sessions")
-}
-
-model Role {
-  id           String         @id @default(cuid())
-  name         String
-  key          String         @unique
-  description  String?
-  level        Int            @default(1)
-  isSystemRole Boolean        @default(false)
-  status       RoleStatusEnum @default(ACTIVE)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  permissions  Permission[]   @relation("RolePermissions")
-  users        User[]         @relation("UserRoles")
-
-  @@index([key])
-  @@index([status])
-  @@index([level])
-  @@map("roles")
-}
-
-model Permission {
-  id          String               @id @default(cuid())
-  name        String
-  key         String               @unique
-  description String?
-  resource    String
-  action      String
-  scope       String               @default("OWN")
-  status      PermissionStatusEnum @default(ACTIVE)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  roles       Role[]               @relation("RolePermissions")
-
-  @@index([key])
-  @@index([resource, action])
-  @@index([status])
-  @@map("permissions")
-}
-
-model PluginRegistry {
-  id              String           @id @default(cuid())
-  name            String           @unique
-  displayName     String?
-  description     String?
-  url             String
-  version         String           @default("1.0.0")
-  status          PluginStatusEnum @default(INACTIVE)
-  healthCheck     String? // Health check endpoint
-  metadata        Json? // Additional plugin metadata
-  dependencies    String[]         @default([]) // List of plugin names this plugin depends on
-  tags            String[]         @default([]) // Tags for plugin categorization
-  isRequired      Boolean          @default(false) // Whether this plugin is required for the app to function
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  lastHealthCheck DateTime?
-  createdBy       String?
-  updatedBy       String?
-
-  @@index([name])
-  @@index([status])
-  @@index([isRequired])
-  @@map("plugin_registry")
-}
 
 enum UserStatusEnum {
   ACTIVE
@@ -233,4 +99,305 @@ enum PluginStatusEnum {
   MAINTENANCE
   ERROR
   DEGRADED
+}
+
+
+model User {
+  id                       String         @id @default(cuid())
+  /// @FieldType('Scalars.GraphQLEmailAddress')
+  email                    String         @unique
+  phone                    String?        @unique
+  /// @HideField()
+  password                 String
+  username                 String         @unique @default(cuid())
+  firstName                String?
+  lastName                 String?
+  fullName                 String?
+  avatar                   String?
+  dateOfBirth              DateTime?
+  gender                   GenderEnum?
+  address                  String?
+  status                   UserStatusEnum @default(INACTIVE)
+  emailVerified            Boolean        @default(false)
+  phoneVerified            Boolean        @default(false)
+  twoFactorEnabled         Boolean        @default(false)
+  isFirstLogin             Boolean        @default(true)
+  loginMethod              LoginMethod    @default(LOCAL)
+  lastLogin                DateTime?
+  lastLoginIP              String?
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  failedLoginAttempts      Int            @default(0)
+  lockoutExpires           DateTime?
+  twoFactorSecret          String?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  deletedAt                DateTime?
+  createdBy                String?
+  updatedBy                String?
+  userSessions             UserSession[]
+  roles                    Role[]         @relation("UserRoles")
+
+  name        String
+  image       String?
+  role        String?
+  sessions    Session[]
+  accounts    Account[]
+  teammembers TeamMember[]
+  members     Member[]
+  invitations Invitation[]
+
+  @@index([email])
+  @@index([username])
+  @@index([phone])
+  @@index([status])
+  @@index([emailVerified])
+  @@index([lastLogin])
+  @@map("users")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  refreshToken String?  @unique
+  deviceInfo   String?
+  ipAddress    String?
+  userAgent    String?
+  isActive     Boolean  @default(true)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActivity DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("userSessions")
+}
+
+// Global roles table - for system-wide permissions (Admin plugin)
+// This is used for application-level access control (e.g., super admin, admin, user)
+model Role {
+  id           String         @id @default(cuid())
+  name         String
+  key          String         @unique
+  description  String?
+  level        Int            @default(1) // Higher level = more permissions
+  isSystemRole Boolean        @default(false) // System roles can't be deleted
+  status       RoleStatusEnum @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  permissions  Permission[]   @relation("RolePermissions")
+  users        User[]         @relation("UserRoles")
+
+  @@index([key])
+  @@index([status])
+  @@index([level])
+  @@map("roles")
+}
+
+// Global permissions table - for system-wide permissions (Admin plugin)
+// This is used for application-level resource access (e.g., user management, system settings)
+model Permission {
+  id          String               @id @default(cuid())
+  name        String
+  key         String               @unique
+  description String?
+  resource    String // user, session, system, etc.
+  action      String // create, read, update, delete, ban, impersonate, etc.
+  scope       String               @default("ALL") // ALL, OWN, ORGANIZATION
+  status      PermissionStatusEnum @default(ACTIVE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  roles       Role[]               @relation("RolePermissions")
+
+  @@unique([resource, action, scope])
+  @@index([key])
+  @@index([resource, action])
+  @@index([status])
+  @@map("permissions")
+}
+
+model PluginRegistry {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  displayName     String?
+  description     String?
+  url             String
+  version         String           @default("1.0.0")
+  status          PluginStatusEnum @default(INACTIVE)
+  healthCheck     String? // Health check endpoint
+  metadata        Json? // Additional plugin metadata
+  dependencies    String[]         @default([]) // List of plugin names this plugin depends on
+  tags            String[]         @default([]) // Tags for plugin categorization
+  isRequired      Boolean          @default(false) // Whether this plugin is required for the app to function
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  lastHealthCheck DateTime?
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([name])
+  @@index([status])
+  @@index([isRequired])
+  @@map("pluginRegistry")
+}
+
+// Organization-specific role permissions table (Organization plugin)
+// This is for organization-level access control (e.g., owner, admin, content manager)
+// Each organization can have its own set of roles and permissions
+model OrganizationRolePermission {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String // Role name (owner, admin, contentManager, moderator, member, viewer, custom roles)
+  resource       String // Resource name (anime, episode, comment, subscription, analytics, organization, member, invitation, team)
+  action         String // Action name (create, read, update, delete, publish, upload, moderate, cancel, export)
+  description    String?
+  conditions     Json? // Optional conditions for advanced ABAC (Attribute-Based Access Control)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+
+  @@unique([organizationId, role, resource, action])
+  @@index([organizationId])
+  @@index([organizationId, role])
+  @@index([role])
+  @@index([resource, action])
+  @@map("organizationRolePermission")
+}
+
+
+model Session {
+  id                   String   @id
+  expiresAt            DateTime
+  token                String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrganizationId String?
+  activeTeamId         String?
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+model OrganizationRole {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String
+  permission     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+
+  @@map("organizationRole")
+}
+
+model Team {
+  id             String       @id
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime
+  updatedAt      DateTime?    @updatedAt
+  teammembers    TeamMember[]
+
+  @@map("team")
+}
+
+model TeamMember {
+  id        String    @id
+  teamId    String
+  team      Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime?
+
+  @@map("teamMember")
+}
+
+model Organization {
+  id                        String                       @id
+  name                      String
+  slug                      String
+  logo                      String?
+  createdAt                 DateTime
+  metadata                  String?
+  organizationroles         OrganizationRole[]
+  organizationRolePermissions OrganizationRolePermission[]
+  teams                     Team[]
+  members                   Member[]
+  invitations               Invitation[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  createdAt      DateTime
+
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  teamId         String?
+  status         String
+  expiresAt      DateTime
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
 }

@@ -1,21 +1,39 @@
 {
   "projects": {
-    "casl-authorization": {
+    "authorization": {
       "type": "library",
-      "root": "libs/casl-authorization",
+      "root": "shared/authorization",
       "entryFile": "index",
-      "sourceRoot": "libs/casl-authorization/src",
+      "sourceRoot": "shared/authorization/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/casl-authorization/tsconfig.lib.json"
+        "tsConfigPath": "shared/authorization/tsconfig.lib.json"
       }
     },
     "common": {
       "type": "library",
-      "root": "libs/common",
+      "root": "shared/common",
       "entryFile": "index",
-      "sourceRoot": "libs/common/src",
+      "sourceRoot": "shared/common/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
+        "tsConfigPath": "shared/common/tsconfig.lib.json"
+      }
+    },
+    "searcher": {
+      "type": "application",
+      "root": "apps/searcher",
+      "entryFile": "main",
+      "sourceRoot": "apps/searcher/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/searcher/tsconfig.app.json"
+      }
+    },
+    "logger": {
+      "type": "application",
+      "root": "apps/logger",
+      "entryFile": "main",
+      "sourceRoot": "apps/logger/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/logger/tsconfig.app.json"
       }
     }
   },

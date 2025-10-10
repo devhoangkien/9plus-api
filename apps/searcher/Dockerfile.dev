@@ -1,0 +1,33 @@
+# Development Dockerfile for Searcher Service
+FROM oven/bun:1.2.19-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache curl netcat-openbsd
+
+# Copy shared libraries first
+COPY shared /app/shared
+
+# Copy package files
+COPY apps/searcher/package.json apps/searcher/bun.lock* ./
+
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY apps/searcher .
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose port
+EXPOSE 3002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3002/health || exit 1
+
+# Development command with hot reload
+CMD ["bun", "run", "start:dev"]

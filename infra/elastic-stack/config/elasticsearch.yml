@@ -1,0 +1,21 @@
+cluster.name: "anineplus-cluster"
+network.host: 0.0.0.0
+http.port: 9200
+discovery.type: single-node
+
+# Security settings
+xpack.security.enabled: true
+xpack.security.authc.api_key.enabled: true
+
+# Disable SSL for development
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Memory settings
+bootstrap.memory_lock: true
+
+# Index settings
+action.auto_create_index: .monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*,users,roles,permissions,logs*
+
+# Logging
+logger.level: INFO

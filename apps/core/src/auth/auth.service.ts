@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -10,11 +10,14 @@ import { LoginMethod } from 'prisma/@generated';
 import { LoginResponse } from 'src/users/dtos';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterUserInput } from 'src/users/inputs';
+import { RequestContextService } from '@anineplus/common';
 
 
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -22,15 +25,24 @@ export class AuthService {
     private usersService: UsersService,
     private passwordService: PasswordService,
     private twoFactorService: TwoFactorService,
+    private requestContextService: RequestContextService,
   ) {}
 
   async register(registerInput: RegisterUserInput, ipAddress?: string): Promise<LoginResponse> {
     const { email, password } = registerInput;
+    const requestId = this.requestContextService.getRequestId();
+
+    this.logger.log(`[${requestId}] 📝 Registration attempt for email: ${email}`);
 
     // Check if user already exists
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
-      throw new BadRequestException('User with this email already exists');
+      this.logger.warn(`[${requestId}] ⚠️ Registration failed: User already exists - ${email}`);
+      throw new BadRequestException({
+        message: 'User with this email already exists',
+        messageCode: 0,
+        requestId,
+      });
     }
 
     // Hash password
@@ -45,7 +57,7 @@ export class AuthService {
       loginMethod: LoginMethod.LOCAL,
     });
 
-    // Log registration
+    this.logger.log(`[${requestId}] ✅ User registered successfully: ${user.id} - ${email}`);
    
 
     // Generate tokens

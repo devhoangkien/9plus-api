@@ -1,0 +1,24 @@
+{
+  "name": "elasticsearch-sink-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "tasks.max": "3",
+    "topics.regex": "user\\.(created|updated|deleted)|role\\.(created|updated|deleted)|permission\\.(created|updated|deleted)",
+    "connection.url": "http://elasticsearch:9200",
+    "connection.username": "elastic",
+    "connection.password": "changeme",
+    "type.name": "_doc",
+    "key.ignore": "false",
+    "schema.ignore": "true",
+    "behavior.on.null.values": "delete",
+    "behavior.on.malformed.documents": "warn",
+    "transforms": "AddTimestamp,RouteToIndex",
+    "transforms.AddTimestamp.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+    "transforms.AddTimestamp.field": "timestamp",
+    "transforms.AddTimestamp.target.type": "Timestamp",
+    "transforms.RouteToIndex.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.RouteToIndex.regex": "([^.]+)\\.(.*)",
+    "transforms.RouteToIndex.replacement": "$1s",
+    "topic.index.map": "user.created:users,user.updated:users,user.deleted:users,role.created:roles,role.updated:roles,role.deleted:roles,permission.created:permissions,permission.updated:permissions,permission.deleted:permissions"
+  }
+}

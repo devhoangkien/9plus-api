@@ -1,7 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GqlAllExceptionsFilter, GqlValidationPipe } from '@bune/common';
-import { LoggerService } from '@bune/common';
+import { GqlAllExceptionsFilter, GqlValidationPipe } from '@anineplus/common';
+import { LoggerService } from '@anineplus/common';
+
+// Workaround for KafkaJS with Bun runtime
+// See: https://github.com/tulios/kafkajs/issues/1751
+// Override performance.now() to use Date.now() instead
+if (typeof performance !== 'undefined') {
+  const startTime = Date.now();
+  (performance as any).now = function() {
+    return Date.now() - startTime;
+  };
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
