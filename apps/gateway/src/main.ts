@@ -42,14 +42,14 @@ async function bootstrap() {
 
   // Load federated schema
   const { schema } = await gateway.load();
-  cacheService.clear();
+  // Cache disabled - no need to clear
+  // cacheService.clear();
   
-  // Create Sofa API using factory
+  // Create Sofa API using factory (with response formatting built-in)
   const sofa = sofaFactory.createSofaApi(schema);
 
   // Mount Sofa API
   app.use('/api', sofa);
-  
   
   // Start the server
   const port = urlResolver.getPort();

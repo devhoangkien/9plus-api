@@ -65,14 +65,14 @@ export class GatewayHealthService {
   }
 
   /**
-   * Get cache statistics
+   * Get cache statistics (Cache is disabled)
    */
   getCacheStats() {
-    // Note: This would need to be implemented with access to the cache instance
     return {
-      size: 'N/A - Need cache instance access',
-      maxSize: this.configService.get<number>('CACHE_MAX_SIZE', 1000),
-      ttl: this.configService.get<number>('CACHE_TTL_MINUTES', 5) * 60 * 1000,
+      enabled: false,
+      size: 'N/A - Cache disabled',
+      maxSize: 0,
+      ttl: 0,
     };
   }
 
@@ -84,8 +84,7 @@ export class GatewayHealthService {
     this.logger.log(`   Host: ${host}`);
     this.logger.log(`   Port: ${port}`);
     this.logger.log(`   Protocol: ${protocol}`);
-    this.logger.log(`   Cache Max Size: ${this.configService.get('CACHE_MAX_SIZE', 1000)}`);
-    this.logger.log(`   Cache TTL: ${this.configService.get('CACHE_TTL_MINUTES', 5)} minutes`);
+    this.logger.log(`   Cache: DISABLED`);
     this.logger.log(`   Request Timeout: ${this.configService.get('REQUEST_TIMEOUT_MS', 30000)}ms`);
   }
 }

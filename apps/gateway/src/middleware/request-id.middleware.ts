@@ -15,7 +15,7 @@ export class RequestIdMiddleware implements NestMiddleware {
 
     // Set response header for tracking
     res.setHeader('X-Request-Id', requestId);
-
+    console.log('Assigned Request ID:', requestId);
     // Run within context
     this.contextService.run(
       {

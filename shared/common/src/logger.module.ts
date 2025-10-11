@@ -1,9 +1,12 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerService, LoggerOptions } from './logger.service';
+import { RequestContextService } from './services/request-context.service';
 
 @Module({
   imports: [ConfigModule],
+  providers: [RequestContextService],
+  exports: [RequestContextService],
 })
 export class LoggerModule {
   static forRoot(options: LoggerOptions): DynamicModule {
@@ -28,8 +31,10 @@ export class LoggerModule {
             return new LoggerService(mergedOptions);
           },
         },
+        RequestContextService,
       ],
-      exports: [LoggerService],
+      exports: [LoggerService, RequestContextService],
+      global: true,
     };
   }
 }
