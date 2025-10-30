@@ -34,10 +34,10 @@ export class SubscriptionPlanService {
     return plan;
   }
 
-  async findByType(type: string) {
+  async findByType(type: PlanType) {
     return this.prisma.subscriptionPlan.findMany({
       where: {
-        type: type as PlanType,
+        type,
         isVisible: true,
         status: 'ACTIVE',
       },

@@ -31,6 +31,10 @@ export class SubscriptionService {
     const now = new Date();
     const periodEnd = new Date(now);
 
+    // ONE_TIME plans get a long period (10 years) as they don't auto-renew
+    const ONE_TIME_PERIOD_YEARS = 10;
+    const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
     switch (plan.billingCycle) {
       case 'MONTHLY':
         periodEnd.setMonth(periodEnd.getMonth() + 1);
@@ -42,7 +46,7 @@ export class SubscriptionService {
         periodEnd.setFullYear(periodEnd.getFullYear() + 1);
         break;
       case 'ONE_TIME':
-        periodEnd.setFullYear(periodEnd.getFullYear() + 10);
+        periodEnd.setFullYear(periodEnd.getFullYear() + ONE_TIME_PERIOD_YEARS);
         break;
     }
 
@@ -58,7 +62,7 @@ export class SubscriptionService {
         isTrialing: input.isTrialing || false,
         trialStart: input.isTrialing ? now : null,
         trialEnd: input.isTrialing
-          ? new Date(now.getTime() + plan.trialDays * 24 * 60 * 60 * 1000)
+          ? new Date(now.getTime() + plan.trialDays * MILLISECONDS_PER_DAY)
           : null,
         nextBillingDate: periodEnd,
         paymentMethodId: input.paymentMethodId,
@@ -183,9 +187,13 @@ export class SubscriptionService {
   async reactivate(id: string): Promise<Subscription> {
     const subscription = await this.findOne(id);
 
-    if (subscription.status !== SubscriptionStatus.CANCELED) {
+    // Allow reactivation if canceled or marked for cancellation
+    if (
+      subscription.status !== SubscriptionStatus.CANCELED &&
+      !subscription.cancelAtPeriodEnd
+    ) {
       throw new BadRequestException(
-        'Only canceled subscriptions can be reactivated',
+        'Only canceled or canceling subscriptions can be reactivated',
       );
     }
 

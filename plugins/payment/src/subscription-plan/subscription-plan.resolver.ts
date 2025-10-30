@@ -1,6 +1,6 @@
 import { Resolver, Query, Args } from '@nestjs/graphql';
 import { SubscriptionPlanService } from './subscription-plan.service';
-import { SubscriptionPlan } from '../../prisma/@generated';
+import { SubscriptionPlan, PlanType } from '../../prisma/@generated';
 
 @Resolver(() => SubscriptionPlan)
 export class SubscriptionPlanResolver {
@@ -19,7 +19,7 @@ export class SubscriptionPlanResolver {
   }
 
   @Query(() => [SubscriptionPlan])
-  async subscriptionPlansByType(@Args('type') type: string) {
+  async subscriptionPlansByType(@Args('type') type: PlanType) {
     return this.subscriptionPlanService.findByType(type);
   }
 }

@@ -12,7 +12,31 @@ import {
 /**
  * PaymentDataLoaderService
  *
- * Provides DataLoader instances for batching payment-related queries.
+ * Provides DataLoader instances for batching payment-related queries to improve performance.
+ *
+ * ## Caching Strategy
+ * - Each DataLoader instance caches results for the duration of a single request
+ * - Cache is automatically cleared between requests (request-scoped service)
+ * - Batching reduces N+1 query problems by grouping multiple queries into one
+ *
+ * ## Usage Example
+ * ```typescript
+ * // In a resolver
+ * constructor(private dataLoaderService: PaymentDataLoaderService) {}
+ *
+ * @ResolveField()
+ * async subscription(@Parent() user: User) {
+ *   const loader = this.dataLoaderService.createSubscriptionByIdLoader();
+ *   return loader.load(user.subscriptionId);
+ * }
+ * ```
+ *
+ * ## Available Loaders
+ * - Subscription: by ID, by user ID
+ * - SubscriptionPlan: by ID
+ * - PaymentMethod: by ID, by user ID
+ * - Invoice: by ID, by user ID
+ * - Transaction: by ID, by user ID
  */
 @Injectable()
 export class PaymentDataLoaderService {
