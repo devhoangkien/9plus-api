@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from 'src/redis/redis.module';
 import { KafkaModule } from '../kafka/kafka.module';
+import { UsersDataLoaderService } from './users.dataloader.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { KafkaModule } from '../kafka/kafka.module';
       }),
     }),
   ],
-  providers: [UsersService, UsersResolver],
-  exports: [UsersService],
+  providers: [UsersService, UsersResolver, UsersDataLoaderService],
+  exports: [UsersService, UsersDataLoaderService],
 })
 export class UsersModule {}
