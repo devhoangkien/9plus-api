@@ -14,9 +14,11 @@ DataLoader is a utility that:
 ## Architecture
 
 ### Base Service
-- **Location**: `apps/core/src/common/services/dataloader.service.ts`
+- **Location**: `shared/common/src/services/dataloader.service.ts`
+- **Package**: `@anineplus/common`
 - **Purpose**: Generic DataLoader manager for creating and managing DataLoader instances
 - **Scope**: Request-scoped to ensure each GraphQL request gets fresh DataLoader instances
+- **Usage**: Can be imported from `@anineplus/common` in any service (core, searcher, gateway, etc.)
 
 ### Service-Specific DataLoaders
 
@@ -106,11 +108,18 @@ query {
 
 ## Adding New DataLoaders
 
-To add DataLoader support to a new service:
+To add DataLoader support to any service (core, searcher, gateway, etc.):
 
-1. **Create DataLoader Service**:
+1. **Import DataLoader from shared/common**:
 ```typescript
-// apps/core/src/yourmodule/yourmodule.dataloader.service.ts
+// In any service: apps/core, apps/searcher, apps/gateway, etc.
+import DataLoader from 'dataloader';
+import { DataLoaderService } from '@anineplus/common';
+```
+
+2. **Create DataLoader Service**:
+```typescript
+// Example: apps/core/src/yourmodule/yourmodule.dataloader.service.ts
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
 import { PrismaService } from '../prisma/prisma.service';
@@ -137,10 +146,11 @@ export class YourModuleDataLoaderService {
 }
 ```
 
-2. **Update Service**:
+3. **Update Service**:
 ```typescript
 // yourmodule.service.ts
 import { YourModuleDataLoaderService } from './yourmodule.dataloader.service';
+import DataLoader from 'dataloader';
 
 @Injectable()
 export class YourModuleService {
@@ -159,7 +169,7 @@ export class YourModuleService {
 }
 ```
 
-3. **Update Module**:
+4. **Update Module**:
 ```typescript
 // yourmodule.module.ts
 @Module({
