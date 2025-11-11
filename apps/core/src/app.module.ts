@@ -14,6 +14,7 @@ import {  PrismaModule } from './prisma/prisma.module';
 import { KafkaModule } from './kafka/kafka.module';
 import { BetterAuthModule } from './auth/better-auth.module';
 import { OrganizationModule } from './organization/organization.module';
+import { CoreSagaModule } from './saga/saga.module';
 
 // Create Core-specific middleware
 const CoreRequestIdMiddleware = createRequestIdMiddleware('core');
@@ -49,6 +50,7 @@ const CoreRequestIdMiddleware = createRequestIdMiddleware('core');
     RedisModule,
     PluginManagementModule,
     KafkaModule,
+    CoreSagaModule, // Saga pattern implementation
   ],
   providers: [
     RequestContextService,
