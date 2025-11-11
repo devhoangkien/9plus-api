@@ -7,7 +7,6 @@ import {
   SagaStep,
   SagaStatus,
   SagaContext,
-  SagaStepStatus,
 } from './saga.interface';
 
 describe('SagaOrchestrator', () => {

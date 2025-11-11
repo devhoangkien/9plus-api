@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import {
   SagaOrchestrator,
   SagaConfig,
@@ -47,7 +48,7 @@ export class UserRegistrationSaga {
    * Execute user registration saga
    */
   async execute(data: UserRegistrationData): Promise<SagaResult<UserRegistrationData>> {
-    const sagaId = `user-registration-${Date.now()}`;
+    const sagaId = `user-registration-${randomUUID()}`;
     
     const config: SagaConfig = {
       sagaId,
@@ -106,9 +107,7 @@ export class UserRegistrationSaga {
         
         const hashedPassword = await hashPassword(context.data.password);
         
-        // Store hashed password in context for next steps
-        context.data.password = hashedPassword;
-        
+        // Return hashed password without mutating input
         return { hashedPassword };
       },
       compensate: async () => {
@@ -128,13 +127,22 @@ export class UserRegistrationSaga {
       execute: async (context) => {
         this.logger.debug(`[${context.sagaId}] Creating user in database`);
         
-        const username = context.data.username || context.data.email.split('@')[0];
+        // Get hashed password from previous step
+        const hashResult = context.stepResults.get('HashPassword');
+        const hashedPassword = hashResult?.hashedPassword;
+        
+        if (!hashedPassword) {
+          throw new Error('Hashed password not found from previous step');
+        }
+        
+        // Generate and validate username
+        const username = context.data.username || this.generateUsername(context.data.email);
         
         const user = await this.prisma.user.create({
           data: {
             email: context.data.email,
             username,
-            password: context.data.password,
+            password: hashedPassword,
             firstName: context.data.firstName,
             lastName: context.data.lastName,
             fullName: context.data.firstName && context.data.lastName
@@ -293,5 +301,26 @@ export class UserRegistrationSaga {
         }
       },
     };
+  }
+
+  /**
+   * Generate a valid username from email
+   * Ensures username meets system requirements
+   */
+  private generateUsername(email: string): string {
+    const baseUsername = email.split('@')[0];
+    
+    // Remove special characters and ensure it meets requirements
+    const cleanUsername = baseUsername
+      .replace(/[^a-zA-Z0-9_-]/g, '')
+      .toLowerCase()
+      .substring(0, 30); // Limit length
+    
+    // Ensure username is not empty after sanitization
+    if (!cleanUsername) {
+      throw new Error('Unable to generate valid username from email');
+    }
+    
+    return cleanUsername;
   }
 }

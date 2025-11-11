@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
   ISagaOrchestrator,
   SagaConfig,
@@ -22,8 +22,8 @@ export class SagaOrchestrator implements ISagaOrchestrator {
   private readonly logger = new Logger(SagaOrchestrator.name);
 
   constructor(
-    private readonly eventPublisher?: ISagaEventPublisher,
-    private readonly stateStore?: ISagaStateStore,
+    @Optional() private readonly eventPublisher?: ISagaEventPublisher,
+    @Optional() private readonly stateStore?: ISagaStateStore,
   ) {}
 
   /**
@@ -93,8 +93,8 @@ export class SagaOrchestrator implements ISagaOrchestrator {
             error: error as Error,
           });
 
-          // Execute compensation for all completed steps
-          await this.compensate(context, completedSteps.reverse());
+          // Execute compensation for all completed steps in reverse order
+          await this.compensate(context, [...completedSteps].reverse());
           
           break;
         }

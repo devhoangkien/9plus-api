@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import {
   SagaOrchestrator,
   SagaConfig,
@@ -54,7 +55,7 @@ export class SubscriptionPaymentSaga {
   async execute(
     data: SubscriptionPaymentData,
   ): Promise<SagaResult<SubscriptionPaymentData>> {
-    const sagaId = `subscription-payment-${data.userId}-${Date.now()}`;
+    const sagaId = `subscription-payment-${data.userId}-${randomUUID()}`;
     
     const config: SagaConfig = {
       sagaId,
@@ -341,8 +342,9 @@ export class SubscriptionPaymentSaga {
     // Simulate payment processing
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // Simulate random payment failure for testing
-        const success = Math.random() > 0.1; // 90% success rate
+        // Simulate random payment failure for testing (only in development/test environments)
+        const simulateFailure = process.env.SIMULATE_PAYMENT_FAILURES === 'true';
+        const success = simulateFailure ? Math.random() > 0.1 : true; // 90% success rate when enabled
         
         if (success) {
           resolve({
