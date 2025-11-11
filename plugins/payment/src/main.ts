@@ -1,22 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GqlAllExceptionsFilter, GqlValidationPipe } from '@anineplus/common';
-import { LoggerService } from '@anineplus/common';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  const logger = app.get(LoggerService);
 
-  logger.log('🚀 Starting User Service...');
+  console.log('🚀 Starting Payment Service...');
 
-  app.useGlobalFilters(new GqlAllExceptionsFilter());
-  app.useGlobalPipes(new GqlValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
 
   const port = process.env.PORT ?? 50052;
   await app.listen(port);
 
-  logger.log(`✅ User Service is running on: http://localhost:${port}/graphql`);
+  console.log(
+    `✅ Payment Service is running on: http://localhost:${port}/graphql`,
+  );
 }
 
 bootstrap().catch((error) => {
