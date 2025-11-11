@@ -8,6 +8,9 @@ import { LoginUserInput, RegisterUserInput } from './inputs';
 import { CheckUserExistDto, LoginResponse } from './dtos';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { KafkaProducerService } from '../kafka/kafka-producer.service';
+import { UsersDataLoaderService } from './users.dataloader.service';
+import DataLoader from 'dataloader';
+import { User, UserStatusEnum, LoginMethod } from '@prisma/client';
 
 export interface CreateUserInput {
   email: string;
@@ -43,12 +46,22 @@ export interface UpdateUserInput {
 
 @Injectable()
 export class UsersService {
+  private userByIdLoader: DataLoader<string, User | null>;
+  private userByEmailLoader: DataLoader<string, User | null>;
+  private userByUsernameLoader: DataLoader<string, User | null>;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly kafkaProducerService: KafkaProducerService,
-  ) {}
+    private readonly usersDataLoaderService: UsersDataLoaderService,
+  ) {
+    // Initialize DataLoaders
+    this.userByIdLoader = this.usersDataLoaderService.createUserByIdLoader();
+    this.userByEmailLoader = this.usersDataLoaderService.createUserByEmailLoader();
+    this.userByUsernameLoader = this.usersDataLoaderService.createUserByUsernameLoader();
+  }
 
   async register(input: RegisterUserInput): Promise<any> {
     const existingUser = await this.prisma.user.findUnique({
@@ -210,15 +223,7 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<any | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        roles: true,
-
-
-
-      },
-    });
+    return this.userByIdLoader.load(id);
   }
 
   async findUserById(userId: string): Promise<any> {
@@ -236,25 +241,11 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<any | null> {
-    return this.prisma.user.findUnique({
-      where: { email },
-      include: {
-        roles: true,
-
-
-      },
-    });
+    return this.userByEmailLoader.load(email);
   }
 
   async findByUsername(username: string): Promise<any | null> {
-    return this.prisma.user.findUnique({
-      where: { username },
-      include: {
-        roles: true,
-
-
-      },
-    });
+    return this.userByUsernameLoader.load(username);
   }
 
   async update(id: string, input: UpdateUserInput): Promise<any> {
