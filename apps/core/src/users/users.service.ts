@@ -10,7 +10,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { KafkaProducerService } from '../kafka/kafka-producer.service';
 import { UsersDataLoaderService } from './users.dataloader.service';
 import DataLoader from 'dataloader';
-import { User, UserStatusEnum, LoginMethod } from '@prisma/client';
+import { User } from 'prisma/@generated';
+import { UserStatusEnum } from 'prisma/@generated';
+import { LoginMethod } from 'prisma/@generated';
+import { GenderEnum } from 'prisma/@generated';
 
 export interface CreateUserInput {
   email: string;
@@ -32,7 +35,7 @@ export interface UpdateUserInput {
   gender?: string;
   address?: string;
   phone?: string;
-  status?: string;
+  status?: UserStatusEnum;
   emailVerified?: boolean;
   phoneVerified?: boolean;
   twoFactorEnabled?: boolean;
@@ -94,6 +97,7 @@ export class UsersService {
         email: input.email,
         username: username,
         password: hashedPassword,
+        name: input.firstName || input.lastName || username || input.email, 
         roles: {
           connect: {
             id: role.id,
@@ -113,7 +117,7 @@ export class UsersService {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        roles: user.roles,
+        roles: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }, {
@@ -172,8 +176,8 @@ export class UsersService {
             ? `${input.firstName} ${input.lastName}` 
             : input.firstName || input.lastName,
             name: input.firstName || input.lastName || input.email,
-          status: input.status || UserStatusEnum.PENDING_VERIFICATION,
-          loginMethod: input.loginMethod  ||LoginMethod.LOCAL,
+          status: input.status ? UserStatusEnum[input.status as keyof typeof UserStatusEnum] : UserStatusEnum.PENDING_VERIFICATION,
+          loginMethod: input.loginMethod ? (LoginMethod[input.loginMethod as keyof typeof LoginMethod]) : LoginMethod.LOCAL,
         },
         include: {
           roles: true,
@@ -259,6 +263,8 @@ export class UsersService {
         where: { id },
         data: {
           ...input,
+          gender: input.gender ? (GenderEnum[input.gender as keyof typeof GenderEnum]) : undefined,
+          status: input.status ? UserStatusEnum[input.status as keyof typeof UserStatusEnum] : undefined,
           fullName: input.firstName && input.lastName 
             ? `${input.firstName} ${input.lastName}` 
             : input.fullName,

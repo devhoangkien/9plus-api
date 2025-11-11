@@ -12,7 +12,7 @@
     
     "env:setup": "sh ./scripts/setup-env.sh",
     "i:libs": "sh ./scripts/link-libs.sh",
-    "i:all": "bun run i:libs && sh ./scripts/install.sh",
+    "i:all": "sh ./scripts/install.sh && bun run i:libs",
     "install:all": "sh ./scripts/install.sh",
     "app:lint": "sh ./scripts/lint.sh",
     "app:build": "sh ./scripts/build.sh",
@@ -44,9 +44,7 @@
     "docker:dev:down": "docker compose -f docker-compose-dev.yaml down",
     "docker:dev:restart": "docker compose -f docker-compose-dev.yaml restart",
     "docker:down": "docker compose down",
-    "start": "bun run install && bun run lint && bun run build && bun run docker:build && bun run docker:start",
-    "dev": "bun run docker:dev:up",
-    
+    "start:all": "sh ./scripts/start-all.sh",
     "dev:full": "bun run event-driven:setup && bun run event-driven:start",
     "test:full": "bun run event-driven:test"
   },
