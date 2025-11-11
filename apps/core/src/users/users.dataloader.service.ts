@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import DataLoader from 'dataloader';
-import { PrismaService } from '../../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { User } from 'prisma/@generated';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 /**
  * UsersDataLoaderService
