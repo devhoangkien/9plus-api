@@ -179,7 +179,7 @@ describe('SagaOrchestrator', () => {
         },
       ];
 
-      const result = await orchestrator.execute(config, steps, { data: 'test' });
+      await orchestrator.execute(config, steps, { data: 'test' });
 
       expect(capturedContext).not.toBeNull();
       expect(capturedContext?.stepResults.get('Step1')).toEqual({ value: 'result1' });
