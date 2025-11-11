@@ -62,8 +62,9 @@ export class StartupDisplayService {
     this.loggerService.log(`   Host: ${chalk.cyan(this.urlResolver.getHost())}`);
     this.loggerService.log(`   Port: ${chalk.cyan(this.urlResolver.getPort().toString())}`);
     this.loggerService.log(`   Protocol: ${chalk.cyan(this.urlResolver.getProtocol())}`);
-    this.loggerService.log(`   Cache Max Size: ${chalk.yellow(cacheStats.maxSize.toString())}`);
-    this.loggerService.log(`   Cache TTL: ${chalk.yellow((cacheStats.ttl / 1000 / 60).toString())} minutes`);
+    this.loggerService.log(`   Cache: ${chalk.red('DISABLED')}`);
+    // this.loggerService.log(`   Cache Max Size: ${chalk.yellow(cacheStats.maxSize.toString())}`);
+    // this.loggerService.log(`   Cache TTL: ${chalk.yellow((cacheStats.ttl / 1000 / 60).toString())} minutes`);
   }
 
   /**

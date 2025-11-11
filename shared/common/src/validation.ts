@@ -1,42 +1,17 @@
 import { ValidationPipe  } from '@nestjs/common';
-import { ErrorType, validateGraphqlError } from './graphql-errors';
+import { validateGraphqlError } from './graphql-errors';
 
 export class GqlValidationPipe extends ValidationPipe {
   constructor() {
     super({
-      exceptionFactory: (errors:any) => {
+      exceptionFactory: (errors: any) => {
         console.log('Validation errors:', errors);
-        const errorMessages = errors.map((error: any) => {
-          const childrenError = error.children.map((children: any) => {
-            const property = children.property;
-            const dynamicKey = Object.keys(children.constraints)[0];
-            const message = children.constraints[dynamicKey];
-
-            if (children.contexts) {
-              const contexts = children.contexts;
-              const errorCode = contexts[dynamicKey].errorCode;
-              const developerNote = contexts[dynamicKey].developerNote;
-
-              return {
-                property,
-                message,
-                errorCode,
-                developerNote,
-              };
-            }
-
-            return {
-              property,
-              message,
-            };
-          });
-
-          return childrenError;
-        });
-
-        return validateGraphqlError(errorMessages[0] as ErrorType[]);
+        
+        // Pass ValidationError[] directly to validateGraphqlError
+        // It will automatically transform them to ErrorType[] format
+        return validateGraphqlError(errors);
       },
-      stopAtFirstError: true,
+      stopAtFirstError: false, // Collect all validation errors
     });
   }
 }

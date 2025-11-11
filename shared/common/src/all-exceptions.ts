@@ -11,30 +11,39 @@ export class GqlAllExceptionsFilter implements GqlExceptionFilter {
     const response = context?.res;
     let status = 500;
     let message = 'Internal Server Error';
-    let messageCode = 0;
-    let stacktrace = [];
+    let extensions: any = {};
 
     if (exception instanceof GraphQLError) {
       message = exception.message;
-      stacktrace = exception.stack?.split('\n') || [];
-      status = exception.extensions?.status || (500 as any);
-      messageCode = exception.extensions?.messageCode as any;
+      status = (exception.extensions?.status as number) || 500;
+      
+      // Preserve all extensions from the original GraphQLError
+      extensions = {
+        ...exception.extensions,
+      };
+      
+      // Add stacktrace in development mode only
+      if (process.env.NODE_ENV !== 'production') {
+        extensions.stacktrace = exception.stack?.split('\n') || [];
+      }
     } else if (exception instanceof Error) {
-      status = 'status' in exception ? exception['status'] : (500 as any);
+      status = ('status' in exception ? (exception as any)['status'] : 500) as number;
       message = exception.message;
-      stacktrace = exception.stack?.split('\n') || [] as any;
+      
+      // Add stacktrace in development mode only
+      if (process.env.NODE_ENV !== 'production') {
+        extensions.stacktrace = exception.stack?.split('\n') || [];
+      }
     } else {
       this.logger.error('Unexpected error', exception);
     }
+    
     if (response) {
       response.status(status).json({
         errors: [
           {
             message,
-            extensions: {
-              messageCode,
-              stacktrace,
-            },
+            extensions,
           },
         ],
         data: null,

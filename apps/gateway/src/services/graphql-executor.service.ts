@@ -18,7 +18,7 @@ export class GraphQLExecutorService {
   ) {}
 
   /**
-   * Create optimized executeWithFetch function with caching and dynamic URL
+   * Create optimized executeWithFetch function WITHOUT caching
    */
   createExecuteFunction() {
     return async ({
@@ -34,27 +34,29 @@ export class GraphQLExecutorService {
     }) => {
       const query = print(document);
       
+      // ===== CACHE DISABLED =====
       // Check if operation should be cached
-      const shouldCache = this.cacheService.shouldCache(query);
-      const cacheKey = shouldCache 
-        ? this.cacheService.generateCacheKey(query, variableValues, operationName)
-        : null;
+      // const shouldCache = this.cacheService.shouldCache(query);
+      // const cacheKey = shouldCache 
+      //   ? this.cacheService.generateCacheKey(query, variableValues, operationName)
+      //   : null;
 
-      // Check cache for queries only
-      if (cacheKey && this.cacheService.has(cacheKey)) {
-        this.logger.debug('📦 Serving cached GraphQL response...');
-        return this.cacheService.get(cacheKey);
-      }
+      // // Check cache for queries only
+      // if (cacheKey && this.cacheService.has(cacheKey)) {
+      //   this.logger.debug('📦 Serving cached GraphQL response...');
+      //   return this.cacheService.get(cacheKey);
+      // }
 
-      this.logger.debug('🔄 Delegating REST API request to GraphQL Gateway...');
+      this.logger.debug('🔄 Delegating REST API request to GraphQL Gateway (NO CACHE)...');
       
       try {
         const response = await this.executeGraphQLRequest(query, variableValues, contextValue, operationName);
         
+        // ===== CACHE DISABLED =====
         // Cache successful query responses only
-        if (cacheKey && !response.errors) {
-          this.cacheService.set(cacheKey, response);
-        }
+        // if (cacheKey && !response.errors) {
+        //   this.cacheService.set(cacheKey, response);
+        // }
 
         return response;
       } catch (error) {

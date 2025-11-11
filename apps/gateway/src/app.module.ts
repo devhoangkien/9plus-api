@@ -21,31 +21,42 @@ import { GraphQLExecutorService } from './services/graphql-executor.service';
 import { StartupDisplayService } from './services/startup-display.service';
 import { GatewayUrlResolver } from './resolvers/gateway-url-resolver';
 import { SofaApiFactory } from './factories/sofa-api.factory';
+import { useRequestIdPlugin } from './plugins/request-id.plugin';
+import { useErrorFormatPlugin } from './plugins/error-format.plugin';
 
 // Create Gateway-specific middleware
 const GatewayRequestIdMiddleware = createRequestIdMiddleware('gateway');
 
+// ===== CACHE DISABLED =====
 // Initialize cache with LRU (Least Recently Used)
-const cache = new LRUCache<string, any>({
-  max: 100, // Maximum number of items in cache
-  ttl: 1000 * 60 * 1, // Cache lifetime (1 minute)
-});
+// const cache = new LRUCache<string, any>({
+//   max: 100, // Maximum number of items in cache
+//   ttl: 1000 * 60 * 1, // Cache lifetime (1 minute)
+// });
 
-// GraphQL call with cache
-async function cachedRequest(query: string, variables: any) {
-  const cacheKey = JSON.stringify({ query, variables });
-
-  if (cache.has(cacheKey)) {
-    return cache.get(cacheKey);
-  }
-
-  // If not in cache, make request
+// GraphQL call WITHOUT cache
+async function directRequest(query: string, variables: any) {
+  // Direct request without caching
   const data = await client.request(query, variables);
-
-  cache.set(cacheKey, data);
-
   return data;
 }
+
+// // GraphQL call with cache (DISABLED)
+// async function cachedRequest(query: string, variables: any) {
+//   const cacheKey = JSON.stringify({ query, variables });
+
+//   if (cache.has(cacheKey)) {
+//     return cache.get(cacheKey);
+//   }
+
+//   // If not in cache, make request
+//   const data = await client.request(query, variables);
+
+//   cache.set(cacheKey, data);
+
+//   return data;
+// }
+// ===== END CACHE DISABLED =====
 
 const getToken = (authToken: string): string => {
   const match = authToken.match(/^Bearer (.*)$/);
@@ -54,6 +65,7 @@ const getToken = (authToken: string): string => {
       HttpStatus.UNAUTHORIZED,
       UNAUTHORIZED_MESSAGE,
       UNAUTHORIZED,
+      undefined, // No validation errors
     );
   }
   return match[1];
@@ -71,6 +83,7 @@ const decodeToken = (tokenString: string) => {
       HttpStatus.UNAUTHORIZED,
       UNAUTHORIZED_MESSAGE,
       UNAUTHORIZED,
+      undefined, // No validation errors
     );
   }
   return decoded;
@@ -105,13 +118,14 @@ const handleAuth = async ({ req }) => {
           HttpStatus.UNAUTHORIZED,
           UNAUTHORIZED_MESSAGE,
           UNAUTHORIZED,
+          undefined, // No validation errors
         );
       }
       const decoded = decodeToken(token);
       // Call UserService to get user roles
       const variables = { keys: decoded.roles };
 
-      const data = await cachedRequest(query, variables);
+      const data = await directRequest(query, variables); // Cache disabled
       const uniquePermissions = extractUniquePermissions(data);
       return {
         userId: decoded.userId,
@@ -123,6 +137,7 @@ const handleAuth = async ({ req }) => {
         HttpStatus.UNAUTHORIZED,
         UNAUTHORIZED_MESSAGE,
         UNAUTHORIZED,
+        undefined, // No validation errors
       );
     }
   } catch (err) {
@@ -130,6 +145,7 @@ const handleAuth = async ({ req }) => {
       HttpStatus.UNAUTHORIZED,
       UNAUTHORIZED_MESSAGE,
       UNAUTHORIZED,
+      undefined, // No validation errors
     );
   }
 };
@@ -141,18 +157,51 @@ const handleAuth = async ({ req }) => {
     GraphQLModule.forRootAsync<YogaGatewayDriverConfig>({
       driver: YogaGatewayDriver,
       imports: [DynamicGatewayModule],
-      inject: [ConfigService, DynamicGatewayService],
+      inject: [ConfigService, DynamicGatewayService, RequestContextService],
       useFactory: async (
         configService: ConfigService,
         dynamicGatewayService: DynamicGatewayService,
+        contextService: RequestContextService,
       ) => {
         // Load subgraphs dynamically
         const subgraphs = await dynamicGatewayService.loadSubgraphs();
         
         return {
-          // server: {
-          //   context: handleAuth,
-          // },
+          plugins: [
+            useRequestIdPlugin(contextService),
+          ],
+          graphqlEndpoint: '/graphql',
+          maskedErrors: false, // Disable error masking to see full errors
+          formatError: (error: any) => {
+            // Extract validation errors from subgraph response
+            if (
+              error.extensions?.response?.body?.errors &&
+              Array.isArray(error.extensions.response.body.errors)
+            ) {
+              const subgraphErrors = error.extensions.response.body.errors;
+              
+              if (subgraphErrors.length > 0) {
+                const firstError = subgraphErrors[0];
+                
+                // Return formatted error with validation details
+                return {
+                  message: firstError.message || error.message,
+                  path: error.path,
+                  locations: error.locations,
+                  extensions: {
+                    ...firstError.extensions,
+                    subgraph: {
+                      url: error.extensions.response.url,
+                      status: error.extensions.response.status,
+                    },
+                  },
+                };
+              }
+            }
+            
+            // Return error as-is if not a wrapped subgraph error
+            return error;
+          },
           gateway: {
             buildService: ({ name, url }) => {
               return new RemoteGraphQLDataSource({
@@ -187,12 +236,14 @@ const handleAuth = async ({ req }) => {
     GraphQLExecutorService,
     SofaApiFactory,
     StartupDisplayService,
-    RequestContextService,
     GatewayRequestIdMiddleware,
+    // RequestContextService is provided by LoggerModule
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(GatewayRequestIdMiddleware).forRoutes('*');
+    consumer
+      .apply(GatewayRequestIdMiddleware)
+      .forRoutes('*');
   }
 }
