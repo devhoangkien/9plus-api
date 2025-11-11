@@ -1,6 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
-  ISagaOrchestrator,
   SagaConfig,
   SagaContext,
   SagaResult,
@@ -9,9 +8,12 @@ import {
   SagaStepStatus,
   SagaEvent,
   SagaEventType,
+} from './saga.interface';
+import {
+  ISagaOrchestrator,
   ISagaEventPublisher,
   ISagaStateStore,
-} from './saga.interface';
+} from './interfaces';
 
 /**
  * Default Saga orchestrator implementation

@@ -115,41 +115,6 @@ export enum SagaEventType {
   STEP_COMPENSATED = 'STEP_COMPENSATED',
 }
 
-/**
- * Interface for Saga orchestrator
- */
-export interface ISagaOrchestrator {
-  execute<T = any>(
-    config: SagaConfig,
-    steps: SagaStep<T>[],
-    initialData: T,
-  ): Promise<SagaResult<T>>;
-  
-  getStatus(sagaId: string): Promise<SagaStatus | null>;
-  
-  compensate<T = any>(
-    context: SagaContext<T>,
-    completedSteps: SagaStep<T>[],
-  ): Promise<void>;
-}
+// Re-export interfaces from the interfaces directory
+export * from './interfaces';
 
-/**
- * Interface for Saga state storage
- */
-export interface ISagaStateStore {
-  save(sagaId: string, state: any): Promise<void>;
-  get(sagaId: string): Promise<any | null>;
-  update(sagaId: string, state: any): Promise<void>;
-  delete(sagaId: string): Promise<void>;
-}
-
-/**
- * Interface for Saga event publisher
- */
-export interface ISagaEventPublisher {
-  publish(event: SagaEvent): Promise<void>;
-  subscribe(
-    eventType: SagaEventType,
-    handler: (event: SagaEvent) => Promise<void>,
-  ): void;
-}

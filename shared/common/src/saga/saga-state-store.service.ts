@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { ISagaStateStore } from './saga.interface';
+import { ISagaStateStore } from './interfaces';
 
 interface StoredState {
   state: any;

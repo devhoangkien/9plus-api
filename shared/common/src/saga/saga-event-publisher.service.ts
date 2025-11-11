@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ISagaEventPublisher, SagaEvent, SagaEventType } from './saga.interface';
+import { SagaEvent, SagaEventType } from './saga.interface';
+import { ISagaEventPublisher } from './interfaces';
 
 /**
  * In-memory implementation of Saga event publisher
