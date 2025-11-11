@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { auth } from './auth.config';
 import type { Session, User } from 'better-auth/types';
+import { ErrorCodes } from '@anineplus/common';
 
 @Injectable()
 export class BetterAuthService  {
@@ -21,7 +22,7 @@ export class BetterAuthService  {
 
       return result;
     } catch (error) {
-      throw new UnauthorizedException('Failed to sign up: ' + error.message);
+      throw new UnauthorizedException({ message: 'Failed to sign up: ' + error.message, code: ErrorCodes.REG_FAILED_TO_SIGN_UP });
     }
   }
 
@@ -39,7 +40,7 @@ export class BetterAuthService  {
 
       return result;
     } catch (error) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({ message: 'Invalid credentials', code: ErrorCodes.AUTH_INVALID_CREDENTIALS });
     }
   }
 
@@ -56,7 +57,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Failed to sign out');
+      throw new UnauthorizedException({ message: 'Failed to sign out', code: ErrorCodes.SESSION_FAILED_TO_SIGN_OUT });
     }
   }
 
@@ -93,7 +94,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Invalid verification token');
+      throw new UnauthorizedException({ message: 'Invalid verification token', code: ErrorCodes.TOKEN_INVALID_VERIFICATION });
     }
   }
 
@@ -127,7 +128,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired reset token');
+      throw new UnauthorizedException({ message: 'Invalid or expired reset token', code: ErrorCodes.TOKEN_INVALID_OR_EXPIRED_RESET });
     }
   }
 
@@ -152,7 +153,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Failed to change password');
+      throw new UnauthorizedException({ message: 'Failed to change password', code: ErrorCodes.SESSION_FAILED_TO_CHANGE_PASSWORD });
     }
   }
 
@@ -169,7 +170,7 @@ export class BetterAuthService  {
 
       return result;
     } catch (error) {
-      throw new UnauthorizedException('Failed to list sessions');
+      throw new UnauthorizedException({ message: 'Failed to list sessions', code: ErrorCodes.SESSION_FAILED_TO_LIST });
     }
   }
 
@@ -189,7 +190,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Failed to revoke session');
+      throw new UnauthorizedException({ message: 'Failed to revoke session', code: ErrorCodes.SESSION_FAILED_TO_REVOKE });
     }
   }
 
@@ -206,7 +207,7 @@ export class BetterAuthService  {
 
       return { success: true };
     } catch (error) {
-      throw new UnauthorizedException('Failed to revoke sessions');
+      throw new UnauthorizedException({ message: 'Failed to revoke sessions', code: ErrorCodes.SESSION_FAILED_TO_REVOKE_ALL });
     }
   }
 }

@@ -10,7 +10,7 @@ import { LoginMethod } from 'prisma/@generated';
 import { LoginResponse } from 'src/users/dtos';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterUserInput } from 'src/users/inputs';
-import { RequestContextService } from '@anineplus/common';
+import { RequestContextService, ErrorCodes } from '@anineplus/common';
 
 
 
@@ -70,31 +70,31 @@ export class AuthService {
       const user = await this.usersService.findByEmail(email);
       if (!user) {
         await this.logFailedLogin(email, 'USER_NOT_FOUND', ipAddress, userAgent);
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException({ message: 'Invalid credentials', code: ErrorCodes.AUTH_INVALID_CREDENTIALS });
       }
 
       // Check account status
       if (user.status === UserStatusEnum.LOCKED) {
         await this.logFailedLogin(email, 'ACCOUNT_LOCKED', ipAddress, userAgent);
-        throw new UnauthorizedException('Account is locked');
+        throw new UnauthorizedException({ message: 'Account is locked', code: ErrorCodes.AUTH_ACCOUNT_LOCKED });
       }
 
       if (user.status === UserStatusEnum.SUSPENDED) {
         await this.logFailedLogin(email, 'ACCOUNT_SUSPENDED', ipAddress, userAgent);
-        throw new UnauthorizedException('Account is suspended');
+        throw new UnauthorizedException({ message: 'Account is suspended', code: ErrorCodes.AUTH_ACCOUNT_SUSPENDED });
       }
 
       // Check lockout
       if (user.lockoutExpires && user.lockoutExpires > new Date()) {
         await this.logFailedLogin(email, 'ACCOUNT_LOCKED_OUT', ipAddress, userAgent);
-        throw new UnauthorizedException('Account is temporarily locked due to failed attempts');
+        throw new UnauthorizedException({ message: 'Account is temporarily locked due to failed attempts', code: ErrorCodes.AUTH_ACCOUNT_LOCKED_OUT });
       }
 
       // Validate password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         await this.handleFailedLogin(user, ipAddress, userAgent);
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException({ message: 'Invalid credentials', code: ErrorCodes.AUTH_INVALID_CREDENTIALS });
       }
 
       // Reset failed attempts on successful login
@@ -132,20 +132,20 @@ export class AuthService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Login failed');
+      throw new BadRequestException({ message: 'Login failed', code: ErrorCodes.AUTH_LOGIN_FAILED });
     }
   }
 
   async verifyTwoFactor(userId: string, token: string, ipAddress?: string, userAgent?: string): Promise<LoginResponse> {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({ message: 'Invalid credentials', code: ErrorCodes.AUTH_INVALID_CREDENTIALS });
     }
 
     const isValidToken = await this.twoFactorService.verifyToken(user.id, token);
     if (!isValidToken) {
       await this.logFailedLogin(user.email, 'INVALID_2FA_TOKEN', ipAddress, userAgent);
-      throw new UnauthorizedException('Invalid 2FA token');
+      throw new UnauthorizedException({ message: 'Invalid 2FA token', code: ErrorCodes.TWO_FA_INVALID_TOKEN });
     }
 
     // Log successful login
@@ -168,7 +168,7 @@ export class AuthService {
 
       const user = await this.usersService.findById(decoded.userId);
       if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException({ message: 'Invalid refresh token', code: ErrorCodes.AUTHZ_INVALID_REFRESH_TOKEN });
       }
 
       // Check if session exists
@@ -196,7 +196,7 @@ export class AuthService {
         user,
       };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException({ message: 'Invalid refresh token', code: ErrorCodes.AUTHZ_INVALID_REFRESH_TOKEN });
     }
   }
 
@@ -223,12 +223,12 @@ export class AuthService {
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException({ message: 'User not found', code: ErrorCodes.AUTH_USER_NOT_FOUND });
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isCurrentPasswordValid) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new UnauthorizedException({ message: 'Current password is incorrect', code: ErrorCodes.AUTH_CURRENT_PASSWORD_INCORRECT });
     }
 
     const hashedNewPassword = await this.passwordService.hashPassword(newPassword);
@@ -275,7 +275,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException({ message: 'Invalid or expired reset token', code: ErrorCodes.TOKEN_INVALID_OR_EXPIRED_RESET });
     }
 
     const hashedPassword = await this.passwordService.hashPassword(newPassword);
@@ -295,11 +295,11 @@ export class AuthService {
   async setupTwoFactor(userId: string): Promise<{ qrCodeUrl: string; secret: string; backupCodes: string[] }> {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException({ message: 'User not found', code: ErrorCodes.AUTH_USER_NOT_FOUND });
     }
 
     if (user.twoFactorEnabled) {
-      throw new BadRequestException('Two-factor authentication is already enabled');
+      throw new BadRequestException({ message: 'Two-factor authentication is already enabled', code: ErrorCodes.TWO_FA_ALREADY_ENABLED });
     }
 
     const { secret, otpauthUrl } = this.twoFactorService.generateSecret(user.email);
@@ -329,21 +329,21 @@ export class AuthService {
   async enableTwoFactor(userId: string, token: string): Promise<boolean> {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException({ message: 'User not found', code: ErrorCodes.AUTH_USER_NOT_FOUND });
     }
 
     if (user.twoFactorEnabled) {
-      throw new BadRequestException('Two-factor authentication is already enabled');
+      throw new BadRequestException({ message: 'Two-factor authentication is already enabled', code: ErrorCodes.TWO_FA_ALREADY_ENABLED });
     }
 
     if (!user.twoFactorSecret) {
-      throw new BadRequestException('Two-factor authentication setup not initiated. Call setupTwoFactor first.');
+      throw new BadRequestException({ message: 'Two-factor authentication setup not initiated. Call setupTwoFactor first.', code: ErrorCodes.TWO_FA_SETUP_NOT_INITIATED });
     }
 
     // Verify the token with the temporary secret
     const isValidToken = this.twoFactorService.verifyTokenWithSecret(token, user.twoFactorSecret);
     if (!isValidToken) {
-      throw new BadRequestException('Invalid verification token');
+      throw new BadRequestException({ message: 'Invalid verification token', code: ErrorCodes.TOKEN_INVALID_VERIFICATION });
     }
 
     // Enable 2FA
@@ -363,17 +363,17 @@ export class AuthService {
   async disableTwoFactor(userId: string, password: string): Promise<boolean> {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException({ message: 'User not found', code: ErrorCodes.AUTH_USER_NOT_FOUND });
     }
 
     if (!user.twoFactorEnabled) {
-      throw new BadRequestException('Two-factor authentication is not enabled');
+      throw new BadRequestException({ message: 'Two-factor authentication is not enabled', code: ErrorCodes.TWO_FA_NOT_ENABLED });
     }
 
     // Verify password for security
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password');
+      throw new UnauthorizedException({ message: 'Invalid password', code: ErrorCodes.AUTH_INVALID_PASSWORD });
     }
 
     // Disable 2FA

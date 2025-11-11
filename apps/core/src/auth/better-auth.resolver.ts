@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@anineplus/authorization';
 import { BetterAuthService } from './better-auth.service';
+import { ErrorCodes } from '@anineplus/common';
 import {
   SignUpInput,
   SignInInput,
@@ -61,7 +62,7 @@ export class BetterAuthResolver {
     const session = await this.betterAuthService.getSession(token);
 
     if (!session) {
-      throw new UnauthorizedException('Invalid session');
+      throw new UnauthorizedException({ message: 'Invalid session', code: ErrorCodes.AUTHZ_INVALID_SESSION });
     }
 
     return session as any;
@@ -143,13 +144,13 @@ export class BetterAuthResolver {
     const authorization = req.headers.authorization;
 
     if (!authorization) {
-      throw new UnauthorizedException('No authorization header');
+      throw new UnauthorizedException({ message: 'No authorization header', code: ErrorCodes.AUTHZ_NO_AUTH_HEADER });
     }
 
     const [type, token] = authorization.split(' ');
 
     if (type !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Invalid authorization format');
+      throw new UnauthorizedException({ message: 'Invalid authorization format', code: ErrorCodes.AUTHZ_INVALID_AUTH_FORMAT });
     }
 
     return token;
