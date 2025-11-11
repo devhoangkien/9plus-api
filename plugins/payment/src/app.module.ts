@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from '@anineplus/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/nestjs-federation'
+import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/nestjs-federation';
+import { PaymentSagaModule } from './saga/saga.module';
+
 @Module({
   imports: [
     LoggerModule.forRoot({
@@ -18,6 +20,7 @@ import { YogaFederationDriver, YogaFederationDriverConfig } from '@graphql-yoga/
         path: './schema.gql',
       },
     }),
+    PaymentSagaModule, // Saga pattern implementation
   ],
   controllers: [],
   providers: [],
