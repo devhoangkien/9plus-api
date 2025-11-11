@@ -76,11 +76,12 @@ export class SagaOrchestrator implements ISagaOrchestrator {
           await this.executeStep(config, step, context);
           completedSteps.push(step);
         } catch (error) {
-          lastError = error as Error;
+          const err = error as Error;
+          lastError = err;
           failedStep = step.name;
           this.logger.error(
-            `[${config.sagaId}] Step ${step.name} failed: ${error.message}`,
-            error.stack,
+            `[${config.sagaId}] Step ${step.name} failed: ${err.message}`,
+            err.stack,
           );
           
           // Publish failure event
@@ -150,9 +151,10 @@ export class SagaOrchestrator implements ISagaOrchestrator {
         duration,
       };
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `[${config.sagaId}] Saga execution failed: ${error.message}`,
-        error.stack,
+        `[${config.sagaId}] Saga execution failed: ${err.message}`,
+        err.stack,
       );
       
       await this.publishEvent({
@@ -270,9 +272,10 @@ export class SagaOrchestrator implements ISagaOrchestrator {
           `[${context.sagaId}] Step ${step.name} compensated successfully`,
         );
       } catch (error) {
+        const err = error as Error;
         this.logger.error(
-          `[${context.sagaId}] Failed to compensate step ${step.name}: ${error.message}`,
-          error.stack,
+          `[${context.sagaId}] Failed to compensate step ${step.name}: ${err.message}`,
+          err.stack,
         );
         // Continue with other compensations even if one fails
       }
@@ -327,8 +330,9 @@ export class SagaOrchestrator implements ISagaOrchestrator {
       try {
         await this.eventPublisher.publish(event);
       } catch (error) {
+        const err = error as Error;
         this.logger.error(
-          `Failed to publish event ${event.eventType}: ${error.message}`,
+          `Failed to publish event ${event.eventType}: ${err.message}`,
         );
         // Don't fail the saga if event publishing fails
       }
