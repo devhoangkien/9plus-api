@@ -12,8 +12,7 @@
     
     "env:setup": "sh ./scripts/setup-env.sh",
     "i:libs": "sh ./scripts/link-libs.sh",
-    "i:all": "sh ./scripts/install.sh && bun run i:libs",
-    "install:all": "sh ./scripts/install.sh",
+    "install:all": "bun run i:libs && sh ./scripts/install.sh",
     "app:lint": "sh ./scripts/lint.sh",
     "app:build": "sh ./scripts/build.sh",
     "validate-dev": "sh ./scripts/validate-dev-env.sh",

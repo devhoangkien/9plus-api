@@ -13,18 +13,44 @@ NC='\033[0m' # No Color
 # Build shared libraries first
 echo -e "${BLUE}📦 Building shared libraries...${NC}"
 
+# Make sure dependencies are installed in repo root before building shared libs
+echo -e "${BLUE}🔧 Installing root dependencies with bun (if available)...${NC}"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if command -v bun >/dev/null 2>&1; then
+	(cd "$ROOT_DIR" && bun install)
+	echo -e "${GREEN}✅ Root dependencies installed${NC}"
+else
+	echo -e "${YELLOW}⚠️  bun not found — skipping root install.${NC}"
+fi
+
 echo -e "${YELLOW}Building @anineplus/common...${NC}"
 cd shared/common
+if command -v bun >/dev/null 2>&1; then
+	echo -e "${BLUE}🔧 Installing @anineplus/common dependencies with bun...${NC}"
+	bun install
+	echo -e "${GREEN}✅ @anineplus/common dependencies installed${NC}"
+else
+	echo -e "${YELLOW}⚠️  bun not found — skipping @anineplus/common install.${NC}"
+fi
 bun run build
 echo -e "${GREEN}✅ @anineplus/common built${NC}"
 
 echo -e "${YELLOW}Building @anineplus/authorization...${NC}"
 cd ../authorization
+if command -v bun >/dev/null 2>&1; then
+	echo -e "${BLUE}🔧 Installing @anineplus/authorization dependencies with bun...${NC}"
+	bun install
+	echo -e "${GREEN}✅ @anineplus/authorization dependencies installed${NC}"
+else
+	echo -e "${YELLOW}⚠️  bun not found — skipping @anineplus/authorization install.${NC}"
+fi
 bun run build
 echo -e "${GREEN}✅ @anineplus/authorization built${NC}"
 
 # Link shared libraries globally
 echo -e "${BLUE}🔗 Registering shared libraries globally...${NC}"
+
+# Root dependencies already installed above (if bun available)
 
 cd ../common
 bun link
