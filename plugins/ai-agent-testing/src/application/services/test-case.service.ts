@@ -29,7 +29,7 @@ export class TestCaseService {
         name: input.name,
         description: input.description,
         type: input.type,
-        steps: input.steps,
+        steps: input.steps as any,
         script: input.script,
         generatedBy: input.generatedBy,
         originalPrompt: input.originalPrompt,
@@ -128,7 +128,7 @@ export class TestCaseService {
       data: {
         name: input.name,
         description: input.description,
-        steps: input.steps,
+        steps: input.steps as any,
         script: input.script,
         isActive: input.isActive,
       },

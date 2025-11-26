@@ -215,7 +215,7 @@ export class TestRunService {
         errorStack: input.errorStack,
         screenshotUrl: input.screenshotUrl,
         artifacts: input.artifacts,
-        stepResults: input.stepResults,
+        stepResults: input.stepResults as any,
       },
     });
 

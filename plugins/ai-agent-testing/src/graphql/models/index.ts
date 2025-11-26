@@ -24,13 +24,13 @@ export class ProjectModel {
   name: string;
 
   @Field({ nullable: true })
-  description?: string;
+  description?: string | null;
 
   @Field(() => ID, { nullable: true })
-  defaultModelId?: string;
+  defaultModelId?: string | null;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  settings?: Record<string, any>;
+  settings?: Record<string, any> | null;
 
   @Field()
   createdAt: Date;
@@ -39,7 +39,7 @@ export class ProjectModel {
   updatedAt: Date;
 
   @Field({ nullable: true })
-  createdBy?: string;
+  createdBy?: string | null;
 }
 
 // ==================== Test Case Types ====================
@@ -80,22 +80,22 @@ export class TestCaseModel {
   name: string;
 
   @Field({ nullable: true })
-  description?: string;
+  description?: string | null;
 
   @Field(() => TestType)
   type: TestType;
 
   @Field(() => [TestStepModel], { nullable: true })
-  steps?: TestStepModel[];
+  steps?: TestStepModel[] | null;
 
   @Field({ nullable: true })
-  script?: string;
+  script?: string | null;
 
   @Field({ nullable: true })
-  generatedBy?: string;
+  generatedBy?: string | null;
 
   @Field({ nullable: true })
-  originalPrompt?: string;
+  originalPrompt?: string | null;
 
   @Field()
   isActive: boolean;
@@ -107,7 +107,7 @@ export class TestCaseModel {
   updatedAt: Date;
 
   @Field({ nullable: true })
-  createdBy?: string;
+  createdBy?: string | null;
 }
 
 // ==================== Test Run Types ====================
@@ -121,22 +121,22 @@ export class StepResultModel {
   status: TestResultStatus;
 
   @Field({ nullable: true })
-  startedAt?: Date;
+  startedAt?: Date | null;
 
   @Field({ nullable: true })
-  finishedAt?: Date;
+  finishedAt?: Date | null;
 
   @Field(() => Int, { nullable: true })
-  duration?: number;
+  duration?: number | null;
 
   @Field({ nullable: true })
-  log?: string;
+  log?: string | null;
 
   @Field({ nullable: true })
-  errorMessage?: string;
+  errorMessage?: string | null;
 
   @Field({ nullable: true })
-  screenshotUrl?: string;
+  screenshotUrl?: string | null;
 }
 
 @ObjectType()
@@ -154,31 +154,31 @@ export class TestRunResultModel {
   status: TestResultStatus;
 
   @Field({ nullable: true })
-  startedAt?: Date;
+  startedAt?: Date | null;
 
   @Field({ nullable: true })
-  finishedAt?: Date;
+  finishedAt?: Date | null;
 
   @Field(() => Int, { nullable: true })
-  duration?: number;
+  duration?: number | null;
 
   @Field({ nullable: true })
-  logs?: string;
+  logs?: string | null;
 
   @Field({ nullable: true })
-  errorMessage?: string;
+  errorMessage?: string | null;
 
   @Field({ nullable: true })
-  errorStack?: string;
+  errorStack?: string | null;
 
   @Field({ nullable: true })
-  screenshotUrl?: string;
+  screenshotUrl?: string | null;
 
   @Field(() => [String], { nullable: true })
-  artifacts?: string[];
+  artifacts?: string[] | null;
 
   @Field(() => [StepResultModel], { nullable: true })
-  stepResults?: StepResultModel[];
+  stepResults?: StepResultModel[] | null;
 
   @Field()
   createdAt: Date;
@@ -196,10 +196,10 @@ export class TestRunModel {
   projectId: string;
 
   @Field({ nullable: true })
-  name?: string;
+  name?: string | null;
 
   @Field({ nullable: true })
-  description?: string;
+  description?: string | null;
 
   @Field(() => TestRunStatus)
   status: TestRunStatus;
@@ -208,16 +208,16 @@ export class TestRunModel {
   triggerSource: TestRunTriggerSource;
 
   @Field({ nullable: true })
-  startedAt?: Date;
+  startedAt?: Date | null;
 
   @Field({ nullable: true })
-  finishedAt?: Date;
+  finishedAt?: Date | null;
 
   @Field({ nullable: true })
-  environment?: string;
+  environment?: string | null;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  config?: Record<string, any>;
+  config?: Record<string, any> | null;
 
   @Field(() => Int)
   totalTests: number;
@@ -232,13 +232,13 @@ export class TestRunModel {
   skippedTests: number;
 
   @Field({ nullable: true })
-  buildId?: string;
+  buildId?: string | null;
 
   @Field({ nullable: true })
-  commitSha?: string;
+  commitSha?: string | null;
 
   @Field({ nullable: true })
-  branch?: string;
+  branch?: string | null;
 
   @Field()
   createdAt: Date;
@@ -247,7 +247,7 @@ export class TestRunModel {
   updatedAt: Date;
 
   @Field({ nullable: true })
-  createdBy?: string;
+  createdBy?: string | null;
 }
 
 @ObjectType()
@@ -271,7 +271,7 @@ export class TestRunSummaryModel {
   skippedTests: number;
 
   @Field(() => Int, { nullable: true })
-  duration?: number;
+  duration?: number | null;
 
   @Field(() => Float)
   passRate: number;
@@ -300,7 +300,7 @@ export class ModelConfigModel {
   apiKeyRef: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  parameters?: Record<string, any>;
+  parameters?: Record<string, any> | null;
 
   @Field()
   isDefault: boolean;
@@ -309,7 +309,7 @@ export class ModelConfigModel {
   isActive: boolean;
 
   @Field(() => ID, { nullable: true })
-  projectId?: string;
+  projectId?: string | null;
 
   @Field()
   createdAt: Date;
@@ -318,7 +318,7 @@ export class ModelConfigModel {
   updatedAt: Date;
 
   @Field({ nullable: true })
-  createdBy?: string;
+  createdBy?: string | null;
 }
 
 // ==================== AI Agent Types ====================

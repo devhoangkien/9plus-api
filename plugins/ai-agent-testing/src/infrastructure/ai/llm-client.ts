@@ -20,12 +20,11 @@ export class LlmClient {
     private readonly openAiProvider: OpenAiProvider,
     private readonly geminiProvider: GeminiProvider,
   ) {
-    this.providers = new Map([
-      [ModelProvider.ANTHROPIC, this.anthropicProvider],
-      [ModelProvider.OPENAI, this.openAiProvider],
-      [ModelProvider.AZURE_OPENAI, this.openAiProvider],
-      [ModelProvider.GOOGLE, this.geminiProvider],
-    ]);
+    this.providers = new Map<ModelProvider, LlmProvider>();
+    this.providers.set(ModelProvider.ANTHROPIC, this.anthropicProvider);
+    this.providers.set(ModelProvider.OPENAI, this.openAiProvider);
+    this.providers.set(ModelProvider.AZURE_OPENAI, this.openAiProvider);
+    this.providers.set(ModelProvider.GOOGLE, this.geminiProvider);
   }
 
   /**
