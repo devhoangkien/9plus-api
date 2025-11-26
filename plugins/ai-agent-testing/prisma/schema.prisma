@@ -1,0 +1,256 @@
+// AI Agent Testing Platform - Manages projects, test cases, test runs, and AI model configurations
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-arm64-openssl-1.0.x", "debian-openssl-1.1.x"]
+  previewFeatures = ["fullTextSearchPostgres"]
+  output   = "../prisma/@generated/client"
+}
+
+generator nestgraphql {
+  provider                              = "prisma-nestjs-graphql"
+  output                                = "../prisma/@generated"
+  noAtomicOperations                    = false
+  combineScalarFilters                  = false
+  reExport                              = None
+  emitSingle                            = true
+  emitCompiled                          = true
+  purgeOutput                           = false
+  requireSingleFieldsInWhereUniqueInput = false
+  fields_Validator_from                 = "class-validator"
+  fields_Validator_input                = true
+  fields_Scalars_from                   = "graphql-scalars"
+  fields_Scalars_input                  = true
+  useInputType_WhereInput_ALL           = "WhereInput"
+}
+
+// Project - A container for test cases
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  
+  // Project settings
+  defaultModelId String?
+  settings    Json?    // Additional project-specific settings
+  
+  // Relationships
+  testCases   TestCase[]
+  testRuns    TestRun[]
+  modelConfigs ModelConfig[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([name])
+  @@map("projects")
+}
+
+// TestCase - A test case belonging to a project
+model TestCase {
+  id          String   @id @default(cuid())
+  
+  // Parent project
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Test case details
+  name        String
+  description String?
+  type        TestType
+  
+  // Test content
+  steps       Json?    // Array of TestStep objects
+  script      String?  // Executable script (DSL or TypeScript)
+  
+  // AI generation metadata
+  generatedBy String?  // Model ID that generated this test case
+  originalPrompt String? // Original natural language description
+  
+  // Status
+  isActive    Boolean  @default(true)
+  
+  // Relationships
+  testRunResults TestRunResult[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([projectId])
+  @@index([type])
+  @@index([isActive])
+  @@map("test_cases")
+}
+
+// TestRun - An execution of test cases
+model TestRun {
+  id          String   @id @default(cuid())
+  
+  // Parent project
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Run details
+  name        String?
+  description String?
+  
+  // Status and timing
+  status      TestRunStatus @default(PENDING)
+  triggerSource TestRunTriggerSource @default(MANUAL)
+  
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  
+  // Environment and configuration
+  environment String?  // e.g., "staging", "production"
+  config      Json?    // Run-specific configuration
+  
+  // Summary statistics (cached for performance)
+  totalTests  Int      @default(0)
+  passedTests Int      @default(0)
+  failedTests Int      @default(0)
+  skippedTests Int     @default(0)
+  
+  // CI/CD integration
+  buildId     String?  // External build/pipeline ID
+  commitSha   String?  // Git commit SHA
+  branch      String?  // Git branch name
+  
+  // Relationships
+  results     TestRunResult[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([projectId])
+  @@index([status])
+  @@index([triggerSource])
+  @@index([startedAt])
+  @@map("test_runs")
+}
+
+// TestRunResult - Result of a single test case in a test run
+model TestRunResult {
+  id          String   @id @default(cuid())
+  
+  // Parent relationships
+  testRunId   String
+  testRun     TestRun  @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  testCaseId  String
+  testCase    TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  
+  // Result
+  status      TestResultStatus @default(PENDING)
+  
+  // Timing
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  duration    Int?     // Duration in milliseconds
+  
+  // Execution details
+  logs        String?  // Execution logs (text or JSON)
+  errorMessage String?
+  errorStack  String?
+  
+  // Screenshots and artifacts
+  screenshotUrl String?
+  artifacts   Json?    // Array of artifact URLs/paths
+  
+  // Step-by-step results
+  stepResults Json?    // Array of step execution results
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([testRunId])
+  @@index([testCaseId])
+  @@index([status])
+  @@map("test_run_results")
+}
+
+// ModelConfig - AI model configuration
+model ModelConfig {
+  id          String   @id @default(cuid())
+  
+  // Model identification
+  name        String
+  provider    ModelProvider
+  modelName   String   // Underlying model name (e.g., "claude-3-5-sonnet-20241022")
+  
+  // Connection details
+  apiBaseUrl  String
+  apiKeyRef   String   // Reference to secret (avoid storing raw keys)
+  
+  // Model parameters
+  parameters  Json?    // temperature, maxTokens, topP, etc.
+  
+  // Default settings
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  
+  // Project scoping (null = global)
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([provider])
+  @@index([isDefault])
+  @@index([projectId])
+  @@index([isActive])
+  @@map("model_configs")
+}
+
+// Enums
+enum TestType {
+  WEB
+  API
+}
+
+enum TestRunStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  PARTIAL
+  ERROR
+  CANCELLED
+}
+
+enum TestResultStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  SKIPPED
+  ERROR
+}
+
+enum TestRunTriggerSource {
+  MANUAL
+  CI_CD
+  SCHEDULE
+  API
+}
+
+enum ModelProvider {
+  ANTHROPIC
+  GOOGLE
+  OPENAI
+  AZURE_OPENAI
+  CUSTOM
+}
