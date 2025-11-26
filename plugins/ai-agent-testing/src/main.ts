@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
+const DEFAULT_PORT = 50053;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -14,7 +16,7 @@ async function bootstrap() {
     }),
   );
 
-  const port = process.env.PORT ?? 50053;
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : DEFAULT_PORT;
   await app.listen(port);
 
   console.log(

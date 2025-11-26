@@ -23,11 +23,11 @@ export class ApiRunner implements TestRunner {
     this.logger.debug(`Starting API test: ${testCase.name}`);
     logs.push(`[${new Date().toISOString()}] Starting test: ${testCase.name}`);
 
-    const steps = testCase.steps || [];
+    const steps = testCase.steps ?? [];
 
     try {
       for (let i = 0; i < steps.length; i++) {
-        const step = steps[i] as TestStep;
+        const step = steps[i];
         const stepStartTime = Date.now();
         
         logs.push(`[${new Date().toISOString()}] Step ${i + 1}: ${step.description}`);

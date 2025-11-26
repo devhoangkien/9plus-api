@@ -26,11 +26,11 @@ export class WebRunner implements TestRunner {
     this.logger.debug(`Starting web test: ${testCase.name}`);
     logs.push(`[${new Date().toISOString()}] Starting test: ${testCase.name}`);
 
-    const steps = testCase.steps || [];
+    const steps = testCase.steps ?? [];
 
     try {
       for (let i = 0; i < steps.length; i++) {
-        const step = steps[i] as TestStep;
+        const step = steps[i];
         const stepStartTime = Date.now();
         
         logs.push(`[${new Date().toISOString()}] Step ${i + 1}: ${step.description}`);
@@ -136,9 +136,9 @@ export class WebRunner implements TestRunner {
         break;
 
       case TestStepType.WAIT:
-        const waitTime = parseInt(step.value || '1000', 10);
+        const waitTime = Number(step.value ?? '1000') || 1000;
         this.logger.debug(`Waiting ${waitTime}ms`);
-        await this.delay(waitTime);
+        await this.delay(Math.max(0, waitTime));
         break;
 
       case TestStepType.SCREENSHOT:
