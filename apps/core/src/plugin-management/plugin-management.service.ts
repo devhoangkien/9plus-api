@@ -3,6 +3,7 @@ import { GraphQLClient } from 'graphql-request';
 import { WebhookService } from './webhook.service';
 import { PluginRegistryCreateInput, PluginRegistryUpdateInput } from 'prisma/@generated';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ErrorCodes } from '@anineplus/common';
 
 
 @Injectable()
@@ -18,7 +19,7 @@ export class PluginManagementService {
       const isValid = await this.validateServiceEndpoint(data.url);
       if (!isValid) {
         throw new HttpException(
-          'Service URL is not a valid GraphQL endpoint',
+          { message: 'Service URL is not a valid GraphQL endpoint', code: ErrorCodes.PLUGIN_INVALID_ENDPOINT },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -36,14 +37,14 @@ export class PluginManagementService {
 
   async unregister(where: { id?: string; name?: string }) {
     if (!where.id && !where.name) {
-      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException({ message: 'Either id or name must be provided', code: ErrorCodes.PLUGIN_ID_OR_NAME_REQUIRED }, HttpStatus.BAD_REQUEST);
     }
     
     // Use either id or name as unique identifier
     const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
     const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
-      throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
+      throw new HttpException({ message: 'Service not found', code: ErrorCodes.PLUGIN_SERVICE_NOT_FOUND }, HttpStatus.NOT_FOUND);
     }
 
     const deletedService = await this.prisma.pluginRegistry.delete({ where: uniqueWhere });
@@ -59,14 +60,14 @@ export class PluginManagementService {
     data: PluginRegistryUpdateInput,
   ) {
     if (!where.id && !where.name) {
-      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException({ message: 'Either id or name must be provided', code: ErrorCodes.PLUGIN_ID_OR_NAME_REQUIRED }, HttpStatus.BAD_REQUEST);
     }
     
     // Use either id or name as unique identifier
     const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
     const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
-      throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
+      throw new HttpException({ message: 'Service not found', code: ErrorCodes.PLUGIN_SERVICE_NOT_FOUND }, HttpStatus.NOT_FOUND);
     }
 
     // Validate service URL if it's being updated
@@ -74,7 +75,7 @@ export class PluginManagementService {
       const isValid = await this.validateServiceEndpoint(data.url);
       if (!isValid) {
         throw new HttpException(
-          'Service URL is not a valid GraphQL endpoint',
+          { message: 'Service URL is not a valid GraphQL endpoint', code: ErrorCodes.PLUGIN_INVALID_ENDPOINT },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -110,14 +111,14 @@ export class PluginManagementService {
 
   async findOne(where: { id?: string; name?: string }) {
     if (!where.id && !where.name) {
-      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException({ message: 'Either id or name must be provided', code: ErrorCodes.PLUGIN_ID_OR_NAME_REQUIRED }, HttpStatus.BAD_REQUEST);
     }
     
     // Use either id or name as unique identifier
     const uniqueWhere = where.id ? { id: where.id } : { name: where.name! };
     const service = await this.prisma.pluginRegistry.findUnique({ where: uniqueWhere });
     if (!service) {
-      throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
+      throw new HttpException({ message: 'Service not found', code: ErrorCodes.PLUGIN_SERVICE_NOT_FOUND }, HttpStatus.NOT_FOUND);
     }
     return service;
   }
@@ -127,7 +128,7 @@ export class PluginManagementService {
     status: string,
   ) {
     if (!where.id && !where.name) {
-      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException({ message: 'Either id or name must be provided', code: ErrorCodes.PLUGIN_ID_OR_NAME_REQUIRED }, HttpStatus.BAD_REQUEST);
     }
     
     // Use either id or name as unique identifier
@@ -145,7 +146,7 @@ export class PluginManagementService {
     const service = await this.findOne(where);
     
     if (!where.id && !where.name) {
-      throw new HttpException('Either id or name must be provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException({ message: 'Either id or name must be provided', code: ErrorCodes.PLUGIN_ID_OR_NAME_REQUIRED }, HttpStatus.BAD_REQUEST);
     }
     
     // Use either id or name as unique identifier

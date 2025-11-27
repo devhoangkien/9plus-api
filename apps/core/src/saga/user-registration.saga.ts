@@ -5,6 +5,8 @@ import {
   SagaConfig,
   SagaStep,
   SagaResult,
+  ErrorCodes,
+  createErrorString,
 } from '@anineplus/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { KafkaProducerService } from '../kafka/kafka-producer.service';
@@ -83,7 +85,7 @@ export class UserRegistrationSaga {
         });
 
         if (existingUser) {
-          throw new Error(`User with email ${context.data.email} already exists`);
+          throw new Error(createErrorString(`User with email ${context.data.email} already exists`, ErrorCodes.SAGA_USER_ALREADY_EXISTS));
         }
 
         return { validated: true };
@@ -132,7 +134,7 @@ export class UserRegistrationSaga {
         const hashedPassword = hashResult?.hashedPassword;
         
         if (!hashedPassword) {
-          throw new Error('Hashed password not found from previous step');
+          throw new Error(createErrorString('Hashed password not found from previous step', ErrorCodes.SAGA_HASHED_PASSWORD_NOT_FOUND));
         }
         
         // Generate and validate username
@@ -188,7 +190,7 @@ export class UserRegistrationSaga {
         const userId = createUserResult?.userId;
         
         if (!userId) {
-          throw new Error('User ID not found from previous step');
+          throw new Error(createErrorString('User ID not found from previous step', ErrorCodes.SAGA_USER_ID_NOT_FOUND));
         }
 
         // Find the role to assign (default to 'user' role)
@@ -198,7 +200,7 @@ export class UserRegistrationSaga {
         });
 
         if (!role) {
-          throw new Error(`Role ${roleKey} not found`);
+          throw new Error(createErrorString(`Role ${roleKey} not found`, ErrorCodes.SAGA_ROLE_NOT_FOUND));
         }
 
         // Assign role to user
@@ -257,7 +259,7 @@ export class UserRegistrationSaga {
         const user = roleAssignmentResult?.user;
         
         if (!user) {
-          throw new Error('User data not found from previous step');
+          throw new Error(createErrorString('User data not found from previous step', ErrorCodes.SAGA_USER_DATA_NOT_FOUND));
         }
 
         await this.kafkaProducer.publishUserEvent('created', {
@@ -318,7 +320,7 @@ export class UserRegistrationSaga {
     
     // Ensure username is not empty after sanitization
     if (!cleanUsername) {
-      throw new Error('Unable to generate valid username from email');
+      throw new Error(createErrorString('Unable to generate valid username from email', ErrorCodes.SAGA_UNABLE_TO_GENERATE_USERNAME));
     }
     
     return cleanUsername;

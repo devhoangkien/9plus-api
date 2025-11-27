@@ -52,6 +52,7 @@ export const ErrorCodes = {
   // Plugin Management Errors (PLUGIN_*)
   PLUGIN_ID_OR_NAME_REQUIRED: 'PLUGIN_ID_OR_NAME_REQUIRED',
   PLUGIN_SERVICE_NOT_FOUND: 'PLUGIN_SERVICE_NOT_FOUND',
+  PLUGIN_INVALID_ENDPOINT: 'PLUGIN_INVALID_ENDPOINT',
 
   // Validation Errors (VAL_*)
   VAL_INPUT_REQUIRED: 'VAL_INPUT_REQUIRED',
@@ -75,4 +76,20 @@ export interface ErrorWithCode {
   message: string;
   code: ErrorCode;
   requestId?: string;
+}
+
+/**
+ * Helper function to create a structured error object
+ * Use this for consistent error handling across the system
+ */
+export function createError(message: string, code: ErrorCode, requestId?: string): ErrorWithCode {
+  return { message, code, requestId };
+}
+
+/**
+ * Helper function to create a JSON string error for use with throw new Error()
+ * Use this when you need to throw a generic Error with structured data
+ */
+export function createErrorString(message: string, code: ErrorCode): string {
+  return JSON.stringify({ message, code });
 }

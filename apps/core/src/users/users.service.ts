@@ -255,7 +255,7 @@ export class UsersService {
   async update(id: string, input: UpdateUserInput): Promise<any> {
     const existingUser = await this.findById(id);
     if (!existingUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({ message: 'User not found', code: ErrorCodes.USER_NOT_FOUND });
     }
 
     try {
@@ -317,7 +317,7 @@ export class UsersService {
   async delete(id: string): Promise<boolean> {
     const existingUser = await this.findById(id);
     if (!existingUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({ message: 'User not found', code: ErrorCodes.USER_NOT_FOUND });
     }
 
     // Soft delete
@@ -355,7 +355,7 @@ export class UsersService {
   async assignRole(userId: string, roleId: string): Promise<any> {
     const user = await this.findById(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({ message: 'User not found', code: ErrorCodes.USER_NOT_FOUND });
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -378,7 +378,7 @@ export class UsersService {
   async removeRole(userId: string, roleId: string): Promise<any> {
     const user = await this.findById(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({ message: 'User not found', code: ErrorCodes.USER_NOT_FOUND });
     }
 
     const updatedUser = await this.prisma.user.update({
