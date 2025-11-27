@@ -4,6 +4,7 @@ import { PluginRegistryCreateInput } from 'prisma/@generated';
 import { PluginRegistry } from 'prisma/@generated';
 import { HealthCheckResult } from './dto/health-check-result.dto';
 import { GatewaySubgraph } from './dto/gateway-subgraph.dto';
+import { ErrorCodes, createErrorString } from '@anineplus/common';
 
 @Resolver()
 export class PluginManagementResolver {
@@ -31,7 +32,7 @@ export class PluginManagementResolver {
     @Args('input') input?: PluginRegistryCreateInput,
   ) {
     if (!input) {
-      throw new Error('Input is required');
+      throw new Error(createErrorString('Input is required', ErrorCodes.VAL_INPUT_REQUIRED));
     }
     return this.pluginsManagementService.update({ id, name }, input);
   }
@@ -43,7 +44,7 @@ export class PluginManagementResolver {
     @Args('status') status?: string,
   ) {
     if (!status) {
-      throw new Error('Status is required');
+      throw new Error(createErrorString('Status is required', ErrorCodes.VAL_STATUS_REQUIRED));
     }
     return this.pluginsManagementService.updateStatus({ id, name }, status);
   }

@@ -8,6 +8,7 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@anineplus/authorization';
 import { PermissionsService } from './permissions.service';
+import { ErrorCodes, createErrorString } from '@anineplus/common';
 import {
   CreateRoleInput,
   UpdateRoleInput,
@@ -24,7 +25,7 @@ export class PermissionResolver {
   private extractSessionToken(context: any): string {
     const authHeader = context.req?.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new Error('User not authenticated');
+      throw new Error(createErrorString('User not authenticated', ErrorCodes.USER_NOT_AUTHENTICATED));
     }
     return authHeader.substring(7);
   }

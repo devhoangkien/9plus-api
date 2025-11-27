@@ -5,6 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaClient, RoleStatusEnum } from 'prisma/@generated/client';
+import { ErrorCodes, createErrorString } from '@anineplus/common';
 
 @Injectable()
 export class RolePermissionService {
@@ -309,11 +310,11 @@ export class RolePermissionService {
     });
 
     if (!role) {
-      throw new Error('Role not found');
+      throw new Error(createErrorString('Role not found', ErrorCodes.ROLE_NOT_FOUND));
     }
 
     if (role.isSystemRole) {
-      throw new Error('Cannot delete system role');
+      throw new Error(createErrorString('Cannot delete system role', ErrorCodes.ROLE_CANNOT_DELETE_SYSTEM_ROLE));
     }
 
     return this.prisma.role.delete({
