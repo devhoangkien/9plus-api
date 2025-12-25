@@ -7,6 +7,26 @@ export enum TestType {
   API = 'API',
 }
 
+export enum TestCategory {
+  FUNCTIONAL = 'FUNCTIONAL',
+  SECURITY = 'SECURITY',
+  PERFORMANCE = 'PERFORMANCE',
+  ACCESSIBILITY = 'ACCESSIBILITY',
+  VISUAL = 'VISUAL',
+}
+
+export enum SecurityTestType {
+  XSS_INJECTION = 'XSS_INJECTION',
+  SQL_INJECTION = 'SQL_INJECTION',
+  AUTH_BYPASS = 'AUTH_BYPASS',
+  CSRF = 'CSRF',
+  INSECURE_DIRECT_OBJECT = 'INSECURE_DIRECT_OBJECT',
+  SENSITIVE_DATA_EXPOSURE = 'SENSITIVE_DATA_EXPOSURE',
+  BROKEN_ACCESS_CONTROL = 'BROKEN_ACCESS_CONTROL',
+  COMMAND_INJECTION = 'COMMAND_INJECTION',
+  PATH_TRAVERSAL = 'PATH_TRAVERSAL',
+}
+
 export enum TestRunStatus {
   PENDING = 'PENDING',
   RUNNING = 'RUNNING',
@@ -41,6 +61,29 @@ export enum ModelProvider {
   CUSTOM = 'CUSTOM',
 }
 
+export enum DocumentType {
+  OPENAPI = 'OPENAPI',
+  MARKDOWN = 'MARKDOWN',
+  POSTMAN = 'POSTMAN',
+  HAR = 'HAR',
+  FIGMA = 'FIGMA',
+  TEXT = 'TEXT',
+}
+
+export enum DocumentStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+export enum RiskLevel {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+}
+
 export enum TestStepType {
   // Web actions
   NAVIGATE = 'NAVIGATE',
@@ -49,6 +92,8 @@ export enum TestStepType {
   SELECT = 'SELECT',
   WAIT = 'WAIT',
   SCREENSHOT = 'SCREENSHOT',
+  SCROLL = 'SCROLL',
+  HOVER = 'HOVER',
   
   // API actions
   HTTP_REQUEST = 'HTTP_REQUEST',
@@ -59,7 +104,17 @@ export enum TestStepType {
   ASSERT_URL = 'ASSERT_URL',
   ASSERT_STATUS = 'ASSERT_STATUS',
   ASSERT_RESPONSE = 'ASSERT_RESPONSE',
+  ASSERT_VISIBLE = 'ASSERT_VISIBLE',
+  
+  // Security testing steps
+  INJECT_XSS = 'INJECT_XSS',
+  INJECT_SQL = 'INJECT_SQL',
+  TEST_AUTH_BYPASS = 'TEST_AUTH_BYPASS',
+  TEST_CSRF = 'TEST_CSRF',
+  SCAN_HEADERS = 'SCAN_HEADERS',
+  CHECK_SSL = 'CHECK_SSL',
   
   // Control flow
   CUSTOM = 'CUSTOM',
 }
+

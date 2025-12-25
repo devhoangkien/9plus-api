@@ -38,10 +38,14 @@ model Project {
   defaultModelId String?
   settings    Json?    // Additional project-specific settings
   
+  // Target URL for testing
+  baseUrl     String?  // Base URL for the project under test
+  
   // Relationships
   testCases   TestCase[]
   testRuns    TestRun[]
   modelConfigs ModelConfig[]
+  testDocuments TestDocument[]
   
   // Audit
   createdAt   DateTime @default(now())
@@ -64,6 +68,12 @@ model TestCase {
   name        String
   description String?
   type        TestType
+  category    TestCategory @default(FUNCTIONAL)
+  securityType SecurityTestType?
+  
+  // Priority and tags
+  priority    Int      @default(0)  // 0=low, 1=medium, 2=high, 3=critical
+  tags        String[] @default([])
   
   // Test content
   steps       Json?    // Array of TestStep objects
@@ -72,6 +82,13 @@ model TestCase {
   // AI generation metadata
   generatedBy String?  // Model ID that generated this test case
   originalPrompt String? // Original natural language description
+  
+  // Document source (for document-based generation)
+  sourceDocId   String?      // Reference to TestDocument
+  sourceDoc     TestDocument? @relation(fields: [sourceDocId], references: [id], onDelete: SetNull)
+  
+  // Target URL for security/UI tests
+  targetUrl   String?
   
   // Status
   isActive    Boolean  @default(true)
@@ -86,6 +103,7 @@ model TestCase {
 
   @@index([projectId])
   @@index([type])
+  @@index([category])
   @@index([isActive])
   @@map("test_cases")
 }
@@ -215,6 +233,61 @@ model ModelConfig {
   @@map("model_configs")
 }
 
+// TestDocument - Documents used for generating test cases
+model TestDocument {
+  id          String   @id @default(cuid())
+  
+  // Parent project
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Document details
+  name        String
+  type        DocumentType
+  description String?
+  
+  // Content
+  url         String?      // URL to external document
+  content     String?      @db.Text  // Inline content (for uploaded files)
+  metadata    Json?        // Parsed metadata (endpoints, schemas, etc.)
+  
+  // Processing status
+  status      DocumentStatus @default(PENDING)
+  processedAt DateTime?
+  errorMessage String?
+  
+  // Generated test cases from this document
+  testCases   TestCase[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@map("test_documents")
+}
+
+// Document types for test generation
+enum DocumentType {
+  OPENAPI       // OpenAPI/Swagger specification
+  MARKDOWN      // Markdown PRD/specs
+  POSTMAN       // Postman collection
+  HAR           // HTTP Archive format
+  FIGMA         // Figma design reference
+  TEXT          // Plain text requirements
+}
+
+// Document processing status
+enum DocumentStatus {
+  PENDING       // Waiting to be processed
+  PROCESSING    // Currently being processed
+  COMPLETED     // Successfully processed
+  FAILED        // Processing failed
+}
+
 // Enums
 enum TestType {
   WEB
@@ -253,4 +326,26 @@ enum ModelProvider {
   OPENAI
   AZURE_OPENAI
   CUSTOM
+}
+
+// Test category for different types of testing
+enum TestCategory {
+  FUNCTIONAL     // Standard functional tests
+  SECURITY       // Security/penetration tests
+  PERFORMANCE    // Load/stress tests
+  ACCESSIBILITY  // A11y tests
+  VISUAL         // Visual regression tests
+}
+
+// Security test types based on OWASP
+enum SecurityTestType {
+  XSS_INJECTION           // Cross-site scripting
+  SQL_INJECTION           // SQL injection
+  AUTH_BYPASS             // Authentication bypass
+  CSRF                    // Cross-site request forgery
+  INSECURE_DIRECT_OBJECT  // IDOR attacks
+  SENSITIVE_DATA_EXPOSURE // Data leak checks
+  BROKEN_ACCESS_CONTROL   // Authorization tests
+  COMMAND_INJECTION       // OS command injection
+  PATH_TRAVERSAL          // Directory traversal
 }

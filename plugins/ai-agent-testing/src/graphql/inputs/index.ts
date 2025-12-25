@@ -1,13 +1,26 @@
-import { InputType, Field, ID, registerEnumType } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { InputType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
+import { IsNotEmpty, IsOptional, IsBoolean, IsArray, ValidateNested, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TestType, TestRunTriggerSource, ModelProvider, TestStepType } from '../../domain/entities';
+import { 
+  TestType, 
+  TestRunTriggerSource, 
+  ModelProvider, 
+  TestStepType,
+  TestCategory,
+  SecurityTestType,
+  DocumentType,
+  DocumentStatus,
+} from '../../domain/entities';
 
 // Register enums with GraphQL
 registerEnumType(TestType, { name: 'TestType' });
 registerEnumType(TestRunTriggerSource, { name: 'TestRunTriggerSource' });
 registerEnumType(ModelProvider, { name: 'ModelProvider' });
 registerEnumType(TestStepType, { name: 'TestStepType' });
+registerEnumType(TestCategory, { name: 'TestCategory' });
+registerEnumType(SecurityTestType, { name: 'SecurityTestType' });
+registerEnumType(DocumentType, { name: 'DocumentType' });
+registerEnumType(DocumentStatus, { name: 'DocumentStatus' });
 
 // ==================== Project Inputs ====================
 

@@ -16,11 +16,13 @@ docs/
 │   ├── 04-logging-monitoring.md
 │   ├── 05-search-indexing.md
 │   ├── 06-development-deployment.md
-│   └── 07-plugin-system.md
+│   ├── 07-plugin-system.md
+│   └── 08-ai-agent-testing.md         # NEW: AI Agent Testing
 ├── auth/                              # Authentication & Authorization
 │   └── authentication-authorization.md
 ├── architecture/                      # System Architecture
-│   └── system-architecture.md
+│   ├── system-architecture.md
+│   └── ai-agent-testing.md            # NEW: AI Testing Architecture
 └── development/                       # Development Guide
     ├── development-guide.md
     └── change-logs.md
@@ -31,7 +33,9 @@ docs/
 ## 🎯 Quick Navigation
 
 ### 📋 [Task Checklists](tasks/)
+
 Detailed implementation tasks organized by topic:
+
 - [Setup & Configuration](tasks/01-setup-configuration.md)
 - [Authentication & Authorization](tasks/02-auth-authorization.md)
 - [Architecture & Services](tasks/03-architecture-services.md)
@@ -39,23 +43,30 @@ Detailed implementation tasks organized by topic:
 - [Search & Indexing](tasks/05-search-indexing.md)
 - [Development & Deployment](tasks/06-development-deployment.md)
 - [Plugin System](tasks/07-plugin-system.md)
+- [AI Agent Testing](tasks/08-ai-agent-testing.md) 🆕
 
 ### 🔐 [Authentication & Authorization](auth/)
+
 Complete guide for auth implementation:
+
 - Better Auth setup and configuration
 - CASL authorization
 - Two-level permission system (Global + Organization)
 - Permission guards and API reference
 
 ### 🏗️ [System Architecture](architecture/)
+
 Architecture and design documentation:
+
 - Microservices overview
 - Event-driven architecture with Kafka
 - GraphQL Federation
 - Service communication patterns
 
 ### 🚀 [Development Guide](development/)
+
 Development setup and workflows:
+
 - Environment setup
 - Running services
 - Available scripts
@@ -85,8 +96,9 @@ bun prisma db seed
 ```
 
 **Access Points**:
+
 - **Gateway**: http://localhost:3000/graphql
-- **Kibana**: http://localhost:5601  
+- **Kibana**: http://localhost:5601
 - **Kafka UI**: http://localhost:8080
 
 ---
@@ -94,18 +106,21 @@ bun prisma db seed
 ## 📖 Reading Guide
 
 ### For New Developers (Start Here)
+
 1. [Development Guide](development/development-guide.md) - Setup environment
 2. [System Architecture](architecture/system-architecture.md) - Understand the system
 3. [Authentication Guide](auth/authentication-authorization.md) - Learn auth/authz
 4. [Task Checklists](tasks/) - Implementation guides
 
 ### For AI Agents
+
 1. [Task Checklists](tasks/) - Step-by-step implementation guides
 2. [System Architecture](architecture/system-architecture.md) - System overview
 3. [Authentication Guide](auth/authentication-authorization.md) - Auth implementation
 4. [Development Guide](development/development-guide.md) - Setup and workflows
 
 ### For Specific Tasks
+
 - **Setup Project**: [Setup & Configuration Tasks](tasks/01-setup-configuration.md)
 - **Implement Auth**: [Authentication & Authorization Tasks](tasks/02-auth-authorization.md)
 - **Add Service**: [Architecture & Services Tasks](tasks/03-architecture-services.md)
@@ -119,6 +134,7 @@ bun prisma db seed
 ## 🏗️ System Overview
 
 AnineePlus API is a microservices backend built with:
+
 - **NestJS**: Node.js framework
 - **GraphQL Federation**: Unified API
 - **Apache Kafka**: Event streaming
@@ -141,6 +157,7 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 ## 📝 Key Features
 
 ### Authentication & Authorization
+
 - ✅ Better Auth with JWT/Sessions
 - ✅ OAuth providers (Google, GitHub)
 - ✅ Two-level permission system
@@ -148,6 +165,7 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 - ✅ Organization multi-tenancy
 
 ### Microservices
+
 - ✅ GraphQL Federation
 - ✅ Event-driven architecture
 - ✅ Service discovery
@@ -155,6 +173,7 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 - ✅ Circuit breakers
 
 ### Observability
+
 - ✅ ELK Stack for logging
 - ✅ Request correlation IDs
 - ✅ Metrics collection
@@ -162,6 +181,7 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 - ✅ Performance monitoring
 
 ### Search & Indexing
+
 - ✅ Real-time Elasticsearch indexing
 - ✅ Full-text search
 - ✅ Fuzzy search
@@ -173,12 +193,14 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 ## 🔗 External Links
 
 ### Services
+
 - [Core Service](../apps/core/README.md)
 - [Gateway Service](../apps/gateway/README.md)
 - [Logger Service](../apps/logger/)
 - [Searcher Service](../apps/searcher/)
 
 ### Configuration
+
 - [Docker Compose](../docker-compose.yaml)
 - [Package.json](../package.json)
 - [Scripts](../scripts/)
@@ -188,6 +210,7 @@ Kafka → [PostgreSQL, Elasticsearch, Redis]
 ## 🤝 Contributing
 
 When contributing:
+
 1. ✅ Read [Development Guide](development/development-guide.md)
 2. ✅ Follow [System Architecture](architecture/system-architecture.md) patterns
 3. ✅ Implement [Authentication](auth/authentication-authorization.md) properly
@@ -200,12 +223,14 @@ When contributing:
 ## 🆘 Need Help?
 
 ### Common Tasks
+
 - **Can't start services?** → Check [Troubleshooting](development/development-guide.md#troubleshooting)
 - **Auth not working?** → See [Authentication Guide](auth/authentication-authorization.md)
 - **Need to add feature?** → Follow [Task Checklists](tasks/)
 - **Architecture questions?** → Read [System Architecture](architecture/system-architecture.md)
 
 ### Support Channels
+
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
 - **Documentation**: This docs directory
@@ -214,15 +239,15 @@ When contributing:
 
 ## 📅 Project Status
 
-| Component | Status | Documentation |
-|-----------|--------|---------------|
-| Core Service | ✅ Active | [Core README](../apps/core/README.md) |
-| Gateway Service | ✅ Active | [Gateway README](../apps/gateway/README.md) |
-| Authentication | ✅ Active | [Auth Guide](auth/authentication-authorization.md) |
-| Event System | ✅ Active | [Architecture](architecture/system-architecture.md) |
-| ELK Stack | ✅ Active | [Logging Tasks](tasks/04-logging-monitoring.md) |
-| Search | ✅ Active | [Search Tasks](tasks/05-search-indexing.md) |
-| Plugin System | 🚧 In Progress | [Plugin Tasks](tasks/07-plugin-system.md) |
+| Component       | Status         | Documentation                                       |
+| --------------- | -------------- | --------------------------------------------------- |
+| Core Service    | ✅ Active      | [Core README](../apps/core/README.md)               |
+| Gateway Service | ✅ Active      | [Gateway README](../apps/gateway/README.md)         |
+| Authentication  | ✅ Active      | [Auth Guide](auth/authentication-authorization.md)  |
+| Event System    | ✅ Active      | [Architecture](architecture/system-architecture.md) |
+| ELK Stack       | ✅ Active      | [Logging Tasks](tasks/04-logging-monitoring.md)     |
+| Search          | ✅ Active      | [Search Tasks](tasks/05-search-indexing.md)         |
+| Plugin System   | 🚧 In Progress | [Plugin Tasks](tasks/07-plugin-system.md)           |
 
 ---
 
@@ -282,45 +307,49 @@ docs/
 ## 📚 Documentation Index
 
 ### 🔐 Authentication & Authorization ([`auth/`](auth/))
-| File | Description | Priority |
-|------|-------------|----------|
-| `BETTER_AUTH.md` | Better Auth configuration for authentication | ⭐⭐⭐ |
-| `AUTH_CONFIG.md` | Detailed authentication configuration | ⭐⭐⭐ |
-| `AUTHORIZATION_LIBRARY.md` | CASL library for authorization | ⭐⭐⭐ |
-| `DYNAMIC_PERMISSIONS.md` | Dynamic permission system | ⭐⭐⭐ |
-| `DYNAMIC_PERMISSIONS_GUIDE.md` | Guide to using dynamic permissions | ⭐⭐ |
-| `DYNAMIC_PERMISSIONS_REFACTOR.md` | Permission system refactoring | ⭐⭐ |
-| `PERMISSION_GUARDS.md` | Guards implementation | ⭐⭐⭐ |
-| `ROLE_PERMISSION_SYSTEM.md` | Role and permission management | ⭐⭐⭐ |
-| `ACCESS_CONTROL_SUMMARY.md` | Access control overview | ⭐⭐ |
-| `COMPLETE_ACCESS_CONTROL.md` | Complete access control system | ⭐⭐ |
-| `UNIFIED_ACCESS_CONTROL.md` | Unified access control approach | ⭐⭐ |
-| `DYNAMIC_ACCESS_CONTROL.md` | Dynamic access control patterns | ⭐⭐ |
-| `SHARED_GUARDS_EXAMPLE.md` | Shared guards examples | ⭐ |
+
+| File                              | Description                                  | Priority |
+| --------------------------------- | -------------------------------------------- | -------- |
+| `BETTER_AUTH.md`                  | Better Auth configuration for authentication | ⭐⭐⭐   |
+| `AUTH_CONFIG.md`                  | Detailed authentication configuration        | ⭐⭐⭐   |
+| `AUTHORIZATION_LIBRARY.md`        | CASL library for authorization               | ⭐⭐⭐   |
+| `DYNAMIC_PERMISSIONS.md`          | Dynamic permission system                    | ⭐⭐⭐   |
+| `DYNAMIC_PERMISSIONS_GUIDE.md`    | Guide to using dynamic permissions           | ⭐⭐     |
+| `DYNAMIC_PERMISSIONS_REFACTOR.md` | Permission system refactoring                | ⭐⭐     |
+| `PERMISSION_GUARDS.md`            | Guards implementation                        | ⭐⭐⭐   |
+| `ROLE_PERMISSION_SYSTEM.md`       | Role and permission management               | ⭐⭐⭐   |
+| `ACCESS_CONTROL_SUMMARY.md`       | Access control overview                      | ⭐⭐     |
+| `COMPLETE_ACCESS_CONTROL.md`      | Complete access control system               | ⭐⭐     |
+| `UNIFIED_ACCESS_CONTROL.md`       | Unified access control approach              | ⭐⭐     |
+| `DYNAMIC_ACCESS_CONTROL.md`       | Dynamic access control patterns              | ⭐⭐     |
+| `SHARED_GUARDS_EXAMPLE.md`        | Shared guards examples                       | ⭐       |
 
 ### 🏗️ Architecture & Services ([`architecture/`](architecture/))
-| File | Description | Priority |
-|------|-------------|----------|
-| `architecture.md` | System architecture overview | ⭐⭐⭐ |
-| `MICROSERVICES_ARCHITECTURE.md` | Detailed microservices architecture | ⭐⭐⭐ |
-| `EVENT_DRIVEN_ARCHITECTURE.md` | Event-driven architecture with Kafka & ELK | ⭐⭐⭐ |
-| `DYNAMIC_SERVICE_REGISTRY.md` | Service discovery and registration | ⭐⭐ |
-| `core.md` | Core service documentation | ⭐⭐⭐ |
+
+| File                            | Description                                | Priority |
+| ------------------------------- | ------------------------------------------ | -------- |
+| `architecture.md`               | System architecture overview               | ⭐⭐⭐   |
+| `MICROSERVICES_ARCHITECTURE.md` | Detailed microservices architecture        | ⭐⭐⭐   |
+| `EVENT_DRIVEN_ARCHITECTURE.md`  | Event-driven architecture with Kafka & ELK | ⭐⭐⭐   |
+| `DYNAMIC_SERVICE_REGISTRY.md`   | Service discovery and registration         | ⭐⭐     |
+| `core.md`                       | Core service documentation                 | ⭐⭐⭐   |
 
 ### 🚀 Development & Operations ([`development/`](development/))
-| File | Description | Priority |
-|------|-------------|----------|
-| `DEVELOPMENT.md` | Development setup guide | ⭐⭐⭐ |
-| `ENVIRONMENT_VARIABLES.md` | Environment variable configuration | ⭐⭐⭐ |
-| `SCRIPTS.md` | Automation scripts documentation | ⭐⭐ |
-| `ORGANIZATION_SEEDING.md` | Database seeding guide | ⭐⭐ |
-| `change-logs.md` | Changelog and version history | ⭐ |
+
+| File                       | Description                        | Priority |
+| -------------------------- | ---------------------------------- | -------- |
+| `DEVELOPMENT.md`           | Development setup guide            | ⭐⭐⭐   |
+| `ENVIRONMENT_VARIABLES.md` | Environment variable configuration | ⭐⭐⭐   |
+| `SCRIPTS.md`               | Automation scripts documentation   | ⭐⭐     |
+| `ORGANIZATION_SEEDING.md`  | Database seeding guide             | ⭐⭐     |
+| `change-logs.md`           | Changelog and version history      | ⭐       |
 
 ---
 
 ## 🎓 Reading Guide for AI/Developers
 
 ### 1️⃣ **Starting with a New Project**
+
 ```
 Reading Order:
 1. README.md (this file) - Overview
@@ -331,6 +360,7 @@ Reading Order:
 ```
 
 ### 2️⃣ **Implementing Authentication/Authorization**
+
 ```
 Reading Order:
 1. auth/BETTER_AUTH.md - Basic authentication
@@ -343,6 +373,7 @@ Reading Order:
 ```
 
 ### 3️⃣ **Working with Event-Driven Architecture**
+
 ```
 Reading Order:
 1. architecture/EVENT_DRIVEN_ARCHITECTURE.md - Kafka & ELK setup
@@ -352,6 +383,7 @@ Reading Order:
 ```
 
 ### 4️⃣ **Development & Debugging**
+
 ```
 Reading Order:
 1. development/DEVELOPMENT.md - Development environment
@@ -365,17 +397,20 @@ Reading Order:
 ## 🔗 Quick Links
 
 ### Services Documentation
+
 - [Core Service](../apps/core/README.md)
 - [Gateway Service](../apps/gateway/README.md)
 - [Logger Service](../apps/logger/)
 - [Searcher Service](../apps/searcher/)
 
 ### Configuration Files
+
 - [Docker Compose](../docker-compose.yaml)
 - [Package.json](../package.json)
 - [Environment Variables](development/ENVIRONMENT_VARIABLES.md)
 
 ### Scripts
+
 - [Build Script](../scripts/build.sh)
 - [Setup Environment](../scripts/setup-env.sh)
 - [Event-Driven Setup](../scripts/setup-event-driven.sh)
@@ -405,21 +440,25 @@ Reading Order:
 ## 🆘 Troubleshooting
 
 ### Service Won't Start
+
 1. Check `development/DEVELOPMENT.md` - Validate environment
 2. Check logs: `docker-compose logs -f [service-name]`
 3. Verify `.env` configuration from `development/ENVIRONMENT_VARIABLES.md`
 
 ### Authentication Issues
+
 1. Read `auth/AUTH_CONFIG.md` - Check JWT configuration
 2. Verify Better Auth setup in `auth/BETTER_AUTH.md`
 3. Check session/token in database
 
 ### Permission Denied Errors
+
 1. Review `auth/PERMISSION_GUARDS.md` - Verify guards setup
 2. Check `auth/DYNAMIC_PERMISSIONS.md` - Verify user permissions
 3. Debug with `auth/ACCESS_CONTROL_SUMMARY.md`
 
 ### Kafka/ELK Issues
+
 1. Check `architecture/EVENT_DRIVEN_ARCHITECTURE.md` - Verify setup
 2. Check Kafka UI: http://localhost:8080
 3. Check Kibana: http://localhost:5601
@@ -428,15 +467,15 @@ Reading Order:
 
 ## 📊 Project Status
 
-| Component | Status | Documentation |
-|-----------|--------|---------------|
-| Core Service | ✅ Active | `architecture/core.md` |
-| Gateway Service | ✅ Active | `../apps/gateway/README.md` |
-| Authentication | ✅ Active | `auth/BETTER_AUTH.md` |
-| Authorization | ✅ Active | `auth/AUTHORIZATION_LIBRARY.md` |
-| Event System | ✅ Active | `architecture/EVENT_DRIVEN_ARCHITECTURE.md` |
-| ELK Stack | ✅ Active | `architecture/EVENT_DRIVEN_ARCHITECTURE.md` |
-| Payment Plugin | 🚧 In Progress | `../plugins/payment/` |
+| Component       | Status         | Documentation                               |
+| --------------- | -------------- | ------------------------------------------- |
+| Core Service    | ✅ Active      | `architecture/core.md`                      |
+| Gateway Service | ✅ Active      | `../apps/gateway/README.md`                 |
+| Authentication  | ✅ Active      | `auth/BETTER_AUTH.md`                       |
+| Authorization   | ✅ Active      | `auth/AUTHORIZATION_LIBRARY.md`             |
+| Event System    | ✅ Active      | `architecture/EVENT_DRIVEN_ARCHITECTURE.md` |
+| ELK Stack       | ✅ Active      | `architecture/EVENT_DRIVEN_ARCHITECTURE.md` |
+| Payment Plugin  | 🚧 In Progress | `../plugins/payment/`                       |
 
 ---
 

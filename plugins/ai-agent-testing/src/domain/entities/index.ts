@@ -6,3 +6,5 @@ export * from './project.entity';
 export * from './test-case.entity';
 export * from './test-run.entity';
 export * from './model-config.entity';
+export * from './test-document.entity';
+
