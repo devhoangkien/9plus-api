@@ -25,12 +25,11 @@ copy_env_file() {
                 cp .env.example .env
                 echo -e "${GREEN}✅ Created .env for ${service_name}${NC}"
             fi
-        else
-            echo -e "${YELLOW}⚠️  No .env.example found in ${service_name}${NC}"
+        # else
+            # Silent skip if no .env.example, or log verbose? 
+            # echo -e "${YELLOW}⚠️  No .env.example found in ${service_name}${NC}"
         fi
         cd - > /dev/null
-    else
-        echo -e "${YELLOW}⚠️  Directory not found: ${dir}${NC}"
     fi
 }
 
@@ -51,26 +50,40 @@ fi
 echo ""
 echo -e "${YELLOW}🏢 Setting up service environments...${NC}"
 
-# Copy environment files for all services
-copy_env_file "apps/core" "Core Service"
-copy_env_file "apps/gateway" "Gateway Service" 
-copy_env_file "apps/searcher" "Searcher Service"
-copy_env_file "apps/logger" "Logger Service"
+# Dynamically setup apps envs
+for dir in apps/*; do
+    if [ -d "$dir" ]; then
+        copy_env_file "$dir" "$(basename "$dir") Service"
+    fi
+done
 
 echo ""
 echo -e "${YELLOW}🔌 Setting up plugin environments...${NC}"
-copy_env_file "plugins/payment" "Payment Plugin"
+# Dynamically setup plugins envs
+for dir in plugins/*; do
+    if [ -d "$dir" ]; then
+        copy_env_file "$dir" "$(basename "$dir") Plugin"
+    fi
+done
 
 echo ""
 echo -e "${GREEN}🎉 Environment setup completed!${NC}"
 echo ""
-echo "Created environment files:"
+echo "Created environment files (if .env.example existed):"
 echo "  📄 ./.env (root configuration)"
-echo "  📄 ./apps/core/.env"
-echo "  📄 ./apps/gateway/.env"
-echo "  📄 ./apps/searcher/.env"  
-echo "  📄 ./apps/logger/.env"
-echo "  📄 ./plugins/payment/.env"
+
+# Dynamically list created envs
+for dir in apps/*; do
+    if [ -f "$dir/.env" ]; then
+        echo "  📄 ./$dir/.env"
+    fi
+done
+for dir in plugins/*; do
+    if [ -f "$dir/.env" ]; then
+        echo "  📄 ./$dir/.env"
+    fi
+done
+
 echo ""
 echo "⚠️  Important: Please update the .env files with your actual configuration:"
 echo ""

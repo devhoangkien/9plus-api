@@ -9,7 +9,6 @@
     "searcher": "cd apps/searcher && bun start:dev",
     "logger": "cd apps/logger && bun dev",
     "payment": "cd plugins/payment && bun dev",
-    
     "env:setup": "sh ./scripts/setup-env.sh",
     "i:libs": "sh ./scripts/link-libs.sh",
     "i:all": "sh ./scripts/install.sh && bun run i:libs",
@@ -21,19 +20,16 @@
     "verify": "sh ./scripts/verify-env.sh",
     "cleanup": "sh ./scripts/cleanup.sh",
     "make-executable": "sh ./scripts/make-executable.sh",
-    
     "event-driven:setup": "sh ./scripts/setup-event-driven.sh",
-    "event-driven:start": "sh ./scripts/start-dev-event-driven.sh", 
+    "event-driven:start": "sh ./scripts/start-dev-event-driven.sh",
     "event-driven:test": "sh ./scripts/test-event-driven.sh",
     "event-driven:dev": "sh ./scripts/start-dev-event-driven.sh",
-    
     "infra:kafka": "cd infra/kafka-connect && docker compose up -d",
     "infra:elk": "cd infra/elastic-stack && docker compose up -d",
     "infra:up": "bun run infra:kafka && bun run infra:elk",
     "infra:down": "cd infra/kafka-connect && docker compose down && cd ../elastic-stack && docker compose down",
     "infra:logs": "cd infra/kafka-connect && docker compose logs -f",
     "infra:status": "cd infra/kafka-connect && docker compose ps && cd ../elastic-stack && docker compose ps",
-    
     "docker:build": "docker compose build",
     "docker:start": "docker compose up -d",
     "docker:prod": "docker compose -f docker-compose.prod.yaml up -d",
@@ -57,8 +53,5 @@
   "bugs": {
     "url": "https://github.com/anineplus/anineplus-api/issues"
   },
-  "homepage": "https://github.com/anineplus/anineplus-api#readme",
-  "dependencies": {
-    "reflect-metadata": "0.2.2"
-  }
+  "homepage": "https://github.com/anineplus/anineplus-api#readme"
 }

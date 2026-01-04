@@ -14,7 +14,7 @@ install_deps() {
     local dir=$1
     local service_name=$2
     
-    if [ -d "$dir" ]; then
+    if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
         echo -e "${YELLOW}📦 Installing dependencies for ${service_name}...${NC}"
         cd "$dir" && bun install && cd - > /dev/null
         if [ $? -eq 0 ]; then
@@ -23,8 +23,6 @@ install_deps() {
             echo -e "${RED}❌ Failed to install ${service_name} dependencies${NC}"
             return 1
         fi
-    else
-        echo -e "${YELLOW}⚠️  Directory not found: ${dir} (${service_name})${NC}"
     fi
 }
 
@@ -40,22 +38,30 @@ fi
 
 echo ""
 
-# Install core services
-install_deps "apps/core" "Core Service"
-install_deps "apps/gateway" "Gateway Service"
+# Dynamically install apps
+echo -e "${YELLOW}📦 Installing dependencies for apps...${NC}"
+for dir in apps/*; do
+    if [ -d "$dir" ]; then
+        install_deps "$dir" "$(basename "$dir") Service"
+    fi
+done
 
-# Install new event-driven services
-install_deps "apps/searcher" "Searcher Service"
-install_deps "apps/logger" "Logger Service"
+# Dynamically install plugins
+echo -e "${YELLOW}🔌 Installing dependencies for plugins...${NC}"
+for dir in plugins/*; do
+    if [ -d "$dir" ]; then
+        install_deps "$dir" "$(basename "$dir") Plugin"
+    fi
+done
 
-# Install plugins
-install_deps "plugins/payment" "Payment Plugin"
-
-# Install libraries
+# Dynamically install shared libraries
 echo ""
 echo -e "${YELLOW}📚 Installing shared libraries...${NC}"
-install_deps "shared/common" "Common Library"
-install_deps "libs/casl-authorization" "CASL Authorization Library"
+for dir in shared/*; do
+    if [ -d "$dir" ]; then
+        install_deps "$dir" "$(basename "$dir") Library"
+    fi
+done
 
 echo ""
 echo -e "${YELLOW}🔗 Setting up shared libraries...${NC}"

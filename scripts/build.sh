@@ -15,7 +15,7 @@ build_service() {
     local dir=$1
     local service_name=$2
     
-    if [ -d "$dir" ]; then
+    if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
         echo -e "${YELLOW}🔨 Building ${service_name}...${NC}"
         cd "$dir" && bun run build && cd - > /dev/null
         if [ $? -eq 0 ]; then
@@ -24,54 +24,54 @@ build_service() {
             echo -e "${RED}❌ Failed to build ${service_name}${NC}"
             return 1
         fi
-    else
-        echo -e "${YELLOW}⚠️  Directory not found: ${dir} (${service_name})${NC}"
     fi
 }
 
 # Build shared libraries first
 echo -e "${YELLOW}📚 Building shared libraries...${NC}"
-build_service "shared/common" "Common Library"
-build_service "libs/casl-authorization" "CASL Authorization Library"
+for dir in shared/*; do
+    if [ -d "$dir" ]; then
+        build_service "$dir" "$(basename "$dir") Library"
+    fi
+done
 
 echo ""
 
-# Build core services
-echo -e "${YELLOW}🏢 Building core services...${NC}"
-build_service "apps/core" "Core Service"
-build_service "apps/gateway" "Gateway Service"
-
-# Build event-driven services
-echo -e "${YELLOW}🔄 Building event-driven services...${NC}"
-build_service "apps/searcher" "Searcher Service"  
-build_service "apps/logger" "Logger Service"
+# Build apps
+echo -e "${YELLOW}🏢 Building apps...${NC}"
+for dir in apps/*; do
+    if [ -d "$dir" ]; then
+        build_service "$dir" "$(basename "$dir") Service"
+    fi
+done
 
 # Build plugins
 echo -e "${YELLOW}🔌 Building plugins...${NC}"
-build_service "plugins/payment" "Payment Plugin"
+for dir in plugins/*; do
+    if [ -d "$dir" ]; then
+        build_service "$dir" "$(basename "$dir") Plugin"
+    fi
+done
 
 echo ""
 echo -e "${YELLOW}🐳 Building Docker images...${NC}"
 
 # Build Docker images for all services
-docker-compose build --no-cache
+if [ -f "docker-compose.yaml" ]; then
+    docker-compose build --no-cache
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ All Docker images built successfully${NC}"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ All Docker images built successfully${NC}"
+    else
+        echo -e "${RED}❌ Failed to build Docker images${NC}"
+        exit 1
+    fi
 else
-    echo -e "${RED}❌ Failed to build Docker images${NC}"
-    exit 1
+    echo -e "${YELLOW}⚠️  docker-compose.yaml not found, skipping Docker build${NC}"
 fi
 
 echo ""
 echo -e "${GREEN}🎉 Build completed successfully!${NC}"
-echo ""
-echo "Available services:"
-echo "  - core: Core GraphQL API"
-echo "  - gateway: GraphQL Federation Gateway" 
-echo "  - searcher: Kafka Consumer → Elasticsearch"
-echo "  - logger: Log Aggregation Service"
-echo "  - payment: Payment Processing Plugin"
 echo ""
 echo "To start services:"
 echo "  docker-compose up -d"
