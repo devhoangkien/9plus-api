@@ -24,7 +24,8 @@
     "db:migrate": "npx prisma migrate dev --name",
     "db:migrate-save": "prisma migrate dev",
     "db:migrate-up": "prisma migrate deploy",
-    "db:clean": "prisma migrate reset"
+    "db:clean": "prisma migrate reset",
+    "db:init": "npm run db:migrate-save --name 'initial version' && npm run db:migrate-up && npm run seed"
   },
   "dependencies": {
     "@anineplus/authorization": "file:../../shared/authorization",
