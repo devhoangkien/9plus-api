@@ -25,9 +25,14 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     SELECT 'CREATE DATABASE anineplus_payment'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'anineplus_payment')\gexec
 
+    -- Create AI Agent Testing database
+    SELECT 'CREATE DATABASE ai_agent_testing'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ai_agent_testing')\gexec
+
     -- Grant privileges
     GRANT ALL PRIVILEGES ON DATABASE anineplus_core TO ${DB_USERNAME:-anineplus_user};
     GRANT ALL PRIVILEGES ON DATABASE anineplus_payment TO ${DB_USERNAME:-anineplus_user};
+    GRANT ALL PRIVILEGES ON DATABASE ai_agent_testing TO ${DB_USERNAME:-anineplus_user};
 EOSQL
 
 # Setup core database with extensions
@@ -77,7 +82,26 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "anineplus_payment"
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO ${DB_USERNAME:-anineplus_user};
 EOSQL
 
-# Create indexes for better performance
+# Setup AI Agent Testing database with extensions
+echo "🤖 Setting up AI Agent Testing database extensions..."
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "ai_agent_testing" <<-EOSQL
+    -- Create extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    
+    -- Grant privileges
+    GRANT USAGE ON SCHEMA public TO ${DB_USERNAME:-anineplus_user};
+    GRANT ALL ON ALL TABLES IN SCHEMA public TO ${DB_USERNAME:-anineplus_user};
+    GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO ${DB_USERNAME:-anineplus_user};
+    GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO ${DB_USERNAME:-anineplus_user};
+    
+    -- Set default privileges
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USERNAME:-anineplus_user};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USERNAME:-anineplus_user};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO ${DB_USERNAME:-anineplus_user};
+EOSQL
+
 echo "🏗️  Creating performance indexes..."
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "anineplus_core" <<-EOSQL
     -- Create indexes for common queries (these will be created by Prisma, but as examples)
@@ -154,6 +178,7 @@ echo "📋 Database Information:"
 echo "  - PostgreSQL Version: 18"
 echo "  - Core Database: anineplus_core"
 echo "  - Payment Database: anineplus_payment"
+echo "  - AI Agent Testing Database: ai_agent_testing"
 echo "  - Application User: ${DB_USERNAME:-anineplus_user}"
 echo ""
 echo "🔧 Installed Extensions:"
