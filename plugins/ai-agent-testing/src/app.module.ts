@@ -44,7 +44,6 @@ import {
       driver: YogaFederationDriver,
       autoSchemaFile: {
         federation: 2,
-        path: './schema.gql',
       },
     }),
     PrismaModule,
@@ -99,4 +98,4 @@ import {
     AiAgentResolver,
   ],
 })
-export class AppModule {}
+export class AppModule { }

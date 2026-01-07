@@ -1,0 +1,8 @@
+# Bun configuration for ai-agent-testing plugin
+
+# Set log level to error to suppress warnings
+logLevel = "error"
+
+[run]
+# Suppress warnings about files outside project directory  
+silent = false

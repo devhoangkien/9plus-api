@@ -1,5 +1,5 @@
 import { ArgsType, Field, ID, Int } from '@nestjs/graphql';
-import { IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsNotEmpty, IsString } from 'class-validator';
 import { TestType, TestRunStatus, TestRunTriggerSource } from '../../domain/entities';
 
 // ==================== Pagination Args ====================
@@ -25,24 +25,30 @@ export class PaginationArgs {
 @ArgsType()
 export class GetProjectArgs {
   @Field(() => ID)
-  id: string;
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
 }
 
 @ArgsType()
-export class GetProjectsArgs extends PaginationArgs {}
+export class GetProjectsArgs extends PaginationArgs { }
 
 // ==================== Test Case Args ====================
 
 @ArgsType()
 export class GetTestCaseArgs {
   @Field(() => ID)
-  id: string;
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
 }
 
 @ArgsType()
 export class GetTestCasesArgs extends PaginationArgs {
   @Field(() => ID)
-  projectId: string;
+  @IsNotEmpty()
+  @IsString()
+  projectId!: string;
 
   @Field(() => TestType, { nullable: true })
   @IsOptional()
@@ -58,13 +64,17 @@ export class GetTestCasesArgs extends PaginationArgs {
 @ArgsType()
 export class GetTestRunArgs {
   @Field(() => ID)
-  id: string;
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
 }
 
 @ArgsType()
 export class GetTestRunsArgs extends PaginationArgs {
   @Field(() => ID)
-  projectId: string;
+  @IsNotEmpty()
+  @IsString()
+  projectId!: string;
 
   @Field(() => TestRunStatus, { nullable: true })
   @IsOptional()
@@ -80,7 +90,9 @@ export class GetTestRunsArgs extends PaginationArgs {
 @ArgsType()
 export class GetModelConfigArgs {
   @Field(() => ID)
-  id: string;
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
 }
 
 @ArgsType()

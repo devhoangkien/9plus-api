@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "dev": "bun --bun --watch src/main.ts",
+    "dev": "BUN_QUIET=1 bun --bun --watch src/main.ts 2>&1 | grep -v 'not in the project directory'",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
