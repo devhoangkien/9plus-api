@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package role;
+
+// Role Service for managing roles and permissions
+service RoleService {
+  // Get multiple roles by their keys
+  rpc GetRolesByKeys (GetRolesByKeysRequest) returns (GetRolesByKeysResponse);
+  
+  // Get a single role by ID
+  rpc GetRoleById (GetRoleByIdRequest) returns (Role);
+  
+  // Get all roles for a user
+  rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
+}
+
+// Request to get roles by keys
+message GetRolesByKeysRequest {
+  repeated string keys = 1;
+}
+
+// Response with multiple roles
+message GetRolesByKeysResponse {
+  repeated Role roles = 1;
+}
+
+// Request to get role by ID
+message GetRoleByIdRequest {
+  string id = 1;
+}
+
+// Request to get user roles
+message GetUserRolesRequest {
+  string user_id = 1;
+}
+
+// Response with user roles
+message GetUserRolesResponse {
+  repeated Role roles = 1;
+}
+
+// Role entity
+message Role {
+  string id = 1;
+  string key = 2;
+  string name = 3;
+  string description = 4;
+  repeated Permission permissions = 5;
+  string status = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+// Permission entity
+message Permission {
+  string id = 1;
+  string key = 2;
+  string name = 3;
+  string resource = 4;
+  string action = 5;
+  string status = 6;
+  string description = 7;
+}

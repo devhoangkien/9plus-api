@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -37,9 +38,11 @@ import { AUTH_METADATA_KEYS } from '../interfaces';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name);
+
   constructor(
     @Inject('AUTH_SERVICE') private readonly authService: any,
-  ) {}
+  ) { }
 
   private get reflector(): Reflector {
     // Lazy load Reflector to avoid circular dependency issues
@@ -64,6 +67,7 @@ export class AuthGuard implements CanActivate {
     // Extract token from authorization header
     const authHeader = ctx.req?.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      this.logger.warn('No authorization token provided');
       throw new UnauthorizedException('No authorization token provided');
     }
 
@@ -74,6 +78,7 @@ export class AuthGuard implements CanActivate {
       const session = await this.authService.getSession(sessionToken);
 
       if (!session) {
+        this.logger.warn('Invalid or expired session');
         throw new UnauthorizedException('Invalid or expired session');
       }
 
@@ -88,7 +93,9 @@ export class AuthGuard implements CanActivate {
         throw error;
       }
       const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`Authentication failed: ${message}`);
       throw new UnauthorizedException('Authentication failed: ' + message);
     }
   }
 }
+

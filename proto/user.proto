@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package user;
+
+// User Service for user management
+service UserService {
+  // Get user by ID
+  rpc GetUserById (GetUserByIdRequest) returns (User);
+  
+  // Get user by email
+  rpc GetUserByEmail (GetUserByEmailRequest) returns (User);
+  
+  // Validate user credentials
+  rpc ValidateCredentials (ValidateCredentialsRequest) returns (ValidateCredentialsResponse);
+}
+
+// Request to get user by ID
+message GetUserByIdRequest {
+  string id = 1;
+}
+
+// Request to get user by email
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+// Request to validate credentials
+message ValidateCredentialsRequest {
+  string email = 1;
+  string password = 2;
+}
+
+// Response for credential validation
+message ValidateCredentialsResponse {
+  bool valid = 1;
+  User user = 2;
+}
+
+// User entity
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string status = 5;
+  bool email_verified = 6;
+  bool two_factor_enabled = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}

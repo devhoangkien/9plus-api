@@ -26,13 +26,14 @@
     "db:migrate-save": "prisma migrate dev",
     "db:migrate-up": "prisma migrate deploy",
     "db:clean": "prisma migrate reset",
-    "db:init": "npm run db:migrate-save --name 'initial version' && npm run db:migrate-up && npm run seed"
+    "db:init": "npm run db:migrate-save --name 'initial version' && npm run db:migrate-up "
   },
   "dependencies": {
     "@anineplus/authorization": "file:../../shared/authorization",
     "@anineplus/common": "file:../../shared/common",
     "@graphql-yoga/nestjs-federation": "^3.16.0",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/graphql": "^13.1.0",
     "@nestjs/platform-express": "^11.0.1",
@@ -42,7 +43,8 @@
     "dataloader": "^2.2.2",
     "graphql-scalars": "^1.23.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "stripe": "20.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

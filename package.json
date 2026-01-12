@@ -53,5 +53,13 @@
   "bugs": {
     "url": "https://github.com/anineplus/anineplus-api/issues"
   },
-  "homepage": "https://github.com/anineplus/anineplus-api#readme"
+  "homepage": "https://github.com/anineplus/anineplus-api#readme",
+  "dependencies": {
+    "@grpc/grpc-js": "1.14.3",
+    "@grpc/proto-loader": "0.8.0",
+    "ioredis": "5.9.1"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "3.15.12"
+  }
 }

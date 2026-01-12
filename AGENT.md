@@ -122,7 +122,8 @@ packages/
 
 ### Backend Stack
 - **Framework**: NestJS
-- **API**: GraphQL (Apollo Federation)
+- **API**: GraphQL (Apollo Federation) for clients, gRPC for internal
+- **Internal Communication**: gRPC (Protocol Buffers)
 - **Database**: PostgreSQL with Prisma ORM
 - **Cache**: Redis
 - **Message Queue**: Kafka
@@ -133,27 +134,136 @@ packages/
 
 ### Microservices Architecture
 ```
-┌─────────────┐
-│   Gateway   │ ← GraphQL Federation (Port 3000)
-└──────┬──────┘
-       │
-       ├─────► Core Service (Port 50051)
-       │       ├── Authentication
-       │       ├── User Management
-       │       ├── Roles & Permissions
-       │       └── Organization
-       │
-       ├─────► Payment Service (Port 50052)
-       │
-       └─────► AI Testing Plugin (Port 50053)
-                ├── Projects
-                ├── Test Cases
-                ├── Test Runs
-                └── Model Configs
+┌─────────────────────────────────────────────────────────────┐
+│                     CLIENT (Frontend)                        │
+└─────────────────────────┬───────────────────────────────────┘
+                          │ GraphQL (HTTP)
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    API GATEWAY (Port 3000)                   │
+│  • GraphQL Federation for clients                           │
+│  • gRPC clients for internal calls                          │
+│  • Redis caching layer                                      │
+│  • JWT validation & context injection                       │
+└────────┬────────────────┬────────────────┬──────────────────┘
+         │ gRPC           │ gRPC           │ gRPC
+         ▼                ▼                ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ Core Service │  │Payment Service│ │ AI Testing   │
+│ (Port 50061) │  │ (Port 50062) │  │ (Port 50063) │
+│  • Auth      │  │  • Payments  │  │  • Projects  │
+│  • Users     │  │  • Billing   │  │  • TestCases │
+│  • Roles     │  │              │  │  • TestRuns  │
+│  • Permissions│ │              │  │              │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       │                 │                 │
+       └─────────────────┼─────────────────┘
+                         │ Kafka Events
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    KAFKA EVENT BUS                          │
+│  Topics: user.created, order.placed, test.completed, etc.  │
+└─────────────────────────────────────────────────────────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         ▼               ▼               ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│Logger Service│  │  Searcher    │  │  Analytics   │
+│ (Port 3004)  │  │ (Port 3003)  │  │   Service    │
+└──────────────┘  └──────────────┘  └──────────────┘
+```
 
-Event Bus (Kafka)
-       ↕
-All Services (Event-driven communication)
+### Service Communication Patterns
+
+#### 1. Synchronous (gRPC) - Request/Response
+```
+Gateway ──gRPC──► Core Service   (Get roles, validate user)
+Gateway ──gRPC──► Payment Service (Process payment)
+```
+- **Use for**: Real-time operations requiring immediate response
+- **Protocol**: gRPC with Protocol Buffers
+- **Latency**: ~5-10ms
+- **Features**: Type-safe, streaming support, automatic retry
+
+#### 2. Asynchronous (Kafka) - Event-Driven
+```
+Core Service ──publish──► Kafka ──consume──► Searcher
+                                          └──► Logger
+```
+- **Use for**: Background processing, data sync, notifications
+- **Protocol**: Kafka with JSON/Avro messages
+- **Latency**: ~100-500ms
+- **Features**: Persistence, replay, decoupling
+
+#### 3. Client-Facing (GraphQL Federation)
+```
+Frontend ──GraphQL──► Gateway ──stitches──► All Services
+```
+- **Use for**: Client API, flexible queries
+- **Protocol**: GraphQL over HTTP
+- **Features**: Schema stitching, introspection, playground
+
+### Design Patterns
+
+#### Architectural Patterns
+1. **Microservices Architecture** - Services independently deployable
+2. **API Gateway Pattern** - Single entry point for clients
+3. **Event-Driven Architecture** - Kafka for async communication
+4. **CQRS** - Separate read/write paths where needed
+5. **Saga Pattern** - Distributed transactions via events
+
+#### Structural Patterns
+1. **Layered Architecture**
+   ```
+   Presentation (Controllers/Resolvers)
+        ↓
+   Application (Services)
+        ↓
+   Domain (Entities/DTOs)
+        ↓
+   Infrastructure (Repositories/Prisma)
+   ```
+
+2. **Dependency Injection** - NestJS IoC container
+3. **Repository Pattern** - Prisma as data access layer
+4. **Module Pattern** - NestJS modules for encapsulation
+
+#### Behavioral Patterns
+1. **Strategy Pattern** - Multiple auth strategies (JWT, OAuth)
+2. **Factory Pattern** - Gateway config factory
+3. **Observer Pattern** - Kafka pub/sub
+4. **Decorator Pattern** - NestJS decorators (@Guard, @Injectable)
+5. **Guard Pattern** - Authorization guards
+
+#### Infrastructure Patterns
+1. **Circuit Breaker** - gRPC retry with exponential backoff
+2. **Cache-Aside** - Redis caching layer
+3. **Sidecar Pattern** - Logger/Tracer services
+4. **Service Registry** - Dynamic gateway discovery
+
+### gRPC Configuration
+
+#### Proto Files Location
+```
+proto/
+├── role.proto      # Role service definitions
+├── user.proto      # User service definitions
+└── common.proto    # Shared message types
+```
+
+#### gRPC Ports
+- **Core Service**: 50061
+- **Payment Service**: 50062
+- **AI Testing**: 50063
+
+#### gRPC Client Usage
+```typescript
+// In Gateway - using gRPC client with caching
+const roles = await this.cacheService.getOrSet(
+  `roles:${userId}`,
+  () => this.roleGrpcClient.getRolesByKeys(keys),
+  300 // TTL: 5 minutes
+);
 ```
 
 ### Authentication Flow

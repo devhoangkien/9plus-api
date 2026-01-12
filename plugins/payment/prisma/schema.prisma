@@ -669,6 +669,7 @@ enum PaymentProvider {
   MOMO
   ZALO_PAY
   VIETQR
+  SEPAY
 }
 
 enum InvoiceStatus {

@@ -2,3 +2,1539 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type ErrorDetail {
+  """Field name that caused the error"""
+  field: String
+
+  """Error message"""
+  message: String!
+
+  """Error code"""
+  code: String
+}
+
+type DiscountApplicationAvgAggregate {
+  discountAmount: Decimal
+}
+
+"""An arbitrary-precision Decimal type"""
+scalar Decimal
+
+type DiscountApplicationCountAggregate {
+  id: Int!
+  discountId: Int!
+  userId: Int!
+  appliedAt: Int!
+  invoiceId: Int!
+  discountAmount: Int!
+  createdAt: Int!
+  _all: Int!
+}
+
+type DiscountApplicationMaxAggregate {
+  id: String
+  discountId: String
+  userId: String
+  appliedAt: DateTime
+  invoiceId: String
+  discountAmount: Decimal
+  createdAt: DateTime
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DiscountApplicationMinAggregate {
+  id: String
+  discountId: String
+  userId: String
+  appliedAt: DateTime
+  invoiceId: String
+  discountAmount: Decimal
+  createdAt: DateTime
+}
+
+type DiscountApplicationSumAggregate {
+  discountAmount: Decimal
+}
+
+type DiscountApplication {
+  id: ID!
+  discountId: String!
+  userId: String!
+  appliedAt: DateTime!
+  invoiceId: String
+  discountAmount: Decimal!
+  createdAt: DateTime!
+  discount: DiscountCode!
+}
+
+type DiscountCodeAvgAggregate {
+  value: Decimal
+  usageLimit: Float
+  usageCount: Float
+  perUserLimit: Float
+  minAmount: Decimal
+}
+
+type DiscountCodeCountAggregate {
+  id: Int!
+  code: Int!
+  name: Int!
+  description: Int!
+  type: Int!
+  value: Int!
+  currency: Int!
+  usageLimit: Int!
+  usageCount: Int!
+  perUserLimit: Int!
+  validFrom: Int!
+  validUntil: Int!
+  isActive: Int!
+  planIds: Int!
+  minAmount: Int!
+  newCustomersOnly: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  createdBy: Int!
+  _all: Int!
+}
+
+type DiscountCodeCount {
+  applications: Int!
+}
+
+type DiscountCodeMaxAggregate {
+  id: String
+  code: String
+  name: String
+  description: String
+  type: DiscountType
+  value: Decimal
+  currency: String
+  usageLimit: Int
+  usageCount: Int
+  perUserLimit: Int
+  validFrom: DateTime
+  validUntil: DateTime
+  isActive: Boolean
+  minAmount: Decimal
+  newCustomersOnly: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  createdBy: String
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_TRIAL
+  FREE_MONTHS
+}
+
+type DiscountCodeMinAggregate {
+  id: String
+  code: String
+  name: String
+  description: String
+  type: DiscountType
+  value: Decimal
+  currency: String
+  usageLimit: Int
+  usageCount: Int
+  perUserLimit: Int
+  validFrom: DateTime
+  validUntil: DateTime
+  isActive: Boolean
+  minAmount: Decimal
+  newCustomersOnly: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  createdBy: String
+}
+
+type DiscountCodeSumAggregate {
+  value: Decimal
+  usageLimit: Int
+  usageCount: Int
+  perUserLimit: Int
+  minAmount: Decimal
+}
+
+type DiscountCode {
+  id: ID!
+  code: String!
+  name: String!
+  description: String
+  type: DiscountType!
+  value: Decimal!
+  currency: String
+  usageLimit: Int
+  usageCount: Int!
+  perUserLimit: Int!
+  validFrom: DateTime!
+  validUntil: DateTime
+  isActive: Boolean!
+  planIds: JSON
+  minAmount: Decimal
+  newCustomersOnly: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: String!
+  applications: [DiscountApplication!]
+  _count: DiscountCodeCount!
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type InvoiceAvgAggregate {
+  subtotal: Decimal
+  taxAmount: Decimal
+  discountAmount: Decimal
+  total: Decimal
+  dunningLevel: Float
+}
+
+type InvoiceCountAggregate {
+  id: Int!
+  invoiceNumber: Int!
+  userId: Int!
+  subscriptionId: Int!
+  description: Int!
+  subtotal: Int!
+  taxAmount: Int!
+  discountAmount: Int!
+  total: Int!
+  currency: Int!
+  periodStart: Int!
+  periodEnd: Int!
+  status: Int!
+  invoiceDate: Int!
+  dueDate: Int!
+  paidDate: Int!
+  paymentMethodId: Int!
+  pdfUrl: Int!
+  emailSent: Int!
+  emailSentAt: Int!
+  dunningLevel: Int!
+  lastDunningAt: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type InvoiceCount {
+  lineItems: Int!
+  transactions: Int!
+}
+
+type InvoiceMaxAggregate {
+  id: String
+  invoiceNumber: String
+  userId: String
+  subscriptionId: String
+  description: String
+  subtotal: Decimal
+  taxAmount: Decimal
+  discountAmount: Decimal
+  total: Decimal
+  currency: String
+  periodStart: DateTime
+  periodEnd: DateTime
+  status: InvoiceStatus
+  invoiceDate: DateTime
+  dueDate: DateTime
+  paidDate: DateTime
+  paymentMethodId: String
+  pdfUrl: String
+  emailSent: Boolean
+  emailSentAt: DateTime
+  dunningLevel: Int
+  lastDunningAt: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+type InvoiceMinAggregate {
+  id: String
+  invoiceNumber: String
+  userId: String
+  subscriptionId: String
+  description: String
+  subtotal: Decimal
+  taxAmount: Decimal
+  discountAmount: Decimal
+  total: Decimal
+  currency: String
+  periodStart: DateTime
+  periodEnd: DateTime
+  status: InvoiceStatus
+  invoiceDate: DateTime
+  dueDate: DateTime
+  paidDate: DateTime
+  paymentMethodId: String
+  pdfUrl: String
+  emailSent: Boolean
+  emailSentAt: DateTime
+  dunningLevel: Int
+  lastDunningAt: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type InvoiceSumAggregate {
+  subtotal: Decimal
+  taxAmount: Decimal
+  discountAmount: Decimal
+  total: Decimal
+  dunningLevel: Int
+}
+
+type Invoice {
+  id: ID!
+  invoiceNumber: String!
+  userId: String!
+  subscriptionId: String
+  description: String!
+  subtotal: Decimal!
+  taxAmount: Decimal!
+  discountAmount: Decimal!
+  total: Decimal!
+  currency: String!
+  periodStart: DateTime
+  periodEnd: DateTime
+  status: InvoiceStatus!
+  invoiceDate: DateTime!
+  dueDate: DateTime!
+  paidDate: DateTime
+  paymentMethodId: String
+  pdfUrl: String
+  emailSent: Boolean!
+  emailSentAt: DateTime
+  dunningLevel: Int!
+  lastDunningAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  subscription: Subscription
+  paymentMethod: PaymentMethod
+  lineItems: [InvoiceLineItem!]
+  transactions: [Transaction!]
+  _count: InvoiceCount!
+}
+
+type InvoiceLineItemAvgAggregate {
+  quantity: Float
+  unitPrice: Decimal
+  amount: Decimal
+}
+
+type InvoiceLineItemCountAggregate {
+  id: Int!
+  invoiceId: Int!
+  description: Int!
+  quantity: Int!
+  unitPrice: Int!
+  amount: Int!
+  itemType: Int!
+  itemId: Int!
+  periodStart: Int!
+  periodEnd: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type InvoiceLineItemMaxAggregate {
+  id: String
+  invoiceId: String
+  description: String
+  quantity: Int
+  unitPrice: Decimal
+  amount: Decimal
+  itemType: LineItemType
+  itemId: String
+  periodStart: DateTime
+  periodEnd: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum LineItemType {
+  SUBSCRIPTION
+  ONE_TIME
+  DISCOUNT
+  TAX
+  FEE
+}
+
+type InvoiceLineItemMinAggregate {
+  id: String
+  invoiceId: String
+  description: String
+  quantity: Int
+  unitPrice: Decimal
+  amount: Decimal
+  itemType: LineItemType
+  itemId: String
+  periodStart: DateTime
+  periodEnd: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type InvoiceLineItemSumAggregate {
+  quantity: Int
+  unitPrice: Decimal
+  amount: Decimal
+}
+
+type InvoiceLineItem {
+  id: ID!
+  invoiceId: String!
+  description: String!
+  quantity: Int!
+  unitPrice: Decimal!
+  amount: Decimal!
+  itemType: LineItemType!
+  itemId: String
+  periodStart: DateTime
+  periodEnd: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  invoice: Invoice!
+}
+
+type PaymentAnalyticsAvgAggregate {
+  grossRevenue: Decimal
+  netRevenue: Decimal
+  refundAmount: Decimal
+  transactionCount: Float
+  successfulTransactions: Float
+  failedTransactions: Float
+  newCustomers: Float
+  churnedCustomers: Float
+  activeSubscriptions: Float
+}
+
+type PaymentAnalyticsCountAggregate {
+  id: Int!
+  date: Int!
+  grossRevenue: Int!
+  netRevenue: Int!
+  refundAmount: Int!
+  transactionCount: Int!
+  successfulTransactions: Int!
+  failedTransactions: Int!
+  newCustomers: Int!
+  churnedCustomers: Int!
+  activeSubscriptions: Int!
+  planMetrics: Int!
+  countryMetrics: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type PaymentAnalyticsMaxAggregate {
+  id: String
+  date: DateTime
+  grossRevenue: Decimal
+  netRevenue: Decimal
+  refundAmount: Decimal
+  transactionCount: Int
+  successfulTransactions: Int
+  failedTransactions: Int
+  newCustomers: Int
+  churnedCustomers: Int
+  activeSubscriptions: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentAnalyticsMinAggregate {
+  id: String
+  date: DateTime
+  grossRevenue: Decimal
+  netRevenue: Decimal
+  refundAmount: Decimal
+  transactionCount: Int
+  successfulTransactions: Int
+  failedTransactions: Int
+  newCustomers: Int
+  churnedCustomers: Int
+  activeSubscriptions: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentAnalyticsSumAggregate {
+  grossRevenue: Decimal
+  netRevenue: Decimal
+  refundAmount: Decimal
+  transactionCount: Int
+  successfulTransactions: Int
+  failedTransactions: Int
+  newCustomers: Int
+  churnedCustomers: Int
+  activeSubscriptions: Int
+}
+
+type PaymentMethodAvgAggregate {
+  cardExpMonth: Float
+  cardExpYear: Float
+}
+
+type PaymentMethodCountAggregate {
+  id: Int!
+  userId: Int!
+  type: Int!
+  provider: Int!
+  cardLast4: Int!
+  cardBrand: Int!
+  cardExpMonth: Int!
+  cardExpYear: Int!
+  bankName: Int!
+  accountLast4: Int!
+  walletType: Int!
+  providerId: Int!
+  providerPaymentMethodId: Int!
+  isDefault: Int!
+  isActive: Int!
+  isVerified: Int!
+  verifiedAt: Int!
+  billingAddress: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type PaymentMethodCount {
+  subscriptions: Int!
+  transactions: Int!
+  invoices: Int!
+}
+
+type PaymentMethodMaxAggregate {
+  id: String
+  userId: String
+  type: PaymentType
+  provider: PaymentProvider
+  cardLast4: String
+  cardBrand: String
+  cardExpMonth: Int
+  cardExpYear: Int
+  bankName: String
+  accountLast4: String
+  walletType: String
+  providerId: String
+  providerPaymentMethodId: String
+  isDefault: Boolean
+  isActive: Boolean
+  isVerified: Boolean
+  verifiedAt: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  DIGITAL_WALLET
+  CRYPTO
+  CASH
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  SQUARE
+  BRAINTREE
+  RAZORPAY
+  PAYU
+  MOMO
+  ZALO_PAY
+  VIETQR
+  SEPAY
+}
+
+type PaymentMethodMinAggregate {
+  id: String
+  userId: String
+  type: PaymentType
+  provider: PaymentProvider
+  cardLast4: String
+  cardBrand: String
+  cardExpMonth: Int
+  cardExpYear: Int
+  bankName: String
+  accountLast4: String
+  walletType: String
+  providerId: String
+  providerPaymentMethodId: String
+  isDefault: Boolean
+  isActive: Boolean
+  isVerified: Boolean
+  verifiedAt: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentMethodSumAggregate {
+  cardExpMonth: Int
+  cardExpYear: Int
+}
+
+type PaymentMethod {
+  id: ID!
+  userId: String!
+  type: PaymentType!
+  provider: PaymentProvider!
+  cardLast4: String
+  cardBrand: String
+  cardExpMonth: Int
+  cardExpYear: Int
+  bankName: String
+  accountLast4: String
+  walletType: String
+  providerId: String!
+  providerPaymentMethodId: String
+  isDefault: Boolean!
+  isActive: Boolean!
+  isVerified: Boolean!
+  verifiedAt: DateTime
+  billingAddress: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  subscriptions: [Subscription!]
+  transactions: [Transaction!]
+  invoices: [Invoice!]
+  _count: PaymentMethodCount!
+}
+
+type PaymentWebhookAvgAggregate {
+  retryCount: Float
+}
+
+type PaymentWebhookCountAggregate {
+  id: Int!
+  provider: Int!
+  eventType: Int!
+  eventId: Int!
+  payload: Int!
+  signature: Int!
+  processed: Int!
+  processedAt: Int!
+  retryCount: Int!
+  errorMessage: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type PaymentWebhookMaxAggregate {
+  id: String
+  provider: PaymentProvider
+  eventType: String
+  eventId: String
+  signature: String
+  processed: Boolean
+  processedAt: DateTime
+  retryCount: Int
+  errorMessage: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentWebhookMinAggregate {
+  id: String
+  provider: PaymentProvider
+  eventType: String
+  eventId: String
+  signature: String
+  processed: Boolean
+  processedAt: DateTime
+  retryCount: Int
+  errorMessage: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PaymentWebhookSumAggregate {
+  retryCount: Int
+}
+
+type PlanFeatureAvgAggregate {
+  sortOrder: Float
+}
+
+type PlanFeatureCountAggregate {
+  id: Int!
+  planId: Int!
+  name: Int!
+  description: Int!
+  category: Int!
+  value: Int!
+  isIncluded: Int!
+  icon: Int!
+  sortOrder: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type PlanFeatureMaxAggregate {
+  id: String
+  planId: String
+  name: String
+  description: String
+  category: FeatureCategory
+  value: String
+  isIncluded: Boolean
+  icon: String
+  sortOrder: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum FeatureCategory {
+  CORE
+  ANALYTICS
+  INTEGRATIONS
+  SUPPORT
+  STORAGE
+  USERS
+  CONTENT
+  EXAMS
+}
+
+type PlanFeatureMinAggregate {
+  id: String
+  planId: String
+  name: String
+  description: String
+  category: FeatureCategory
+  value: String
+  isIncluded: Boolean
+  icon: String
+  sortOrder: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PlanFeatureSumAggregate {
+  sortOrder: Int
+}
+
+type PlanFeature {
+  id: ID!
+  planId: String!
+  name: String!
+  description: String
+  category: FeatureCategory!
+  value: String
+  isIncluded: Boolean!
+  icon: String
+  sortOrder: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  plan: SubscriptionPlan!
+}
+
+type RefundAvgAggregate {
+  amount: Decimal
+}
+
+type RefundCountAggregate {
+  id: Int!
+  refundNumber: Int!
+  transactionId: Int!
+  amount: Int!
+  currency: Int!
+  reason: Int!
+  description: Int!
+  status: Int!
+  providerId: Int!
+  requestedAt: Int!
+  processedAt: Int!
+  completedAt: Int!
+  errorMessage: Int!
+  createdBy: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type RefundMaxAggregate {
+  id: String
+  refundNumber: String
+  transactionId: String
+  amount: Decimal
+  currency: String
+  reason: RefundReason
+  description: String
+  status: RefundStatus
+  providerId: String
+  requestedAt: DateTime
+  processedAt: DateTime
+  completedAt: DateTime
+  errorMessage: String
+  createdBy: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum RefundReason {
+  REQUESTED_BY_CUSTOMER
+  DUPLICATE
+  FRAUDULENT
+  SUBSCRIPTION_CANCELED
+  PRODUCT_UNACCEPTABLE
+  NO_LONGER_AVAILABLE
+  OTHER
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+type RefundMinAggregate {
+  id: String
+  refundNumber: String
+  transactionId: String
+  amount: Decimal
+  currency: String
+  reason: RefundReason
+  description: String
+  status: RefundStatus
+  providerId: String
+  requestedAt: DateTime
+  processedAt: DateTime
+  completedAt: DateTime
+  errorMessage: String
+  createdBy: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type RefundSumAggregate {
+  amount: Decimal
+}
+
+type Refund {
+  id: ID!
+  refundNumber: String!
+  transactionId: String!
+  amount: Decimal!
+  currency: String!
+  reason: RefundReason!
+  description: String
+  status: RefundStatus!
+  providerId: String
+  requestedAt: DateTime!
+  processedAt: DateTime
+  completedAt: DateTime
+  errorMessage: String
+  createdBy: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  transaction: Transaction!
+}
+
+type SubscriptionAvgAggregate {
+  studentsUsed: Float
+  coursesUsed: Float
+  storageUsed: Float
+}
+
+type SubscriptionCountAggregate {
+  id: Int!
+  userId: Int!
+  planId: Int!
+  status: Int!
+  currentPeriodStart: Int!
+  currentPeriodEnd: Int!
+  trialStart: Int!
+  trialEnd: Int!
+  isTrialing: Int!
+  cancelAtPeriodEnd: Int!
+  canceledAt: Int!
+  cancelReason: Int!
+  studentsUsed: Int!
+  coursesUsed: Int!
+  storageUsed: Int!
+  nextBillingDate: Int!
+  lastBillingDate: Int!
+  paymentMethodId: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type SubscriptionCount {
+  invoices: Int!
+  usageRecords: Int!
+}
+
+type SubscriptionMaxAggregate {
+  id: String
+  userId: String
+  planId: String
+  status: SubscriptionStatus
+  currentPeriodStart: DateTime
+  currentPeriodEnd: DateTime
+  trialStart: DateTime
+  trialEnd: DateTime
+  isTrialing: Boolean
+  cancelAtPeriodEnd: Boolean
+  canceledAt: DateTime
+  cancelReason: String
+  studentsUsed: Int
+  coursesUsed: Int
+  storageUsed: Int
+  nextBillingDate: DateTime
+  lastBillingDate: DateTime
+  paymentMethodId: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
+
+type SubscriptionMinAggregate {
+  id: String
+  userId: String
+  planId: String
+  status: SubscriptionStatus
+  currentPeriodStart: DateTime
+  currentPeriodEnd: DateTime
+  trialStart: DateTime
+  trialEnd: DateTime
+  isTrialing: Boolean
+  cancelAtPeriodEnd: Boolean
+  canceledAt: DateTime
+  cancelReason: String
+  studentsUsed: Int
+  coursesUsed: Int
+  storageUsed: Int
+  nextBillingDate: DateTime
+  lastBillingDate: DateTime
+  paymentMethodId: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type SubscriptionSumAggregate {
+  studentsUsed: Int
+  coursesUsed: Int
+  storageUsed: Int
+}
+
+type Subscription {
+  id: ID!
+  userId: String!
+  planId: String!
+  status: SubscriptionStatus!
+  currentPeriodStart: DateTime!
+  currentPeriodEnd: DateTime!
+  trialStart: DateTime
+  trialEnd: DateTime
+  isTrialing: Boolean!
+  cancelAtPeriodEnd: Boolean!
+  canceledAt: DateTime
+  cancelReason: String
+  studentsUsed: Int!
+  coursesUsed: Int!
+  storageUsed: Int!
+  nextBillingDate: DateTime
+  lastBillingDate: DateTime
+  paymentMethodId: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  plan: SubscriptionPlan!
+  paymentMethod: PaymentMethod
+  invoices: [Invoice!]
+  usageRecords: [UsageRecord!]
+  _count: SubscriptionCount!
+}
+
+type SubscriptionPlanAvgAggregate {
+  price: Decimal
+  maxStudents: Float
+  maxCourses: Float
+  maxStorage: Float
+  trialDays: Float
+  discountPercentage: Decimal
+  sortOrder: Float
+}
+
+type SubscriptionPlanCountAggregate {
+  id: Int!
+  name: Int!
+  description: Int!
+  type: Int!
+  status: Int!
+  price: Int!
+  currency: Int!
+  billingCycle: Int!
+  features: Int!
+  maxStudents: Int!
+  maxCourses: Int!
+  maxStorage: Int!
+  trialDays: Int!
+  isPromo: Int!
+  promoCode: Int!
+  discountPercentage: Int!
+  promoValidUntil: Int!
+  sortOrder: Int!
+  isVisible: Int!
+  isRecommended: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  createdBy: Int!
+  _all: Int!
+}
+
+type SubscriptionPlanCount {
+  subscriptions: Int!
+  planFeatures: Int!
+}
+
+type SubscriptionPlanMaxAggregate {
+  id: String
+  name: String
+  description: String
+  type: PlanType
+  status: PlanStatus
+  price: Decimal
+  currency: String
+  billingCycle: BillingCycle
+  maxStudents: Int
+  maxCourses: Int
+  maxStorage: Int
+  trialDays: Int
+  isPromo: Boolean
+  promoCode: String
+  discountPercentage: Decimal
+  promoValidUntil: DateTime
+  sortOrder: Int
+  isVisible: Boolean
+  isRecommended: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  createdBy: String
+}
+
+enum PlanType {
+  STUDENT
+  TEACHER
+  INSTITUTION
+  ENTERPRISE
+  FREEMIUM
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ONE_TIME
+}
+
+type SubscriptionPlanMinAggregate {
+  id: String
+  name: String
+  description: String
+  type: PlanType
+  status: PlanStatus
+  price: Decimal
+  currency: String
+  billingCycle: BillingCycle
+  maxStudents: Int
+  maxCourses: Int
+  maxStorage: Int
+  trialDays: Int
+  isPromo: Boolean
+  promoCode: String
+  discountPercentage: Decimal
+  promoValidUntil: DateTime
+  sortOrder: Int
+  isVisible: Boolean
+  isRecommended: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  createdBy: String
+}
+
+type SubscriptionPlanSumAggregate {
+  price: Decimal
+  maxStudents: Int
+  maxCourses: Int
+  maxStorage: Int
+  trialDays: Int
+  discountPercentage: Decimal
+  sortOrder: Int
+}
+
+type SubscriptionPlan {
+  id: ID!
+  name: String!
+  description: String
+  type: PlanType!
+  status: PlanStatus!
+  price: Decimal!
+  currency: String!
+  billingCycle: BillingCycle!
+  features: JSON!
+  maxStudents: Int
+  maxCourses: Int
+  maxStorage: Int
+  trialDays: Int!
+  isPromo: Boolean!
+  promoCode: String
+  discountPercentage: Decimal
+  promoValidUntil: DateTime
+  sortOrder: Int!
+  isVisible: Boolean!
+  isRecommended: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: String!
+  subscriptions: [Subscription!]
+  planFeatures: [PlanFeature!]
+  _count: SubscriptionPlanCount!
+}
+
+type TaxRateAvgAggregate {
+  rate: Decimal
+}
+
+type TaxRateCountAggregate {
+  id: Int!
+  country: Int!
+  state: Int!
+  region: Int!
+  city: Int!
+  zipCode: Int!
+  name: Int!
+  rate: Int!
+  isActive: Int!
+  validFrom: Int!
+  validUntil: Int!
+  taxType: Int!
+  isInclusive: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type TaxRateMaxAggregate {
+  id: String
+  country: String
+  state: String
+  region: String
+  city: String
+  zipCode: String
+  name: String
+  rate: Decimal
+  isActive: Boolean
+  validFrom: DateTime
+  validUntil: DateTime
+  taxType: TaxType
+  isInclusive: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum TaxType {
+  SALES_TAX
+  VAT
+  GST
+  SERVICE_TAX
+}
+
+type TaxRateMinAggregate {
+  id: String
+  country: String
+  state: String
+  region: String
+  city: String
+  zipCode: String
+  name: String
+  rate: Decimal
+  isActive: Boolean
+  validFrom: DateTime
+  validUntil: DateTime
+  taxType: TaxType
+  isInclusive: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type TaxRateSumAggregate {
+  rate: Decimal
+}
+
+type TransactionAvgAggregate {
+  amount: Decimal
+  feeAmount: Decimal
+  netAmount: Decimal
+  retryCount: Float
+}
+
+type TransactionCountAggregate {
+  id: Int!
+  reference: Int!
+  userId: Int!
+  invoiceId: Int!
+  paymentMethodId: Int!
+  type: Int!
+  status: Int!
+  amount: Int!
+  feeAmount: Int!
+  netAmount: Int!
+  currency: Int!
+  provider: Int!
+  providerId: Int!
+  description: Int!
+  processedAt: Int!
+  settledAt: Int!
+  failedAt: Int!
+  errorCode: Int!
+  errorMessage: Int!
+  retryCount: Int!
+  metadata: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type TransactionCount {
+  refunds: Int!
+}
+
+type TransactionMaxAggregate {
+  id: String
+  reference: String
+  userId: String
+  invoiceId: String
+  paymentMethodId: String
+  type: TransactionType
+  status: TransactionStatus
+  amount: Decimal
+  feeAmount: Decimal
+  netAmount: Decimal
+  currency: String
+  provider: PaymentProvider
+  providerId: String
+  description: String
+  processedAt: DateTime
+  settledAt: DateTime
+  failedAt: DateTime
+  errorCode: String
+  errorMessage: String
+  retryCount: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+  CHARGEBACK
+  ADJUSTMENT
+  FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REQUIRES_ACTION
+}
+
+type TransactionMinAggregate {
+  id: String
+  reference: String
+  userId: String
+  invoiceId: String
+  paymentMethodId: String
+  type: TransactionType
+  status: TransactionStatus
+  amount: Decimal
+  feeAmount: Decimal
+  netAmount: Decimal
+  currency: String
+  provider: PaymentProvider
+  providerId: String
+  description: String
+  processedAt: DateTime
+  settledAt: DateTime
+  failedAt: DateTime
+  errorCode: String
+  errorMessage: String
+  retryCount: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type TransactionSumAggregate {
+  amount: Decimal
+  feeAmount: Decimal
+  netAmount: Decimal
+  retryCount: Int
+}
+
+type Transaction {
+  id: ID!
+  reference: String!
+  userId: String!
+  invoiceId: String
+  paymentMethodId: String
+  type: TransactionType!
+  status: TransactionStatus!
+  amount: Decimal!
+  feeAmount: Decimal!
+  netAmount: Decimal!
+  currency: String!
+  provider: PaymentProvider!
+  providerId: String
+  description: String
+  processedAt: DateTime
+  settledAt: DateTime
+  failedAt: DateTime
+  errorCode: String
+  errorMessage: String
+  retryCount: Int!
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  invoice: Invoice
+  paymentMethod: PaymentMethod
+  refunds: [Refund!]
+  _count: TransactionCount!
+}
+
+type UsageRecordAvgAggregate {
+  value: Float
+  unitPrice: Decimal
+  totalCost: Decimal
+}
+
+type UsageRecordCountAggregate {
+  id: Int!
+  subscriptionId: Int!
+  metricName: Int!
+  value: Int!
+  unit: Int!
+  recordDate: Int!
+  periodStart: Int!
+  periodEnd: Int!
+  isBillable: Int!
+  unitPrice: Int!
+  totalCost: Int!
+  metadata: Int!
+  createdAt: Int!
+  updatedAt: Int!
+  _all: Int!
+}
+
+type UsageRecordMaxAggregate {
+  id: String
+  subscriptionId: String
+  metricName: String
+  value: Int
+  unit: String
+  recordDate: DateTime
+  periodStart: DateTime
+  periodEnd: DateTime
+  isBillable: Boolean
+  unitPrice: Decimal
+  totalCost: Decimal
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type UsageRecordMinAggregate {
+  id: String
+  subscriptionId: String
+  metricName: String
+  value: Int
+  unit: String
+  recordDate: DateTime
+  periodStart: DateTime
+  periodEnd: DateTime
+  isBillable: Boolean
+  unitPrice: Decimal
+  totalCost: Decimal
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type UsageRecordSumAggregate {
+  value: Int
+  unitPrice: Decimal
+  totalCost: Decimal
+}
+
+type UsageRecord {
+  id: ID!
+  subscriptionId: String!
+  metricName: String!
+  value: Int!
+  unit: String
+  recordDate: DateTime!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+  isBillable: Boolean!
+  unitPrice: Decimal
+  totalCost: Decimal
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  subscription: Subscription!
+}
+
+type CheckoutSession {
+  id: ID!
+  type: String!
+  redirectUrl: String
+  clientSecret: String
+  qrCode: String
+  invoiceId: String
+  subscriptionId: String
+  expiresAt: DateTime!
+}
+
+type PaymentResult {
+  type: PaymentResultType!
+  redirectUrl: String
+  clientSecret: String
+  qrCode: String
+  transactionId: String
+  status: String
+  errorMessage: String
+}
+
+enum PaymentResultType {
+  REDIRECT
+  QR
+  CLIENT_SECRET
+  COMPLETED
+}
+
+type RefundResult {
+  id: ID!
+  amount: Float!
+  currency: String!
+  status: String!
+  reason: String
+}
+
+type Query {
+  """Get available payment providers"""
+  availablePaymentProviders: [String!]!
+  subscriptions(page: Int = 1, limit: Int = 10, userId: String, status: String): [Subscription!]!
+  subscription(id: String!): Subscription!
+  userSubscriptions(userId: String!): [Subscription!]!
+  subscriptionPlans: [SubscriptionPlan!]!
+  subscriptionPlan(id: String!): SubscriptionPlan!
+  subscriptionPlansByType(type: PlanType!): [SubscriptionPlan!]!
+  paymentMethods(userId: String!): [PaymentMethod!]!
+  paymentMethod(id: String!): PaymentMethod!
+  invoices(userId: String!, limit: Int): [Invoice!]!
+  invoice(id: String!): Invoice!
+  invoiceByNumber(invoiceNumber: String!): Invoice!
+  overdueInvoices(userId: String): [Invoice!]!
+  transactions(userId: String!, limit: Int): [Transaction!]!
+  transaction(id: String!): Transaction!
+  transactionByReference(reference: String!): Transaction!
+  transactionsByStatus(status: TransactionStatus!, userId: String): [Transaction!]!
+}
+
+type Mutation {
+  """Create a checkout session for subscription or one-time payment"""
+  createCheckoutSession(input: CheckoutInput!): CheckoutSession!
+
+  """Process payment for an invoice"""
+  processPayment(input: ProcessPaymentInput!): PaymentResult!
+
+  """Refund a transaction (full or partial)"""
+  refundPayment(transactionId: ID!, amount: Float, reason: String): RefundResult!
+  createSubscription(input: CreateSubscriptionInput!): Subscription!
+  updateSubscription(input: UpdateSubscriptionInput!): Subscription!
+  cancelSubscription(id: String!, reason: String): Subscription!
+  reactivateSubscription(id: String!): Subscription!
+  deleteSubscription(id: String!): Boolean!
+  setDefaultPaymentMethod(id: String!, userId: String!): PaymentMethod!
+  deletePaymentMethod(id: String!): Boolean!
+}
+
+input CheckoutInput {
+  userId: String!
+  type: CheckoutType!
+  planId: String
+  productId: String
+  paymentMethodId: String
+  provider: String = "STRIPE"
+  successUrl: String
+  cancelUrl: String
+}
+
+enum CheckoutType {
+  SUBSCRIPTION
+  ONE_TIME
+}
+
+input ProcessPaymentInput {
+  invoiceId: ID!
+  paymentMethodId: String!
+  provider: String = "STRIPE"
+}
+
+input CreateSubscriptionInput {
+  userId: String!
+  planId: String!
+  paymentMethodId: String
+  isTrialing: Boolean
+}
+
+input UpdateSubscriptionInput {
+  id: String!
+  status: String
+  cancelAtPeriodEnd: Boolean
+  cancelReason: String
+  paymentMethodId: String
+}
